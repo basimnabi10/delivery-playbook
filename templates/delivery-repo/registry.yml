@@ -1,0 +1,12 @@
+# Written in Step 2: where project information lives, and who may see what comes from it.
+code:
+  repos: []
+  production_branch: main
+sources: []
+restricted_drive_folder: ""
+versioning: {}
+pages:
+  delivery-hub: {audience: [client, team, execs]}
+  hours: {enabled: true}
+rules:
+  never_on_client_pages: [credentials, internal links, test pass rates, developer names]

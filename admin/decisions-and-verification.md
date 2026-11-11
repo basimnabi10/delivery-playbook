@@ -1,0 +1,45 @@
+# Decisions and items to verify
+
+Nothing here needs a decision from the PM. The first list records what is decided; the table lists checks to run in the first real pilot.
+
+## Decided
+
+- The playbook is one repo. The starter folder for each delivery repo lives inside it (`templates/delivery-repo/`). The PM creates the project's delivery repo, and the agent clones the playbook and copies it into the delivery repo's `playbook/` folder, following the README's "For the AI agent". `scripts/new-delivery-repo` will automate the same steps.
+- The playbook repo is public and MIT-licensed, with Issues on, under the owner's personal GitHub account (`basimnabi10/delivery-playbook`). Only the owner and invited collaborators can change it. Limiting who can read it to CodingCops accounts is parked; the options are in [publish-this-repo.md](publish-this-repo.md).
+- The delivery repo is always separate from the code repos, and is shared by project management, product management, design and QA. DevOps works in the code repos.
+- Hours are a separate page of the Delivery Hub, built from the timesheet only. The Hub has one audience, everyone it is shared with, so the page shows no budgets, rates or plan figures. A project can switch it off with `pages.hours.enabled`.
+- Nothing goes to `main` directly. Every change goes through a branch, a pull request, approval and merge. There is no `develop` branch: `main` is the only long-lived branch.
+- When the agent cannot run a command (git, `gh` or a playbook script), it gives you the exact command to run in your own terminal and carries on once you confirm.
+- The PM owns the Delivery Hub, and product management supplies scope. Who owns estimates and change requests is settled in the product-management guide.
+- The playbook scripts are built for v1: `validate`, `collect`, `render`, `sync`, `new-delivery-repo`, the secret-scan hook and the CODEOWNERS generator.
+- Acceptance test: a project's hand-built report is reproduced from data as its Delivery Hub, in the shadow cycle in Step 7.
+
+## To verify
+
+| # | Item | Why it matters | How to settle it |
+| --- | --- | --- | --- |
+| 1 | Cowork: `git` and `gh` inside the session | The shell runs in an isolated virtual machine, so a sign-in on your computer may not be visible to it | Verify in a real session. Fallback: the exact terminal command |
+| 2 | Codex: git writes and `gh` sign-in | `.git` is read-only inside the workspace by default, so Codex may ask permission for each git write, and `gh` may not see your sign-in | Verify in a real session. Fallback: the exact terminal command |
+| 3 | Codex connectors | The MCP endpoints listed are untested in Codex, and a dedicated plugin may exist for some | Check Plugins first, then test each endpoint in the dry run |
+| 4 | Chrome extension availability | The Codex extension is in the Codex app on macOS and Windows, and one source says EU and UK were excluded at launch. Claude in Chrome needs a paid plan and Chrome itself, and Team or Enterprise plans may need admin enablement | Check per user. Fallback: mark browser-only sources manual |
+| 5 | Which tool most PMs use | Decides which path is primary and which becomes the appendix | Pilot one PM per path |
+| 6 | Rocket.Chat MCP server | A read-only server would remove the browser dependency for the richest internal chat source | Build it only if the four checks below pass; otherwise keep the browser fallback for v1 |
+| 7 | Publishing the Delivery Hub | How each path publishes a page and keeps one link across updates is not yet checked. Claude has an artifact publish feature, and Codex lists a Sites feature with publish and share | Verify per path in a real session. Fallback: the agent produces the HTML file and you share it by hand |
+| 8 | GitHub plan and delivery repos | On GitHub Free, branch protection, rulesets and CODEOWNERS review work only on public repos, so `main` cannot be protected on private repos without GitHub Team or Enterprise. PMs also need permission to create private repos | Check the plan under Billing and plans. Upgrade before rollout, or pilot on Free with the rules enforced by the agent only |
+| 9 | Where delivery repos live | A private repo owned by a personal account can only give collaborators write access, never read-only, so devs and execs cannot be read-only there. Read-only roles, teams and organisation rulesets need an organisation | Create delivery repos in an organisation. The playbook repo can start personal and be transferred later |
+
+Checks for item 6. Any "no" means keeping the browser fallback for v1.
+
+1. Can an ordinary PM account create a personal access token in Rocket.Chat, under account settings? An admin can disable that permission.
+2. Can the PM's computer reach Rocket.Chat without a VPN, and can the tool reach it too?
+3. Is Node.js or Python available on PM machines? The small server needs one.
+4. Does the tool start a local MCP server from its configuration? Test with a hello-world server in both Cowork and Codex.
+
+If all four pass, the server is read-only by design: list rooms, read history, search, with no send, edit or delete. Each PM keeps their own token in the password manager and passes it to the server as an environment variable, never in the repo. The token acts as that person, so treat it like a password. The agent can write and repair a server this small in a session, so day to day it needs no developer; the PMO owns it and keeps a test room.
+
+## Parked until v1 is final
+
+- knowledge graph and auto-ontology;
+- push notifications, scheduled runs and auto-accepting routine proposals;
+- workspaces for any further roles;
+- a dedicated exec artefact beyond the Delivery Hub and read access to the repo.

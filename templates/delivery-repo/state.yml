@@ -1,0 +1,7 @@
+# Progress and source checks. Written by the agent.
+playbook_version: ""
+onboarding:
+  step: 1
+  done: []
+covered_through: null
+sources_checked: []

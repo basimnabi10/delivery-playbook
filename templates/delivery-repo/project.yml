@@ -1,0 +1,11 @@
+# Written in Step 1 from the project brief.
+project:
+  id: ""
+  name: ""
+  client: ""
+  summary: ""
+  contract: ""   # time-and-materials | fixed-price | retainer
+documents: {}
+timeline: {}
+environments: {}
+draft_team: []

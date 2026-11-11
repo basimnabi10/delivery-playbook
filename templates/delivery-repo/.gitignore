@@ -1,0 +1,12 @@
+# Never committed: personal and sensitive material
+local/
+registry.local.yml
+
+# Local previews
+out/preview/
+out/dryrun/
+
+# Secrets, in case one is created by mistake
+.env
+*.pem
+*.key
