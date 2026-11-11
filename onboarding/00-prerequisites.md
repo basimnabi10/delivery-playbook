@@ -23,12 +23,12 @@ Pick your tool path first: [Path A, Claude Cowork](tools/cowork.md) or [Path B, 
 
 **Use `gh auth login` first.** Choose GitHub.com, HTTPS and "Login with a web browser", and sign in as yourself. The GitHub CLI keeps the resulting token in your system keychain, so you never see it, copy it or renew it by hand. It covers creating repos, cloning, pulling, pushing and pull requests. Check it with `gh auth status`.
 
-**When you need a token you create yourself.** Only when something cannot use the browser sign-in: a script or CI job on a machine with no browser, or a tool that asks for a token. Ask the PMO first. There are two kinds:
+**When you need a token you create yourself.** There are two cases. One is a script or CI job on a machine with no browser. The other is an agent session that cannot see your `gh auth login` sign-in, which is common in Cowork because the agent's shell runs in a separate virtual machine. Until your organisation turns on a GitHub connector, a fine-grained token is how you let the agent pull, push and open pull requests in that second case. There are two kinds of token:
 
 | Kind | Use it for | Notes |
 | --- | --- | --- |
 | Fine-grained personal access token | The default for any token you create | Limited to the repos you pick, with a separate access level for each permission, and it always expires. It cannot create a new repo under a personal account |
-| Personal access token (classic) | Only when a fine-grained token cannot do the job | The `repo` scope reaches every repo you can access. Set the shortest expiry and delete it as soon as the job is done |
+| Personal access token (classic) | When a fine-grained token cannot do the job, such as creating a new repo | The `repo` scope reaches every repo you can access, so it is the riskier choice. If you give one to an agent, the agent will warn you. Set the shortest expiry and delete it as soon as the job is done |
 
 **Create a fine-grained token.**
 
@@ -49,9 +49,26 @@ Pick your tool path first: [Path A, Claude Cowork](tools/cowork.md) or [Path B, 
 | Administration | Read and write | Rulesets, collaborators and repo settings. It also allows renaming and deleting the repo, so make these changes in GitHub's Settings pages instead unless you must automate them |
 | Metadata | Read-only | Set by GitHub; you cannot change it |
 
-**Handling a token.**
+**Giving a token to the agent.** Nothing here is blocked: you decide, and the agent will tell you the risks before it uses a token. The playbook's advice is to use a fine-grained token (it starts with `github_pat_`), limited to the one repo the work is in, with only the permissions in the table above and the shortest expiry that fits.
 
-- Keep it in your password manager and pass it to a tool through an environment variable in your own terminal. Never put it in a repo, a chat or a Drive sheet; this is the secret rule in [AGENTS.md](../AGENTS.md), and the secret-scan hook (0.8) enforces it for repos.
+The risks:
+
+- The token stays in the chat history, and anyone who can see the session or an export can see it.
+- It acts as you, with no approval prompt on each use.
+- An agent that reads hostile text could be steered into misusing it. A public repo takes issues from anyone, so this is not far-fetched.
+- A classic token (`ghp_…`), a token that reaches more than one repo, a password or a token for another service widens the exposure. The agent will say so and suggest the narrower option, and will go ahead if you still want it.
+
+Good practice:
+
+- Paste it only into a session you started yourself, not a shared or recorded one.
+- When the work is done, delete the token at https://github.com/settings/tokens, or keep it in your password manager and paste it again next time. If a session is shared or exported, treat the token as exposed and replace it.
+- The agent uses the token only for what you ask in that session. It passes it to commands as a temporary environment variable, and does not write it to a file, the git config, a remote URL, `state.yml` or memory.
+
+When your organisation turns on a GitHub connector, prefer it: you sign in through GitHub and no token appears in a chat.
+
+**Handling any token.**
+
+- Keep it in your password manager, and pass it to your own tools through an environment variable. Never put it in a repo or a Drive sheet; the secret-scan hook (0.8) enforces this for repos. The only chat exception is the one above.
 - If a token is ever pasted somewhere it should not be, delete it at https://github.com/settings/tokens straight away and make a new one.
 - Delete tokens you no longer need, and renew the rest before they expire.
 - If the repo's `main` branch is protected by a ruleset that requires pull requests, no token can push to `main` directly. Work on a branch and open a pull request; `scripts/sync` does this for you.

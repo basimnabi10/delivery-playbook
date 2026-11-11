@@ -6,7 +6,7 @@ Say "run setup check" and the agent proves each capability with a harmless actio
 | --- | --- | --- | --- | --- |
 | 1 | Write to the workspace | Create and delete `local/.dryrun` | The file appears, then disappears | A: reconnect the folder. B: check the working directory and sandbox mode |
 | 2 | Run commands | `git status` and the playbook's validate script self-test | Both print results | Check the approval prompt was accepted |
-| 3 | GitHub CLI | `gh auth status`, then `gh repo view` on the delivery repo | Signed in, repo opens | Sign in from inside the session; otherwise use the terminal fallback |
+| 3 | GitHub CLI | `gh auth status`, then `gh repo view` on the delivery repo | Signed in, repo opens | Sign in from inside the session; otherwise give the agent a fine-grained token ([Step 0](00-prerequisites.md#github-sign-in-and-tokens)) or use the terminal fallback |
 | 4 | Reach GitHub | `git ls-remote` on the delivery repo | References are listed | A: ask the PMO to allow GitHub egress. B: set `network_access = true` |
 | 5 | Commit | Commit a scratch file on a throwaway branch `dryrun/<you>`, then delete the branch | The commit is created | B: approve the `.git` write, or use `scripts/sync` |
 | 6 | Secret scan | Try to commit a fake token | The hook blocks it | Install the hook (0.8) |
