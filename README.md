@@ -64,7 +64,7 @@ Read `playbook/AGENTS.md` and follow it. Resume at the step recorded in `state.y
 
 - Three gates always wait for the person: accepting proposals, publishing the Delivery Hub, and merging a pull request.
 - Nothing goes to `main` directly after the first commit. Branch, push, pull request, approval, merge.
-- Never read a password manager or credential store, and never put credentials in a repo.
+- Never read a password manager or credential store, and never put credentials in a repo. A person may choose to paste a GitHub token into a session; the agent warns about the risks and does not block it. See [Step 0](onboarding/00-prerequisites.md#github-sign-in-and-tokens).
 - The full rules are in `AGENTS.md`.
 
 ---

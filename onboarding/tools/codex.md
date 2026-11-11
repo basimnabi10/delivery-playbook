@@ -10,7 +10,7 @@ Codex runs commands inside an operating-system sandbox that is limited to the cu
     - approve each git write when prompted (simplest);
     - allow the playbook's `scripts/sync` with an execution-policy rule, so one command covers commit and push (see Codex's Rules documentation, and verify it in the dry run);
     - fallback: the agent prepares the change and you commit and push from your own terminal.
-6. **The GitHub CLI inside the sandbox.** The dry run runs `gh auth status` from inside Codex. If the sandbox cannot see your sign-in, use the terminal fallback in item 5.
+6. **The GitHub CLI inside the sandbox.** The dry run runs `gh auth status` from inside Codex. If the sandbox cannot see your sign-in, either use the terminal fallback in item 5 or give the agent a fine-grained token, as described in [GitHub sign-in and tokens](../00-prerequisites.md#github-sign-in-and-tokens).
 7. **Connectors.** In the Codex app, check Plugins first: where a dedicated plugin exists for Slack, Gmail, Google Calendar, Google Drive or tldv, prefer it. Otherwise add the MCP server in Codex's MCP configuration and sign in when prompted. Endpoints to try, each verified in the dry run:
     - Slack: `https://mcp.slack.com/mcp`
     - Gmail: `https://gmailmcp.googleapis.com/mcp/v1`
