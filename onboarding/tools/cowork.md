@@ -15,7 +15,7 @@ Cowork works in a folder you connect on your computer, uses your connectors, and
 4. **Git and the GitHub CLI inside the session.**
     - Cowork runs shell commands in an isolated virtual machine, while connected-folder file access runs on your device. Installing `gh` on your Mac may therefore not make it available to the agent.
     - The dry run tests `git` and `gh auth status` from inside the session.
-    - If either is missing there, there are two routes. Until your organisation has a GitHub connector, the working one is a fine-grained token: create it and give it to the agent as described in [GitHub sign-in and tokens](../00-prerequisites.md#github-sign-in-and-tokens), which also lists the risks.
+    - If either is missing there, there are two routes. Prefer a GitHub connector or plugin when your organisation has turned one on. Until then, the working one is a fine-grained token, kept in a local file or pasted into the session: create it and set it up as described in [GitHub sign-in and tokens](../00-prerequisites.md#github-sign-in-and-tokens), which also lists the risks.
     - The other route is the terminal fallback: the agent prepares the commit in the folder, and you run `scripts/sync` (branch, commit, push and pull request) in your own terminal. Nothing leaves your computer, and it is a supported mode, not a failure.
 5. **Connectors.** In the connector settings, authorise Slack, Gmail, Google Calendar, Google Drive and tldv (plus Atlassian for Jira projects). Tools that a connector does not mark read-only are gated by approval prompts, so expect to approve writes. Never approve a connector action you did not ask for.
 6. **Browser fallback.**

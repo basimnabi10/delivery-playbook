@@ -64,11 +64,29 @@ Good practice:
 - When the work is done, delete the token at https://github.com/settings/tokens, or keep it in your password manager and paste it again next time. If a session is shared or exported, treat the token as exposed and replace it.
 - The agent uses the token only for what you ask in that session. It passes it to commands as a temporary environment variable, and does not write it to a file, the git config, a remote URL, `state.yml` or memory.
 
-When your organisation turns on a GitHub connector, prefer it: you sign in through GitHub and no token appears in a chat.
+When your organisation turns on a GitHub connector or plugin, prefer it: you sign in through GitHub and no token appears in a chat.
+
+**Keeping a token in a local file (fallback).** Use this when no GitHub connector or plugin is available, the agent cannot see your `gh auth login` sign-in, and you would rather not paste the token every session. In order of preference, the routes are: a GitHub connector or plugin, `gh auth login` visible to the agent, a token in a local file, a token pasted into the session, and the terminal fallback.
+
+1. Create a fine-grained token, as above.
+2. In your terminal, from the repo folder, save it without it appearing on screen or in your shell history:
+
+   ```
+   mkdir -p local && chmod 700 local
+   read -s "t?Paste token: " && printf '%s' "$t" > local/github-token && unset t
+   chmod 600 local/github-token
+   ```
+
+   The `read` line is for zsh, the macOS default. In bash, use `read -rsp "Paste token: " t`.
+3. Make sure git ignores it. A delivery repo's starter `.gitignore` already ignores `local/`. In any other repo, run `echo 'local/' >> .git/info/exclude`, which stays in your clone and is never published.
+4. Check it. `git check-ignore -v local/github-token` must print a rule, and `git status` must not list the file. If either check fails, fix it before going on: a token committed to a public repo is leaked.
+5. Tell the agent "use my token file for GitHub". It reads the file only when you ask for something that needs GitHub write access, loads it into a temporary environment variable, never prints it, and warns you about the risks first.
+
+The risks are the same as for pasting, plus one: the token sits in plain text on disk, so any session that has the folder can read it. Keep the folder out of cloud-synced locations, keep a copy in your password manager, overwrite the file when you renew the token, and delete it when you no longer need it. `.gitignore` is not a guarantee. A typo in the filename or `git add -f` would still commit the file, which is why the secret-scan hook (0.8) matters here.
 
 **Handling any token.**
 
-- Keep it in your password manager, and pass it to your own tools through an environment variable. Never put it in a repo or a Drive sheet; the secret-scan hook (0.8) enforces this for repos. The only chat exception is the one above.
+- Keep it in your password manager, and pass it to your own tools through an environment variable. Never put it in a repo or a Drive sheet; the secret-scan hook (0.8) enforces this for repos. The only exceptions are the pasted token and the local token file, both described above.
 - If a token is ever pasted somewhere it should not be, delete it at https://github.com/settings/tokens straight away and make a new one.
 - Delete tokens you no longer need, and renew the rest before they expire.
 - If the repo's `main` branch is protected by a ruleset that requires pull requests, no token can push to `main` directly. Work on a branch and open a pull request; `scripts/sync` does this for you.
