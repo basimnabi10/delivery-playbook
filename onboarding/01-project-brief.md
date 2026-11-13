@@ -4,21 +4,22 @@ Open the project's workspace, tell the agent who you are, then give it the proje
 
 ## You do
 
-1. **Get the workspace.** For a new project, you (the PM) create the delivery repo, named `<client>-delivery`. Open an empty folder in your tool and paste the prompt from the [playbook README](../README.md). The agent clones the playbook, copies the starter folder from `templates/delivery-repo/` into place, adds a pinned, read-only `playbook/` folder at the current version, and asks for your approval before it creates the repo. The delivery repo is always a separate repo, never a folder inside a code repo: four functions share it, and no code repo suits all of them (a designer, for one, does not work in the code repos). For an existing project the repo already exists; clone it with `gh repo clone <org>/<repo>`, or ask the agent to.
+1. **Get the workspace.** For a new project, you (the PM) create the delivery repo, named `<client>-<project>-delivery`. Open an empty folder in your tool and paste the prompt from the [playbook README](../README.md). The agent clones the playbook, copies the starter folder from `templates/delivery-repo/` into place, adds a pinned, read-only `playbook/` folder at the current version, and asks for your approval before it creates the repo. The delivery repo is always a separate repo, never a folder inside a code repo: four functions share it, and no code repo suits all of them (a designer, for one, does not work in the code repos). **One repo per project, with phases inside it.** The test: same team and same Delivery Hub link means same repo. A new SOW for the same product becomes a new phase, recorded with its SOW in `project.yml`. A separate product or engagement with its own team and Hub gets its own repo. An existing repo keeps its name, and you record that as a decision in `pm/decisions.md`. For an existing project the repo already exists; clone it with `gh repo clone <org>/<repo>`, or ask the agent to.
 2. **Open it.** In Cowork, connect the folder as the working folder; in Codex, run `codex --profile delivery` inside it.
 3. **Say who you are**, in your own words: "I'm the project manager on this project", "I hold both project and product management", or "I'm covering product management while Sam is out".
 4. **Give the project brief.** Tell the agent the following; it asks for whatever is missing.
     - **Project:** name, client, what is being built, and the contract type (time and materials, fixed price or retainer).
-    - **Documents:** the SOW (a Drive link or file ID), plus any proposal, estimate sheet and kickoff notes. If no SOW is signed yet, say so.
+    - **Documents:** the SOW (a Drive link or file ID), plus any proposal, estimate sheet and kickoff notes. If no SOW is signed yet, say so. If you name a Drive folder, say whether it is the restricted shared folder or just the project's folder.
     - **Timeline:** start date, target end, phases, sprint length and first sprint date, known milestones and client deadlines.
     - **Team:** your team, the client's team (sponsor, approver, IT or technical contact), the sales/BD owner and the exec sponsor. Names and roles are enough here; handles and function owners come in Step 3.
-    - **Delivery basics:** environments (staging, production), release cadence, and anything the client has asked you to always or never show.
+    - **Delivery basics:** environments (staging, production), release cadence, and anything the client has asked you to always or never show. Say also whether the client sees hours (the Hours page) and whether the project runs formal sprints.
 
 ## The agent does
 
 - Reads `AGENTS.md` and the pinned `playbook/` copy, and states the playbook version.
 - Identifies you from your git identity and chat handles if `team.yml` exists; otherwise it asks. If you hold both functions, it keeps two separate hats, each with its own preflight section.
 - Reads the SOW and the other files you named, by ID, and drafts the brief: parties, contract type, term, deliverables, milestones and dates, named contacts. Each fact is shown next to where it was found, and any conflict between the SOW and what you said is flagged.
+- Cross-checks the SOW's dates against other evidence (kickoff notes, the recurring meeting series, chat) and records each difference as an open item. A derived window, such as a sprint calendar, records the unconfirmed date it rests on.
 - Keeps commercial terms out of shared data. Rates, totals, payment terms and discounts stay in the SOW. If you want a figure tracked, such as the planned-hours baseline, it goes in the restricted tier only.
 - Writes `project.yml` once you have corrected the draft, and carries the names and roles into a draft team list for Step 3.
 - Notices that `registry.yml` and `team.yml` are missing and runs its first preflight, which should report them, along with sources and state.
@@ -46,6 +47,7 @@ timeline:
   milestones:
     - {id: M1, title: "Kick-off",               date: 2026-05-18}
     - {id: M2, title: "First end-to-end demo",  date: 2026-06-29}
+sprints: {used: true}              # false if the project runs no formal sprints
 environments: {staging: "<url>", production: "<url>"}
 draft_team:                         # names and roles only; Step 3 completes it
   - {name: Dana Ortiz,   org: internal, role: delivery-lead}

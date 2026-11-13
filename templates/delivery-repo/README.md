@@ -1,4 +1,4 @@
-# <client>-delivery
+# <client>-<project>-delivery
 
 The delivery repo for <project name>, shared by project management, product management, design and QA. The Delivery Hub for this project is built from the data in this repo.
 

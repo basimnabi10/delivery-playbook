@@ -11,7 +11,7 @@ Playbook address: https://github.com/basimnabi10/delivery-playbook
 ## For you: applying the playbook to a project
 
 1. **Set up your machine once.** Work through [Step 0](onboarding/00-prerequisites.md): git, the GitHub CLI, your AI tool (Claude Cowork or Codex), connectors, the browser extension and a password manager. The agent checks as much of it as it can.
-2. **Make an empty folder** for the project's delivery repo, named `<client>-delivery`, and open it in your AI tool.
+2. **Make an empty folder** for the project's delivery repo, named `<client>-<project>-delivery`, and open it in your AI tool.
 3. **Paste this prompt:**
 
    > Apply the CodingCops Delivery Playbook to this project. The playbook is at https://github.com/basimnabi10/delivery-playbook. Read its README and follow the section "For the AI agent". I am the project manager.
@@ -46,7 +46,7 @@ You are reading this because a person asked you to apply this playbook to a proj
 
 Only a project manager creates a delivery repo. If the person is not a PM, stop and tell them to ask their PM.
 
-1. Ask for the client and project name. Propose the folder and repo name `<client>-delivery` and confirm it.
+1. Ask for the client and project name. Propose the folder and repo name `<client>-<project>-delivery` and confirm it.
 2. Clone this playbook into a temporary folder outside the working folder:
    `git clone --depth 1 https://github.com/basimnabi10/delivery-playbook <temp>/delivery-playbook`
    Use the latest tag if one exists, otherwise the default branch. If the clone fails (for example, there is no network), give the person the exact command to run in their own terminal, or ask them to download the repo as a ZIP and unzip it into a temp folder. Then continue.
@@ -54,7 +54,7 @@ Only a project manager creates a delivery repo. If the person is not a PM, stop 
 4. Copy everything else from the clone into `playbook/` in the working folder: every file except `.git/` and `templates/delivery-repo/`.
 5. Write the playbook version (the tag, or the commit hash if untagged) and today's date into `state.yml` under `playbook_version`.
 6. Never edit `playbook/` from now on. It is a pinned, read-only copy. Upgrades arrive by pull request.
-7. Ask the person's approval, and ask which GitHub owner should hold the repo (an organisation, or their own account). Then run `git init -b main`, `git add .`, `git commit -m "Start delivery repo from Delivery Playbook <version>"` and `gh repo create <owner>/<client>-delivery --private --source .`, with no `--push`. Then confirm the repo is private: `gh repo view <owner>/<client>-delivery --json isPrivate` must report `true`. If it does not, stop and tell the person before anything is pushed. Once it reports `true`, run `git push -u origin main`. This first commit is the only one made straight to `main`. If `gh` is unavailable or not signed in, give the exact commands instead, in the same order.
+7. Ask the person's approval, and ask which GitHub owner should hold the repo (an organisation, or their own account). Then run `git init -b main`, `git add .`, `git commit -m "Start delivery repo from Delivery Playbook <version>"` and `gh repo create <owner>/<client>-<project>-delivery --private --source .`, with no `--push`. Then confirm the repo is private: `gh repo view <owner>/<client>-<project>-delivery --json isPrivate` must report `true`. If it does not, stop and tell the person before anything is pushed. Once it reports `true`, run `git push -u origin main`. This first commit is the only one made straight to `main`. If `gh` is unavailable or not signed in, give the exact commands instead, in the same order.
 8. Tell the person the repo exists. Then continue with `playbook/onboarding/00-prerequisites.md` and run the setup check.
 
 ### 3. Existing delivery repo
