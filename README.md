@@ -24,7 +24,7 @@ Playbook address: https://github.com/basimnabi10/delivery-playbook
 | You are | Do this |
 | --- | --- |
 | A project manager starting a project | The steps above |
-| A project manager with an existing project | The same, and tell the agent the covered-through date and where earlier reports live ([Step 5](onboarding/05-seed-starting-data.md)) |
+| A project manager with a project already running | The same, plus [adopting a running project](onboarding/adopting-a-running-project.md), and tell the agent the covered-through date and where earlier reports live ([Step 5](onboarding/05-seed-starting-data.md)) |
 | Product, design or QA joining a project | [Step 0](onboarding/00-prerequisites.md), then clone the project's delivery repo, open it and say which function you hold: [joining a project](onboarding/joining.md) |
 | A dev or an exec | Nothing to set up. Read and comment on the delivery repo's pull requests and issues, and open the Delivery Hub link |
 
@@ -39,6 +39,7 @@ You are reading this because a person asked you to apply this playbook to a proj
 ### 1. Find out where you are
 
 - Ask which function the person holds (project management, product management, design or QA), unless they have said.
+- Ask whether the project is new or already running, unless they have said. A running project already shares reports, pages, trackers or folders with the client. For a running project, follow `playbook/onboarding/adopting-a-running-project.md` alongside the steps: it sits beside Steps 1 to 7, not after them.
 - Look at the working folder. If it contains `state.yml` and a `playbook/` folder, it is an existing delivery repo: go to section 3. If it is empty or has no `playbook/`, go to section 2.
 
 ### 2. New delivery repo: clone the playbook and copy it in

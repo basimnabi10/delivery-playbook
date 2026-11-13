@@ -15,6 +15,9 @@ The agent proposes the project's starting data into `_inbox/`, and you accept, e
 - The agent rebuilds history from the repos' merge history, meeting records, chat, QA and UAT sheets and timesheets.
 - It proposes releases using the versioning scheme in the registry, plus milestones, weekly activity and hours by sprint.
 - Each imported item is tagged `reconstructed`.
+- Each change records its environment (`production`, `staging` or `internal-testing`), so release notes can say where a change is live.
+- If the project already has a report the client reads, the agent starts from it as the baseline. It compares each claim in it with the registry and the repos, and lists the result in the `conflicts` block of `project.yml` (see [adopting a running project](adopting-a-running-project.md)). Replacement wording is checked against those facts before you are asked to accept it.
+- Just before it presents proposals, the agent re-reads the baseline and stamps its version in each proposal's evidence. If the baseline changed after a proposal was written, that proposal becomes `superseded`.
 - You confirm the version mapping. Version numbers made for the notes may differ from the team's build labels, and the page footer says so.
 
 Each proposal is a small file in `_inbox/`:
@@ -26,9 +29,10 @@ proposal: {id: M3, title: "UAT passed", date: 2026-10-16}
 evidence:
   - {source: tldv-sync, ref: "2026-10-16 weekly sync"}
   - {source: drive-uat, ref: "results sheet"}
+  - {source: baseline, ref: "weekly status page, version of 12 Oct"}
 confidence: medium
 visibility: client-visible
-status: proposed          # you set: accepted | edited | rejected
+status: proposed          # you set: accepted | edited | rejected; the agent sets superseded
 ```
 
 **How review works.** You review inside the session, grouped and riskiest first, not as a pile of prompts waiting at startup.

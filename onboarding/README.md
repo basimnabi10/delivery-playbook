@@ -15,6 +15,8 @@ The end product is the **Delivery Hub**: one shareable set of pages (release not
 | [6. Review and publish](06-review-and-publish.md) | PM approves | The Delivery Hub and its link |
 | [7. Branch, push, merge, set the rhythm](07-weekly-rhythm.md) | Agent commits, PM approves | A merged pull request and a weekly routine |
 
+**Already running?** If the project already shares reports, pages or folders with the client, follow [adopting a running project](adopting-a-running-project.md) alongside Steps 1 to 7. It treats what the client already sees as a baseline to check, not as the truth.
+
 **How the steps move.** The agent leads. When a step's "Done when" is met, it says so in one line and starts the next step. You can say "pause" or "what's next?" at any time. Progress is kept in `state.yml`, so a later session, or another machine, resumes where you stopped. Three gates always wait for you: accepting proposals (Step 5), publishing (Step 6) and merging a pull request (Step 7).
 
 **When the agent cannot run something.** It never stalls. It gives you the exact command to run in your own terminal and carries on once you confirm.
