@@ -2,11 +2,13 @@
 code:
   repos: []
   production_branch: main
-sources: []
+sources: []   # each: id, type, ref, visibility, read (connector | api | browser | manual); optional owner, url, files, commercial
 restricted_drive_folder: ""
 versioning: {}
 pages:
   delivery-hub: {audience: [client, team, execs]}
-  hours: {enabled: true}
+  hours: {enabled: true, basis: ""}   # basis: allocation | logged
 rules:
   never_on_client_pages: [credentials, internal links, test pass rates, developer names]
+  counting: {merged_pr: "", week_rule: "", script: collect}
+  publishing: {draft_only: true, weekly_slot: ""}

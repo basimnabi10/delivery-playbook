@@ -19,6 +19,8 @@ The end product is the **Delivery Hub**: one shareable set of pages (release not
 
 **How the steps move.** The agent leads. When a step's "Done when" is met, it says so in one line and starts the next step. You can say "pause" or "what's next?" at any time. Progress is kept in `state.yml`, so a later session, or another machine, resumes where you stopped. Three gates always wait for you: accepting proposals (Step 5), publishing (Step 6) and merging a pull request (Step 7).
 
+**Each session.** The agent also runs the short [session readiness checklist](session-readiness.md): which connectors it can reach, whether the browser pane is visible, which GitHub route is in use and which scripts exist.
+
 **When the agent cannot run something.** It never stalls. It gives you the exact command to run in your own terminal and carries on once you confirm.
 
 **Who this is for.** The project manager, who sets the project up in Steps 1 to 7. The project's delivery repo is shared by four functions: project management, product management, design and QA. The other three functions complete Step 0 and then follow [joining a project](joining.md). Devs and execs have read-and-comment access to the repo and do not run the agent.
