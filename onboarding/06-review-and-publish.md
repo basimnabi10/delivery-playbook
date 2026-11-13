@@ -18,11 +18,14 @@ A published page cannot hide content from some readers: everything in the file i
 2. Read it as the client would. Confirm there are no internal links, developer names, test pass rates, credentials, budgets or rates.
 3. Read it as an exec would. Confirm milestones, sprint status and hours are complete and correct.
 4. Read the agent's list of what it left out or could not verify.
-5. Approve the publish. Each publish needs your approval.
-6. Share the link yourself with the people in `team.yml` marked `receives: [delivery-hub]`, using the tool's share menu. The agent can draft the covering message, and sends nothing without your approval.
+5. If the project already shares a report with the client, read the list of that baseline's claims (matches, contradicts, unverifiable). For each client-shared artefact, decide: keep it as it is, fold it into the Delivery Hub, or retire it after the shadow cycle. Any replacement wording must have been checked against the facts.
+6. Approve the publish. Each publish needs your approval.
+7. Share the link yourself with the people in `team.yml` marked `receives: [delivery-hub]`, using the tool's share menu, and set whether each may only view or may also comment (`hub_access`). The agent can draft the covering message, and sends nothing without your approval.
 
 ## The agent does
 
+- Asks, as explicit questions, who receives the link and whether each person may view or comment; whether the project shows an Hours page; and whether it uses formal sprints. It records the answers in `team.yml` (`receives`, `hub_access`), `registry.yml` (`pages.hours.enabled`) and `project.yml` (`sprints.used`).
+- For a project with a hand-built page, offers the adopt-an-existing-Hub path: the hand-built page stays live until the shadow cycle ends, then is retired or folded in as you decided.
 - Runs the playbook's scripts for everything countable: pull requests per week, change counts, phase maths and burn. The model does not count.
 - Renders from the pinned template, so every project has the same look, and embeds the structured data in the page so an exec's tool can read it. Only client-safe data is embedded.
 - Checks the rendered page at desktop and phone width and in light and dark mode: no sideways scroll, no script errors, working chart and filters, correct counts, and none of the strings listed in `rules.never_on_client_pages`.

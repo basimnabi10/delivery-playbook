@@ -1,8 +1,13 @@
 # Written in Step 3: who is on the project and who holds each function.
 functions:
   project-management: {}
-  product-management: {}
+  product-management: {}   # one person can hold two functions: list both in that person's `functions`
   design: {}
   qa: {}
 people: []
-readers: []   # GitHub teams with Read access, for example the project's devs and the execs
+# Optional fields per person: client_facing, engagement (billed | shadow),
+# status (proposed | confirmed | left-client | inactive), introduced_to_client,
+# receives: [delivery-hub], hub_access (view | comment)
+readers: []   # GitHub teams with Read access, for example the project's devs and the execs; empty is valid
+readers_note: ""   # why readers is empty, if it is
+code_owners: {}   # {people: [id], reason: "..."} when the code owners differ from the function owners
