@@ -53,7 +53,7 @@ Only a project manager creates a delivery repo. If the person is not a PM, stop 
 4. Copy everything else from the clone into `playbook/` in the working folder: every file except `.git/` and `templates/delivery-repo/`.
 5. Write the playbook version (the tag, or the commit hash if untagged) and today's date into `state.yml` under `playbook_version`.
 6. Never edit `playbook/` from now on. It is a pinned, read-only copy. Upgrades arrive by pull request.
-7. Ask the person's approval, and ask which GitHub owner should hold the repo (an organisation, or their own account). Then run `git init -b main`, `git add .`, `git commit -m "Start delivery repo from Delivery Playbook <version>"` and `gh repo create <owner>/<client>-delivery --private --source . --push`. This first commit is the only one made straight to `main`. If `gh` is unavailable or not signed in, give the exact commands instead.
+7. Ask the person's approval, and ask which GitHub owner should hold the repo (an organisation, or their own account). Then run `git init -b main`, `git add .`, `git commit -m "Start delivery repo from Delivery Playbook <version>"` and `gh repo create <owner>/<client>-delivery --private --source .`, with no `--push`. Then confirm the repo is private: `gh repo view <owner>/<client>-delivery --json isPrivate` must report `true`. If it does not, stop and tell the person before anything is pushed. Once it reports `true`, run `git push -u origin main`. This first commit is the only one made straight to `main`. If `gh` is unavailable or not signed in, give the exact commands instead, in the same order.
 8. Tell the person the repo exists. Then continue with `playbook/onboarding/00-prerequisites.md` and run the setup check.
 
 ### 3. Existing delivery repo

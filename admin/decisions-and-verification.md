@@ -14,6 +14,8 @@ Nothing here needs a decision from the PM. The first list records what is decide
 - The PM owns the Delivery Hub, and product management supplies scope. Who owns estimates and change requests is settled in the product-management guide.
 - The playbook scripts are built for v1: `validate`, `collect`, `render`, `sync`, `new-delivery-repo`, the secret-scan hook and the CODEOWNERS generator.
 - Acceptance test: a project's hand-built report is reproduced from data as its Delivery Hub, in the shadow cycle in Step 7.
+- Findings from adoption runs are fixed in this order: what can expose data or tell a client something false first, then process integrity, then efficiency. The first batch is text-only rules and checks. The validate gate and the counting rule wait for the scripts, and schema changes and the adoption guide wait for the shadow cycle.
+- Only generic content goes into this repo. A finding from any one project is rewritten as a general rule with fictional names, and a local deny-list scan must pass before anything is pushed. See [CONTRIBUTING.md](../CONTRIBUTING.md).
 
 ## To verify
 
@@ -29,6 +31,7 @@ Nothing here needs a decision from the PM. The first list records what is decide
 | 8 | GitHub plan and delivery repos | On GitHub Free, branch protection, rulesets and CODEOWNERS review work only on public repos, so `main` cannot be protected on private repos without GitHub Team or Enterprise. PMs also need permission to create private repos | Check the plan under Billing and plans. Upgrade before rollout, or pilot on Free with the rules enforced by the agent only |
 | 9 | Where delivery repos live | A private repo owned by a personal account can only give collaborators write access, never read-only, so devs and execs cannot be read-only there. Read-only roles, teams and organisation rulesets need an organisation | Create delivery repos in an organisation. The playbook repo can start personal and be transferred later |
 | 10 | GitHub connector or plugin | The organisation has not turned one on. A connector would let people sign in through GitHub and remove the pasted-token exception | Ask the PMO whether GitHub's remote MCP server can be added as a custom connector, then test it in the dry run. Until then, fine-grained tokens, with the risks and good practice in Step 0 |
+| 11 | Token type from response headers | Observed once: a classic token's `GET /user` response carried `X-OAuth-Scopes` and a fine-grained token's did not. GitHub could change this | Re-verify with one token of each kind in the dry run (row 11) |
 
 Checks for item 6. Any "no" means keeping the browser fallback for v1.
 

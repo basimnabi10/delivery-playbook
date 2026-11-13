@@ -56,7 +56,7 @@ The risks:
 - The token stays in the chat history, and anyone who can see the session or an export can see it.
 - It acts as you, with no approval prompt on each use.
 - An agent that reads hostile text could be steered into misusing it. A public repo takes issues from anyone, so this is not far-fetched.
-- A classic token (`ghp_…`), a token that reaches more than one repo, a password or a token for another service widens the exposure. The agent will say so and suggest the narrower option, and will go ahead if you still want it.
+- A classic token, a token that reaches more than one repo, a password or a token for another service widens the exposure. The agent will say so and suggest the narrower option, and will go ahead if you still want it.
 
 Good practice:
 

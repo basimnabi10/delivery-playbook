@@ -13,6 +13,10 @@ Say "run setup check" and the agent proves each capability with a harmless actio
 | 7 | Connectors | Read one item you name from each: a Slack channel, a calendar entry, the restricted drive folder, a tldv meeting | Each returns the item | Re-authorise that connector. Never test with a broad Drive search |
 | 8 | Browser fallback | Open a test tab and read the title of your Rocket.Chat page | The title is read | Sign in to the site; enable the extension for the tool |
 | 9 | Render | Render the sample page from the pinned template into `out/dryrun/` | An HTML file is created and validates | Check the playbook version is pinned and scripts run |
+| 10 | Repo plan and rulesets | `gh api repos/<owner>/<repo>/rulesets` on the delivery repo | Rulesets are listed, or the call returns 403 or an empty list | Report "main is not protected" with the reason (free plan, or no ruleset yet), and record the compensating controls: the single door (`sync`), `validate` and the secret scan |
+| 11 | Token type | `GET https://api.github.com/user` with the token in an environment variable, reading only the response headers | `X-OAuth-Scopes` present means classic, absent means fine-grained. The token is never printed | Never echo any part of the token. Classify from the headers only |
+| 12 | Private repo | `gh repo view <owner>/<repo> --json isPrivate` after the repo is created and before the first push | `isPrivate` is true | Stop and tell the person. Make the repo private before anything is pushed |
+| 13 | Working folder | Check whether the folder sits inside iCloud Drive, Dropbox, Google Drive or OneDrive | It is a normal local folder, including a connected workspace folder on local disk | Warn the person: a synced folder can have files replaced under the agent. Copy the repo to a local folder before going on |
 
 Publishing is not part of the dry run. The first publish happens in [Step 6](06-review-and-publish.md), with your approval.
 
