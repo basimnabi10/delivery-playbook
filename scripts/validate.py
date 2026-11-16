@@ -303,6 +303,21 @@ def main(argv=None):
                 if item.get("path") and not (root / Path(rel).parent / item["path"]).exists():
                     res.warn(rel, f"'{item['path']}' is listed but the file is missing")
 
+    # the playbook ledger: unique ids, and a status never claims more than the entry holds
+    for rel, doc in data.items():
+        if isinstance(doc, dict) and doc.get("schema") == "ledger":
+            ids = [e.get("id") for e in doc.get("entries", [])]
+            for dup in {i for i in ids if ids.count(i) > 1}:
+                res.error(rel, f"duplicate ledger id {dup}")
+            for e in doc.get("entries", []):
+                st, d = e.get("status"), e.get("draft") or {}
+                if st in ("drafted", "approved", "filed") and not (d.get("title") and d.get("body")):
+                    res.error(rel, f"{e.get('id')} is {st} but has no draft title and body")
+                if st in ("approved", "filed") and not e.get("approved_by"):
+                    res.error(rel, f"{e.get('id')} is {st} but nobody approved it (approved_by is empty)")
+                if st == "filed" and not re.search(r"^https://github\.com/[^/\s]+/[^/\s]+/issues/\d+$", e.get("issue", "")):
+                    res.error(rel, f"{e.get('id')} is filed but has no issue link")
+
     if not args.no_scan:
         for rel, n, rule in scan_visibility.scan(root, ["."], registry=registry or {}):
             res.error(f"{rel}:{n}" if n else rel, f"scan: {rule}")

@@ -282,6 +282,7 @@ def run_all(tmp):
     check("sync stops when the secret scan finds a token", ss.returncode == 2 and not sh(["git", "log", "--oneline", "-1", "--grep=Leaky"], cwd=dest).stdout.strip(), ss.stdout[-300:])
 
     more(tmp, dest, remote)
+    feedback_section(tmp)
 
 
 # ---------------------------------------------------------------- sections 8 to 14
@@ -336,6 +337,110 @@ def layout_problems(structure, text):
                 if parent in dirs and dirs[parent] != "S1" and parent != p:
                     problems.append(f"{p} is S1 but its folder {parent} is {dirs[parent]}")
     return problems
+
+
+def feedback_section(tmp):
+    print("15. playbook feedback: the ledger, the check and filing")
+    fb = tmp / "feedback" / "acme-fb-delivery"
+    g = sh([PY, str(HERE / "new_delivery_repo.py"), "--name", "acme-fb-delivery", "--dest", str(fb), "--playbook", str(PLAYBOOK)])
+    led = fb / "project/internal/hub-operations/playbook-ledger.yml"
+    check("a new delivery repo ships an empty ledger that validates", g.returncode == 0 and led.exists() and sh([PY, "scripts/validate.py"], cwd=fb).returncode == 0, g.stdout[-200:] + g.stderr[-200:])
+    F = lambda *a, **k: sh([PY, "scripts/feedback.py", *a], cwd=fb, **k)  # noqa: E731
+    entries = lambda: yaml.safe_load(led.read_text())["entries"]
+
+    a1 = F("add", "--step", "4", "--kind", "gap", "--severity", "friction", "--raw", "At Zebracorp the Drive link was a shortcut and the agent could not read the file ID.", "--suggest", "Say how to find the ID of a shortcut.")
+    a2 = F("add", "--step", "2", "--kind", "unclear", "--raw", "Visibility tags were confusing.")
+    check("add logs entries with growing ids", a1.returncode == 0 and "F-001" in a1.stdout and "F-002" in a2.stdout and [e["id"] for e in entries()] == ["F-001", "F-002"], a1.stdout + a2.stdout)
+    check("add refuses an unknown kind", F("add", "--step", "4", "--kind", "rant", "--raw", "x").returncode == 2)
+    check("a new entry starts open, with the playbook version and today's date", entries()[0]["status"] == "open" and entries()[0]["date"] == date.today().isoformat() and "playbook_version" in entries()[0])
+    check("list shows the entries", "F-001" in F("list").stdout and "F-002" in F("list", "--status", "open").stdout)
+    check("the ledger passes validate", sh([PY, "scripts/validate.py"], cwd=fb).returncode == 0)
+
+    today = date.today()
+    d = lambda n: (today + timedelta(days=n)).isoformat()  # noqa: E731
+    due = lambda day: "prompt_due: yes" in F("--today", day, "status").stdout  # noqa: E731
+    check("no prompt while only minor friction is waiting and onboarding is not finished", not due(d(0)), F("--today", d(0), "status").stdout)
+    F("add", "--step", "7", "--kind", "bug", "--severity", "blocker", "--raw", "Sync failed.")
+    check("a blocker makes a prompt due", due(d(0)))
+    F("--today", d(0), "status", "--mark-prompted")
+    check("it is offered once a day, and the day is recorded in state.yml", not due(d(0)) and (str(yaml.safe_load((fb / "state.yml").read_text())["feedback"]["last_prompted"]) == d(0)))
+    F("mark", "F-003", "--status", "skipped", "--note", "not a playbook issue")
+    check("ten days on, a minor entry alone is not enough", not due(d(10)))
+    check("fifteen days on, an old waiting entry makes a prompt due", due(d(15)))
+    st = yaml.safe_load((fb / "state.yml").read_text()); st["onboarding"] = {"step": 8, "done": [1, 2, 3, 4, 5, 6, 7]}; st["feedback"] = {"last_prompted": None}; dump(fb / "state.yml", st)
+    check("when onboarding finishes and feedback was never offered, a prompt is due", due(d(1)))
+    sh(["git", "checkout", "-q", "--", "state.yml"], cwd=fb)
+
+    body = "When the link given for a Drive file is a shortcut, the agent cannot read the file ID from it. Say how to open the original and copy the ID from its address, and put this in the Drive question of the registry step."
+    good = "Step 4: say how to find the ID of a Drive file when the link is a shortcut"
+    nd = F("draft", "F-001", "--title", good, "--body", body)
+    check("a draft is refused while local/deny-list.txt is missing", nd.returncode == 1 and "deny-list" in nd.stdout and entries()[0]["status"] == "open", nd.stdout)
+    (fb / "local").mkdir(exist_ok=True); (fb / "local/deny-list.txt").write_text("Zebracorp\n")
+    r = F("draft", "F-001", "--title", good, "--body", "At Zebracorp the link was a shortcut. " + body)
+    check("a name on the deny-list blocks the draft, and the name is not printed", r.returncode == 1 and "deny-list" in r.stdout and "Zebracorp" not in r.stdout + r.stderr and entries()[0]["status"] == "open", r.stdout)
+    bad = "Ask dana.ortiz@example.com or @dana-o about item 62 and ticket #123 (see F-001) at http://localhost:8080/x. " + body
+    r = F("draft", "F-001", "--title", good, "--body", bad)
+    miss = [k for k in ("email", "handle", "reference: 'item 62'", "reference: '#123'", "ledger id", "internal address") if k not in r.stdout]
+    check("emails, handles, item and ticket numbers, ledger ids and internal addresses are all caught", r.returncode == 1 and not miss, "missing " + ", ".join(miss) + "\n" + r.stdout)
+    tok = "gh" + "p_" + "aB3d" * 9
+    r = F("draft", "F-001", "--title", good, "--body", "My token is " + tok + ". " + body)
+    check("a token blocks the draft and is never printed", r.returncode == 1 and "secret" in r.stdout and tok not in r.stdout + r.stderr)
+    r = F("draft", "F-001", "--title", "make step four better", "--body", body)
+    check("a title must say where the problem is", r.returncode == 1 and "title" in r.stdout)
+    r = F("draft", "F-001", "--title", good, "--body", body + " See https://example.org/guide, written 2026-03-04, by Ravenwood Consulting.")
+    check("links, dates and capitalised names are warnings for a person, not errors", r.returncode == 0 and "WARNING link" in r.stdout and "WARNING date" in r.stdout and "Ravenwood" in r.stdout, r.stdout)
+    r = F("draft", "F-001", "--title", good, "--body", body)
+    check("a clean draft is saved and the entry becomes drafted", r.returncode == 0 and entries()[0]["status"] == "drafted" and entries()[0]["draft"]["title"] == good and "WARNING" not in r.stdout, r.stdout)
+    check("a draft cannot be filed before it is approved", F("file", "F-001").returncode == 2)
+    check("approve needs a saved draft", F("approve", "F-002", "--by", "Dana Ortiz").returncode == 2)
+    ap = F("approve", "F-001", "--by", "Dana Ortiz")
+    check("approve records who approved", ap.returncode == 0 and entries()[0]["status"] == "approved" and entries()[0]["approved_by"] == "Dana Ortiz")
+    check("mark filed needs an issue link", F("mark", "F-001", "--status", "filed").returncode == 2)
+
+    bindir = tmp / "feedback" / "bin"; bindir.mkdir(parents=True, exist_ok=True)
+    gh = bindir / "gh"
+    gh.write_text("#!/bin/sh\necho \"$@\" >> \"$GH_LOG\"\ncase \"$1 $2\" in\n  \"auth status\") exit 0;;\n  \"issue list\") echo \"${GH_LIST:-[]}\"; exit 0;;\n"
+                  "  \"issue create\")\n    if [ -n \"$GH_FAIL_LABEL\" ] && echo \"$@\" | grep -q -- \"--label\"; then echo \"could not add label\" >&2; exit 1; fi\n"
+                  "    echo \"https://github.com/basimnabi10/delivery-playbook/issues/42\"; exit 0;;\nesac\nexit 0\n")
+    gh.chmod(0o755)
+    log = tmp / "feedback" / "gh.log"
+    env = lambda **k: {"PATH": str(bindir) + os.pathsep + os.environ["PATH"], "GH_LOG": str(log), **k}  # noqa: E731
+    dr = F("file", "F-001", "--dry-run", env=env())
+    check("--dry-run says what would be filed and files nothing", dr.returncode == 0 and "dry run" in dr.stdout and (not log.exists() or "issue create" not in log.read_text()), dr.stdout)
+    fl = F("file", "F-001", env=env())
+    sent = log.read_text() if log.exists() else ""
+    saved = (fb / "local/playbook-feedback/F-001.md").read_text() if (fb / "local/playbook-feedback/F-001.md").exists() else ""
+    check("file creates the issue on the playbook repo and records its link", fl.returncode == 0 and entries()[0]["status"] == "filed" and entries()[0]["issue"].endswith("/issues/42") and "issue create --repo basimnabi10/delivery-playbook --title Step 4:" in sent, fl.stdout + fl.stderr + sent)
+    check("the filed text carries the footer and none of the raw ledger text", "Playbook version:" in saved and "details are withheld" in saved and "Zebracorp" not in saved and "shortcut and the agent could not" not in saved, saved)
+    check("a filed entry passes validate", sh([PY, "scripts/validate.py"], cwd=fb).returncode == 0)
+
+    F("draft", "F-002", "--title", "Step 2: explain the three visibility tags with one example each", "--body", "The three tags (client-visible, internal, restricted) are listed but a first-time reader cannot tell which to pick for a shared chat channel. One short example for each would settle it, and a rule of thumb for when unsure.")
+    F("approve", "F-002", "--by", "Dana Ortiz")
+    dup = F("file", "F-002", env=env(GH_LIST='[{"number":7,"title":"Step 2: visibility tags need examples","url":"https://github.com/basimnabi10/delivery-playbook/issues/7","state":"OPEN"}]'))
+    check("a possible duplicate stops the filing and lists it", dup.returncode == 4 and "POSSIBLE DUPLICATES" in dup.stdout and "issues/7" in dup.stdout and entries()[1]["status"] == "approved", dup.stdout)
+    log.write_text("")
+    lab = F("file", "F-002", "--allow-duplicates", env=env(GH_LIST="[]", GH_FAIL_LABEL="1"))
+    calls = [l for l in log.read_text().splitlines() if l.startswith("issue create")]
+    check("if a label is refused, the issue is filed without it", lab.returncode == 0 and entries()[1]["status"] == "filed" and len(calls) == 2 and "--label" in calls[0] and "--label" not in calls[1], lab.stdout + "\n".join(calls))
+
+    F("add", "--step", "5", "--kind", "idea", "--raw", "Offer a bulk accept for routine items.", "--suggest", "A shortcut phrase.")
+    F("draft", "F-004", "--title", "Step 5: name a one-line reply that accepts every routine proposal", "--body", "Reviewing a long list of routine proposals one by one is slow. Offer a single reply that accepts the whole routine group while keeping the attention items for one-at-a-time review.")
+    F("approve", "F-004", "--by", "Dana Ortiz")
+    empty = tmp / "feedback" / "nogh"; empty.mkdir(exist_ok=True)
+    nf = F("file", "F-004", env={"PATH": str(empty)})
+    check("with no gh, nothing is filed and a link to open is given", nf.returncode == 3 and "issues/new?template=suggest-a-change.md&title=" in nf.stdout and entries()[3]["status"] == "approved" and (fb / "local/playbook-feedback/F-004.md").exists(), nf.stdout)
+    mk = F("mark", "F-004", "--status", "filed", "--issue", "https://github.com/basimnabi10/delivery-playbook/issues/43")
+    check("the person can record the issue they opened by hand", mk.returncode == 0 and entries()[3]["status"] == "filed")
+
+    def ledger_breaks(name, mutate, expect):
+        keep = led.read_text(); doc = yaml.safe_load(keep); mutate(doc); dump(led, doc)
+        r = sh([PY, "scripts/validate.py"], cwd=fb); led.write_text(keep)
+        check(name, r.returncode == 1 and expect in r.stdout, r.stdout[-300:])
+    ledger_breaks("validate rejects a ledger entry with an unknown kind", lambda x: x["entries"][1].update(kind="rant"), "kind")
+    ledger_breaks("validate rejects a duplicate ledger id", lambda x: x["entries"][1].update(id="F-001"), "duplicate ledger id")
+    ledger_breaks("validate rejects a filed entry with no issue link", lambda x: x["entries"][0].update(issue=""), "no issue link")
+    ledger_breaks("validate rejects an approved entry that nobody approved", lambda x: x["entries"][0].update(approved_by=""), "nobody approved")
+    ledger_breaks("validate rejects a drafted entry with no draft", lambda x: (x["entries"][1].pop("draft"), x["entries"][1].update(status="drafted")), "no draft title")
 
 
 def more(tmp, dest, remote):

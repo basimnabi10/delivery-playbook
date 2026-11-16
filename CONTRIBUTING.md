@@ -4,7 +4,7 @@ The playbook is owned by the PMO. It is public and followed by an AI agent, so o
 
 ## Suggesting a change
 
-Open an issue using the "Suggest a change" template. Say which file, what is wrong or missing, and what you would change. You do not need write access to do this.
+Open an issue using the "Suggest a change" template. Say which file, what is wrong or missing, and what you would change. You do not need write access to do this. People who run the playbook on a project usually send feedback through their agent, which files these issues for them: see [onboarding/feedback.md](onboarding/feedback.md). The owner's routine for reading them is in [admin/feedback-triage.md](admin/feedback-triage.md).
 
 ## Making a change (PMO)
 

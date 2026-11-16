@@ -1,0 +1,5 @@
+# What was wrong, unclear or missing in the playbook while this project ran it. See playbook/onboarding/feedback.md.
+# The agent adds entries with scripts/feedback.py. Raw text may name the project: this file never leaves the delivery repo.
+schema: ledger
+updated: 0000-00-00
+entries: []

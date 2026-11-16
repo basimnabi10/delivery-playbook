@@ -26,6 +26,7 @@ Nothing here needs a decision from the PM. The first list records what is decide
 - Hours stay out of the repo, with one exception: role-level totals in `project/hub/hours.yml`, only when the Hours page is switched on. The Hours page is off until Step 6 asks.
 - The Delivery Hub template is built: `templates/delivery-hub/` holds the page skeleton, the stylesheet, the client script, the design spec and a complete fictional sample. `scripts/build.py` builds the page from the `hub/` files and `scripts/check_render.py` checks it. The timeline chart is drawn in the browser from the data block embedded in the page, so the chart and an exec's tool read the same data.
 - The Sprints page has its own data file, `project/hub/sprints.yml`, required only when `project.yml` says `sprints.used: true`. The earlier layout had no file for it.
+- Feedback loop: while a project runs the playbook, the agent keeps a private ledger in the delivery repo. At set moments (a blocker, the end of onboarding, an entry two weeks old) it offers once to turn the ledger into issues on the playbook repo. Each issue is a general draft that passes a check and that the person approves word for word; the owner reads the issues and makes the changes. Raw ledger text never leaves the private delivery repo.
 
 ## To verify
 
@@ -51,6 +52,10 @@ Nothing here needs a decision from the PM. The first list records what is decide
 | 18 | Fonts and publishing | The page loads three Google fonts and uses `#sprints`, `#hours` and release ids as its only hashes. Whether each path's publishing feature allows both is not checked | Verify in the first publish. Without the fonts, the page falls back to system fonts and stays readable |
 | 19 | Pull requests per sprint | The Sprints page adds the weekly counts for weeks that end within a sprint's dates, so a sprint that starts mid-week is approximate | Confirm this is acceptable, or add a per-sprint count to `count_prs.py` |
 | 20 | Brand assets in a public repo | The CodingCops logo is in this public repo so the Hub can show it by default. The MIT license does not grant rights to it, and the repo says so | Confirm the owner is content with the logo being public, or move the files out and have each delivery repo supply them through `hub.brand` |
+| 21 | Filing issues with `gh` | Assumed: any signed-in GitHub user can open an issue on the public playbook repo with `gh issue create`. A label may be refused to people without triage rights, so the script retries without it. Tested only against a stand-in `gh` | Verify once with a real account that is not a collaborator |
+| 22 | The pre-filled issue link | The fallback link carries the title and body in the address. A long body may be cut, so the script leaves the body out above about 7,500 characters | Verify with a long draft |
+| 23 | Duplicate search | `gh issue list --search` is fuzzy, so the script treats any hit as a possible duplicate and asks the person | Tune after real issues arrive |
+| 24 | Who keeps the ledger | The ledger sits in `project/internal/hub-operations/`, written by the PM and readable by devs and execs. Product, design and QA tell their PM or open an issue themselves | Confirm, or give each function its own ledger |
 
 Checks for item 6. Any "no" means keeping the browser fallback for v1.
 

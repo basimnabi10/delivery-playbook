@@ -20,6 +20,7 @@ Playbook address: https://github.com/basimnabi10/delivery-playbook
 5. **Verify, don't type.** The agent proposes the project data. You accept, edit or reject each item.
 6. **Approve three things.** Accepting proposals, publishing the Delivery Hub, and merging a pull request. The agent never does these without you.
 7. **Next sessions.** Open the delivery repo in your tool and say "run preflight".
+8. **Tell us what to fix.** While you work, the agent keeps a private ledger of anything in the playbook that was wrong, unclear or missing. At the end of onboarding it offers to turn the ledger into issues on this repo, and you approve every word first. See [feedback](onboarding/feedback.md).
 
 | You are | Do this |
 | --- | --- |
@@ -28,7 +29,7 @@ Playbook address: https://github.com/basimnabi10/delivery-playbook
 | Product, design or QA joining a project | [Step 0](onboarding/00-prerequisites.md), then clone the project's delivery repo, open it and say which function you hold: [joining a project](onboarding/joining.md) |
 | A dev or an exec | Nothing to set up. Read and comment on the delivery repo's pull requests and issues, and open the Delivery Hub link |
 
-If the agent cannot run something, it gives you the exact command to run in your own terminal. Problems with the playbook itself: open an issue.
+If the agent cannot run something, it gives you the exact command to run in your own terminal. Problems with the playbook itself: ask the agent to note them, or open an issue.
 
 ---
 
@@ -65,6 +66,7 @@ Read `playbook/AGENTS.md` and follow it. Resume at the step recorded in `state.y
 - Three gates always wait for the person: accepting proposals, publishing the Delivery Hub, and merging a pull request.
 - Nothing goes to `main` directly after the first commit. Branch, push, pull request, approval, merge.
 - Never read a password manager or credential store, and never put credentials in a repo. A person may choose to paste a GitHub token into a session; the agent warns about the risks and does not block it. See [Step 0](onboarding/00-prerequisites.md#github-sign-in-and-tokens).
+- Keep the playbook ledger as you work, and offer once to file it as issues: see `onboarding/feedback.md`.
 - The full rules are in `AGENTS.md`.
 
 ---

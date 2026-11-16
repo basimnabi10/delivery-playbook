@@ -36,7 +36,9 @@ If your tool cannot run a git command, the agent gives you the exact commands to
 
 **Existing projects: one shadow cycle.** Run the playbook output alongside the manual process for one full cycle, either one weekly update or one sprint. Name a freeze window, from the start to the end of the cycle: during it, hand edits to the manual artefact are held back unless you agree, and any hand edit you do make is logged in `project/internal/hub-operations/decisions.md`, so the comparison stays fair. Compare the two, list the differences, fix the data or the version mapping, and only then retire the manual page. For a project that already has hand-built release notes, those are the acceptance test: the generated Delivery Hub should match their content.
 
-**Done when** the pull request is merged, CI is green, the weekly slot is in your calendar, and the next preflight lists only real items.
+**Playbook feedback.** Onboarding is when you hit the most rough edges, so this is when the agent offers to turn its playbook ledger into issues on the playbook repo: see [feedback](feedback.md). It asks once, and files nothing without your approval of the exact words.
+
+**Done when** the pull request is merged, CI is green, the weekly slot is in your calendar, the next preflight lists only real items, and the agent has offered to file your playbook feedback.
 
 ## If it goes wrong
 
