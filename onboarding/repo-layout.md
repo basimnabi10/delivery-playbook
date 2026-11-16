@@ -42,6 +42,7 @@ One line per path, two spaces per level. A name with a placeholder (`YYYY-MM-DD`
         runbook.md                   S1  the weekly run, in order
         playbook-deviations.md       S1  anything done differently from the playbook, with the reason
         decisions.md                 S1  decisions about this project's use of the playbook
+        playbook-ledger.yml          S2  what was wrong, unclear or missing in the playbook; private, raw text allowed
         published/                   S2  the embedded data block as published, to check the repo against the page
           YYYY-MM-DD-vNN.json        S2
         reviews/                     S2  step reviews, shadow-cycle results and refresh reports

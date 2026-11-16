@@ -7,3 +7,4 @@ onboarding:
 covered_through: null
 page: {version: null, covered_through: null, published_on: null}   # what the published Hub page says; the repo must not be older
 sources_checked: []
+feedback: {last_prompted: null}   # the day the agent last offered to file playbook feedback

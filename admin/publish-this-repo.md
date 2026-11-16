@@ -40,3 +40,4 @@ GitHub cannot restrict a public repo to certain accounts, and it does not grant 
 - **Transfer to the CodingCops organisation and make it private,** with an all-staff team that has Read. Staff are invited by email. A repo can be transferred in Settings, Danger Zone; history and issues move with it, and GitHub redirects the old address.
 - Update the address in `README.md`, and change `.github/CODEOWNERS` to the PMO team.
 - Rulesets on a private repo need a paid plan.
+- Feedback: managers can only open issues on a repo they can see, so after going private they must be in the all-staff team. Update `PLAYBOOK_REPO` in `scripts/feedback.py` and the template link in `onboarding/feedback.md` to the new address (the `PLAYBOOK_REPO` environment variable overrides it meanwhile).

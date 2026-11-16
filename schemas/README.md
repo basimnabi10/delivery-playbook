@@ -16,6 +16,7 @@ The content map. For each path or glob it says the schema, the stage (S1 feeds t
 | `capabilities`, `security`, `versions`, `release` | `product/hub/`; one `release` file per release |
 | `try-it-prompts`, `known-limitations` | `qa/hub/` |
 | `code-state`, `flags` | `product/internal/` |
+| `ledger` | `project/internal/hub-operations/playbook-ledger.yml`: what was wrong, unclear or missing in the playbook, with the draft issue for each entry |
 | `risks`, `manifest` | `internal/` registers and the `index.yml` manifests |
 | `meeting-summary`, `copy` | Front matter of meeting summaries and of dated snapshot copies |
 | `hub-block` | The structured data embedded in the Delivery Hub page. Generated, never written by hand |

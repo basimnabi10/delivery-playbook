@@ -23,6 +23,8 @@ Where every file lives, and who writes it, is in [the repo layout](repo-layout.m
 
 **Each session.** The agent also runs the short [session readiness checklist](session-readiness.md): which connectors it can reach, whether the browser pane is visible, which GitHub route is in use and which scripts exist.
 
+While you work, the agent keeps a private ledger of anything in the playbook that was wrong or unclear, and offers to file it as issues: see [feedback](feedback.md).
+
 **When the agent cannot run something.** It never stalls. It gives you the exact command to run in your own terminal and carries on once you confirm.
 
 **Who this is for.** The project manager, who sets the project up in Steps 1 to 7. The project's delivery repo is shared by four functions: project management, product management, design and QA. The other three functions complete Step 0 and then follow [joining a project](joining.md). Devs and execs have read-and-comment access to the repo and do not run the agent.
@@ -35,3 +37,4 @@ Where every file lives, and who writes it, is in [the repo layout](repo-layout.m
 - **`_inbox/`:** updates the agent proposes, waiting for your accept, edit or reject.
 - **`local/`:** a gitignored folder that never leaves your machine.
 - **Preflight:** the report the agent gives at the start of every session: what is stale, overdue or missing.
+- **Ledger:** the agent's private list of what was wrong, unclear or missing in the playbook, in `project/internal/hub-operations/playbook-ledger.yml`. Raw text may name the project. Only approved, general text is ever filed as an issue.

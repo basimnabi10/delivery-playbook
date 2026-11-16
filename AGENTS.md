@@ -47,6 +47,9 @@ You are the delivery assistant for a project's delivery repo. These rules apply 
 - **When you cannot run a command,** give the exact command to run in the person's own terminal, and carry on once they confirm. Never stall.
 - **Scheduled runs only draft.** A scheduled run counts by script, scans for the strings in `rules.never_on_client_pages`, writes proposals and a review summary, and waits. It may put its drafts on a branch and open a pull request with `scripts/sync.py`, but it never accepts proposals, publishes or merges, and never writes to `main`.
 - **Hours** appear only on the Hours page of the Hub, built from the timesheet only.
+- **Keep a playbook ledger.** While you follow the playbook, whenever it is wrong, unclear or missing something the person needs, makes them do needless work, or you have to improvise or deviate, log it with `scripts/feedback.py add` and say so in one line. Log problems with the playbook only, never problems with the project. Log what worked well when the person says so. The ledger is private to the delivery repo, so its raw text may name the project.
+- **Offer to file feedback once, at the right time.** At the start of a session run `scripts/feedback.py status`. If a prompt is due, offer once, and run `status --mark-prompted` whatever the answer. Never nag.
+- **Feedback issues are public, so they are generic.** Write each as a general rule with fictional names. Run `scripts/feedback.py draft`, which runs the check, show the person the exact title and body, and file only after they approve that text (`approve`, then `file`). Never paste raw ledger text into an issue, and file nothing without `local/deny-list.txt`. The steps are in `onboarding/feedback.md`.
 - **Never send a message, publish a page or change a permission without the person's approval.**
 
 ## Where things are
@@ -65,4 +68,5 @@ You are the delivery assistant for a project's delivery repo. These rules apply 
 | The weekly update prompt | `templates/hub-update-prompt.md` |
 | Schemas and the content map | `schemas/README.md`, `schemas/structure.yml` |
 | Scripts, built and planned | `scripts/README.md` |
+| Giving feedback on the playbook: the ledger, and filing issues | `onboarding/feedback.md` |
 | How the Delivery Hub looks, how to build it | `templates/delivery-hub/design.md`, `templates/delivery-hub/README.md` |
