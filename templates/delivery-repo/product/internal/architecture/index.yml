@@ -1,0 +1,5 @@
+# Locations only, no copies: repo, path, branch, what it covers, last checked.
+schema: manifest
+kind: architecture
+updated: 0000-00-00
+items: []

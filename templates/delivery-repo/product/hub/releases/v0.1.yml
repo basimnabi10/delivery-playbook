@@ -1,0 +1,12 @@
+# One file per release. Each change: {id, area, tag, environment: production | staging | internal-testing, text, refs, date}.
+schema: release
+updated: 0000-00-00
+covered_through: null
+proposals: []
+version: v0.1
+highlights: []
+changes: []
+it_notes: []
+in_progress: []
+try_it_ids: []
+limitation_ids: []

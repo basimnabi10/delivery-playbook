@@ -2,12 +2,14 @@
 
 The PM sets the project up once. Everyone else joins the same delivery repo, writes only in their own function's folder, and can read everything in it.
 
-| Function | Folder | Writes | Read by the Delivery Hub for |
+| Function | Folder | Writes in `hub/` (client-safe) | Writes in `internal/` |
 | --- | --- | --- | --- |
-| Project management | `pm/` | Schedule, milestones, risks, change requests, hours, the Delivery Hub, client communications log | It owns the artefact |
-| Product management | `product/` | Scope, backlog and epics, requirements, product decisions | Scope per release |
-| Design | `design/` | Index of design files, design decisions, review status | Design deliverables and status |
-| QA | `qa/` | Test plans, test runs, UAT results, defect summaries | Quality status, internal by default |
+| Project management | `project/` | Phases, milestones, weekly counts, the last-week blocks, the optional hours page | The update prompt, runbook and decisions, meetings and documents, risks and dependencies |
+| Product management | `product/` | Capabilities, security cards, release labels, one file per release | Code state, feature flags, requirements, architecture locations, integrations, roadmap |
+| Design | `design/` | Nothing yet: `hub/` is an empty stub | Design file index, briefs, prototype specs, decisions, handoff specs |
+| QA | `qa/` | Try-it prompts and the known-limitations register | Test suite, run results (pass rates stay internal), bug sheets, release gate, test plans |
+
+QA curates the try-it prompts, and the PM approves their client-safe wording. The PM owns the Delivery Hub, and `hub/` folders are routed to the PM for review as well as to their own function's owner. Every folder has a `README.md` that says what it is for. The full map is in [the repo layout](repo-layout.md).
 
 DevOps has no folder here. It works in the code repos, and the Delivery Hub reads deploy and pipeline status from them through the sources in the registry.
 

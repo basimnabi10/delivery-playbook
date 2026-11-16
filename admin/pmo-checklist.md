@@ -10,6 +10,8 @@
 - Let project managers create **private** repositories in the organisation (member privileges), since each PM creates their project's delivery repo.
 - Protect delivery repos with a branch ruleset (GitHub recommends rulesets over classic branch protection). Setting one up needs an admin. If your plan supports organisation-level rulesets, create one for repos named `*-delivery` that requires a pull request and passing checks on `main`; otherwise add the ruleset to each repo when it is created (verify which applies).
 - Switch on secret scanning and push protection for the organisation.
+- Allow GitHub Actions on delivery repos, so the starter's `validate` workflow runs on every pull request.
+- Python 3.9 or later on PM machines, for the playbook scripts. Step 0 checks it.
 - Cowork: allow GitHub (`github.com`, `api.github.com`) in the organisation's network egress settings.
 - Cowork: enable the Chrome extension for the organisation, if the plan requires it.
 - Codex: confirm no managed configuration overrides the sandbox or network settings.
@@ -20,6 +22,7 @@
 - Add each person to the project's Google Group and the restricted shared drive folder.
 - GitHub: give the four functions Write and the project's devs and the execs Read, through teams.
 - Protect `main` on the new delivery repo if no organisation-wide rule covers it.
+- Check that the secret-scan hook is installed (`sh scripts/install_hooks.sh`) before anyone writes into an `internal/` folder, since it will hold client documents and meeting content.
 - Audit every folder or file the client can open: who can write, who has left the client, and who should read. The agent writes the exact changes to `local/permission-audit.md`; connectors cannot change access, so the PM or the PMO makes them in the tool.
 - If the project has no restricted shared folder, create one, and tell the PM which folder is the restricted one and which is just the project's.
 - If no exec follows the project, `readers` stays empty in `team.yml` with the reason. Do not create a GitHub team with no members.

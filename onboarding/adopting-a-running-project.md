@@ -17,6 +17,8 @@ A new project and a running project get equal billing, and the steps are the sam
 
 ## What gets written
 
+If the baseline is a published Delivery Hub page, the agent parses it into proposals, one per section, stamped with the page's version (`extract_from_page`, see [scripts](../scripts/README.md)). Once you accept them, the `hub/` files are the source and the page is checked against them: the repo must never be older than the page. Releases are matched by id, never by position, because the page may list them newest first.
+
 The inventory and the decisions go in `project.yml` (fictional example):
 
 ```yaml

@@ -1,0 +1,6 @@
+# Phase bands. Each: {id, name, start, end, dates_status: confirmed | inferred}.
+schema: phases
+updated: 0000-00-00
+covered_through: null
+proposals: []
+phases: []

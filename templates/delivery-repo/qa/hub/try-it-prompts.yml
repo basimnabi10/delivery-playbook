@@ -1,0 +1,7 @@
+# Client-safe prompts. Each: {id, suite_id, category, prompt, good_answer}.
+schema: try-it-prompts
+updated: 0000-00-00
+covered_through: null
+proposals: []
+suite: ""
+prompts: []

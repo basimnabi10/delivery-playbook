@@ -1,0 +1,20 @@
+name: validate
+on:
+  pull_request:
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r scripts/requirements.txt
+      - name: Schemas, rules and the scan
+        run: python3 scripts/validate.py --mode auto
+      - name: Only the author's own function folders changed
+        run: python3 scripts/check_writers.py --base origin/${{ github.base_ref }} --head HEAD --author "${{ github.event.pull_request.user.login }}"
+      - name: CODEOWNERS matches team.yml
+        run: python3 scripts/codeowners.py --check

@@ -1,0 +1,6 @@
+# What the product does today. Each area: {id, name, items: [{id, text, since_release, status: live | beta | planned | off}]}.
+schema: capabilities
+updated: 0000-00-00
+covered_through: null
+proposals: []
+areas: []

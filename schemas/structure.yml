@@ -1,0 +1,61 @@
+# The delivery repo's content map: which file feeds the Delivery Hub (stage S1) or gives
+# context (stage S2), who writes it, and which schema checks it.
+# `validate` reads this file. A missing S1 file fails validation; a missing S2 file is only reported.
+# kind: yaml (default) | frontmatter (a markdown file whose front matter is checked) | text | csv
+# min: for a glob, the least number of files expected. when: a registry setting that must be true.
+version: 1
+files:
+  # Root control files
+  - {path: project.yml,  schema: project,  stage: S1, owner: project-management}
+  - {path: registry.yml, schema: registry, stage: S1, owner: project-management}
+  - {path: team.yml,     schema: team,     stage: S1, owner: project-management}
+  - {path: state.yml,    schema: state,    stage: S1, owner: any}
+
+  # project/  owner: project-management
+  - {path: project/hub/phases.yml,            schema: phases,     stage: S1}
+  - {path: project/hub/milestones.yml,        schema: milestones, stage: S1}
+  - {path: project/hub/weekly-prs.yml,        schema: weekly-prs, stage: S1}
+  - {path: "project/hub/weeks/*.yml",         schema: week,       stage: S1, min: 1}
+  - {path: project/hub/hours.yml,             schema: hours,      stage: S1, when: pages.hours.enabled}
+  - {path: project/internal/hub-operations/update-prompt.md,        kind: text, stage: S1}
+  - {path: project/internal/hub-operations/runbook.md,              kind: text, stage: S1}
+  - {path: project/internal/hub-operations/playbook-deviations.md,  kind: text, stage: S1}
+  - {path: project/internal/hub-operations/decisions.md,            kind: text, stage: S1}
+  - {path: "project/internal/hub-operations/published/*.json",      schema: hub-block, kind: json, stage: S2}
+  - {path: project/internal/meetings/index.yml,   schema: manifest, stage: S2}
+  - {path: "project/internal/meetings/summaries/*.md", schema: meeting-summary, kind: frontmatter, stage: S2}
+  - {path: project/internal/documents/index.yml,  schema: manifest, stage: S2}
+  - {path: "project/internal/documents/*.md",     schema: copy, kind: frontmatter, stage: S2}
+  - {path: project/internal/risks-and-dependencies.yml, schema: risks, stage: S2}
+
+  # product/  owner: product-management
+  - {path: product/hub/capabilities.yml,   schema: capabilities, stage: S1}
+  - {path: product/hub/security.yml,       schema: security,     stage: S1}
+  - {path: product/hub/versions.yml,       schema: versions,     stage: S1}
+  - {path: "product/hub/releases/*.yml",   schema: release,      stage: S1, min: 1}
+  - {path: product/internal/code-state.yml, schema: code-state,  stage: S1}
+  - {path: product/internal/flags.yml,      schema: flags,       stage: S1}
+  - {path: "product/internal/requirements/*.md", schema: copy, kind: frontmatter, stage: S2}
+  - {path: product/internal/architecture/index.yml, schema: manifest, stage: S2}
+  - {path: product/internal/integrations.yml, stage: S2}
+  - {path: product/internal/roadmap.yml,      stage: S2}
+
+  # qa/  owner: qa
+  - {path: qa/hub/try-it-prompts.yml,      schema: try-it-prompts,    stage: S1}
+  - {path: qa/hub/known-limitations.yml,   schema: known-limitations, stage: S1}
+  - {path: qa/internal/release-gate.yml,   stage: S2}
+  - {path: "qa/internal/test-plans/*.md",  schema: copy, kind: frontmatter, stage: S2}
+
+  # design/  owner: design. design/hub/ is an empty stub until something on the page comes from design.
+  - {path: design/internal/figma.yml,      stage: S2}
+  - {path: design/internal/deltas/index.yml, schema: manifest, stage: S2}
+  - {path: "design/internal/briefs/*.md",     schema: copy, kind: frontmatter, stage: S2}
+  - {path: "design/internal/prototypes/*.md", schema: copy, kind: frontmatter, stage: S2}
+  - {path: "design/internal/handoff/*.md",    schema: copy, kind: frontmatter, stage: S2}
+
+# Which function owns each top-level folder (used by check_writers and the CODEOWNERS generator)
+folders:
+  project: project-management
+  product: product-management
+  qa: qa
+  design: design

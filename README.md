@@ -50,12 +50,11 @@ Only a project manager creates a delivery repo. If the person is not a PM, stop 
 2. Clone this playbook into a temporary folder outside the working folder:
    `git clone --depth 1 https://github.com/basimnabi10/delivery-playbook <temp>/delivery-playbook`
    Use the latest tag if one exists, otherwise the default branch. If the clone fails (for example, there is no network), give the person the exact command to run in their own terminal, or ask them to download the repo as a ZIP and unzip it into a temp folder. Then continue.
-3. Copy the contents of `templates/delivery-repo/` into the working folder root, dotfiles included.
-4. Copy everything else from the clone into `playbook/` in the working folder: every file except `.git/` and `templates/delivery-repo/`.
-5. Write the playbook version (the tag, or the commit hash if untagged) and today's date into `state.yml` under `playbook_version`.
-6. Never edit `playbook/` from now on. It is a pinned, read-only copy. Upgrades arrive by pull request.
-7. Ask the person's approval, and ask which GitHub owner should hold the repo (an organisation, or their own account). Then run `git init -b main`, `git add .`, `git commit -m "Start delivery repo from Delivery Playbook <version>"` and `gh repo create <owner>/<client>-<project>-delivery --private --source .`, with no `--push`. Then confirm the repo is private: `gh repo view <owner>/<client>-<project>-delivery --json isPrivate` must report `true`. If it does not, stop and tell the person before anything is pushed. Once it reports `true`, run `git push -u origin main`. This first commit is the only one made straight to `main`. If `gh` is unavailable or not signed in, give the exact commands instead, in the same order.
-8. Tell the person the repo exists. Then continue with `playbook/onboarding/00-prerequisites.md` and run the setup check.
+3. Run `python3 <temp>/delivery-playbook/scripts/new_delivery_repo.py --name <client>-<project>-delivery --dest <working folder>`. It copies the starter folder from `templates/delivery-repo/` into place, copies `scripts/` into the repo's own `scripts/`, copies everything else into a pinned, read-only `playbook/` folder (not `.git/`, `.github/`, `templates/delivery-repo/` or `scripts/`), writes the playbook version and today's date into `state.yml`, and makes the first commit. If it cannot run, do the same by hand, then `git init -b main`, `git add .` and `git commit -m "Start delivery repo from Delivery Playbook <version>"`.
+4. Never edit `playbook/` from now on. It is a pinned, read-only copy. Upgrades arrive by pull request.
+5. Install the script packages and the secret-scan hook: `pip install -r scripts/requirements.txt` and `sh scripts/install_hooks.sh`. Run `python3 scripts/selftest.py` to prove the scripts work. If Python is missing, say so and give the person the install step.
+6. Ask the person's approval, and ask which GitHub owner should hold the repo (an organisation, or their own account). Then run `gh repo create <owner>/<client>-<project>-delivery --private --source .`, with no `--push`. Then confirm the repo is private: `gh repo view <owner>/<client>-<project>-delivery --json isPrivate` must report `true`. If it does not, stop and tell the person before anything is pushed. Once it reports `true`, run `git push -u origin main`. This first commit is the only one made straight to `main`. If `gh` is unavailable or not signed in, give the exact commands instead, in the same order. (`new_delivery_repo.py --create-remote <owner>` does these three steps in this order, and stops if the repo is not private.)
+7. Tell the person the repo exists. Then continue with `playbook/onboarding/00-prerequisites.md` and run the setup check.
 
 ### 3. Existing delivery repo
 
@@ -75,12 +74,13 @@ Read `playbook/AGENTS.md` and follow it. Resume at the step recorded in `state.y
 ```
 README.md                  you are here
 AGENTS.md                  the rules the agent follows in every session
-onboarding/                Step 0 to Step 7, the two tool paths, joining a project
+onboarding/                Step 0 to Step 7, the two tool paths, joining a project, the repo layout
 admin/                     checklist, decisions and checks to verify, sources, publishing this repo
 functions/                 per-function guides (project and product management first)
-schemas/                   JSON Schemas for the project data files (planned)
+schemas/                   JSON Schemas for every project data file, and structure.yml, the content map
 templates/                 delivery-repo/ (the starter folder copied into each new delivery repo) and the Delivery Hub template (planned)
-scripts/                   validate, collect, render, sync, new-delivery-repo, secret scan, CODEOWNERS generator (planned)
+scripts/                   validate, count_prs, scan_visibility, sync, check_writers, codeowners, new_delivery_repo, selftest (built);
+                           build, extract_from_page, check_render, refresh (planned)
 ```
 
 ## Who can read and change this repo
@@ -92,4 +92,4 @@ scripts/                   validate, collect, render, sync, new-delivery-repo, s
 
 ## Status
 
-This is a v1 draft. The scripts, schemas and the Delivery Hub template are planned and not built yet. Until `new-delivery-repo` exists, the agent follows section 2 above step by step. Several tool behaviours still need checking in a real session: see [admin/decisions-and-verification.md](admin/decisions-and-verification.md).
+This is a v1 draft. The schemas and the scripts that check, count, scan and sync are built and tested (`python3 scripts/selftest.py`). The Delivery Hub template and the scripts that depend on it (`build`, `extract_from_page`, `check_render`) and `refresh` are planned: see [scripts/README.md](scripts/README.md). Several tool behaviours still need checking in a real session: see [admin/decisions-and-verification.md](admin/decisions-and-verification.md).

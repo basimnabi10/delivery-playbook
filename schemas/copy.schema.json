@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schemas/copy.schema.json",
+  "title": "copy",
+  "description": "Front matter of a dated snapshot copy of a document. A summary is required when the copy is over about 1,500 words.",
+  "type": "object",
+  "properties": {
+    "source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string"
+    },
+    "retrieved": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "visibility": {
+      "enum": [
+        "client-visible",
+        "internal",
+        "restricted"
+      ]
+    },
+    "content_hash": {
+      "type": "string",
+      "minLength": 1
+    },
+    "summary": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "source",
+    "source_id",
+    "retrieved",
+    "visibility",
+    "content_hash"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,6 @@
+# Milestones. Each: {id, title, date, status}. Ids are unique; sort by date.
+schema: milestones
+updated: 0000-00-00
+covered_through: null
+proposals: []
+milestones: []

@@ -1,6 +1,6 @@
 # Step 5: seed the starting data
 
-The agent proposes the project's starting data into `_inbox/`, and you accept, edit or reject each item. Nothing reaches `data/` without your decision.
+The agent proposes the project's starting data into `_inbox/`, and you accept, edit or reject each item. Nothing reaches the `hub/` files (see [the repo layout](repo-layout.md)) without your decision.
 
 **New project.** The agent reads the SOW, the estimates and the kickoff notes, then proposes:
 
@@ -8,7 +8,9 @@ The agent proposes the project's starting data into `_inbox/`, and you accept, e
 - the sprint calendar from the project brief;
 - the planned-hours baseline from the estimates, for the restricted tier only (never in shared data);
 - starter risks from the SOW's assumptions;
-- an empty first release, v0.1.
+- an empty first release, `product/hub/releases/v0.1.yml`.
+
+**The content map.** Before it proposes anything, the agent walks the Hub section by section and says which file will feed each one, who writes it, and what is still missing (see [what each Hub section reads](repo-layout.md#what-each-hub-section-reads)). A section with no data file is a gap you resolve now: a Hub section nobody feeds ends up hand-written on the page, and the repo falls out of step with it.
 
 **Existing project.** You set a **covered-through date**. Everything before it is imported coarsely, everything after is tracked in full detail.
 
@@ -16,6 +18,7 @@ The agent proposes the project's starting data into `_inbox/`, and you accept, e
 - It proposes releases using the versioning scheme in the registry, plus milestones, weekly activity and hours by sprint.
 - Each imported item is tagged `reconstructed`.
 - Each change records its environment (`production`, `staging` or `internal-testing`), so release notes can say where a change is live.
+- If the project already has a published Hub page, the agent parses it (`extract_from_page`, see [scripts](../scripts/README.md)) and writes each section as a proposal stamped with the page's version. Once you accept, the `hub/` files are the source and the page is checked against them. Until that script exists, the agent reads the page and writes the same proposals by hand.
 - If the project already has a report the client reads, the agent starts from it as the baseline. It compares each claim in it with the registry and the repos, and lists the result in the `conflicts` block of `project.yml` (see [adopting a running project](adopting-a-running-project.md)). Replacement wording is checked against those facts before you are asked to accept it.
 - Just before it presents proposals, the agent re-reads the baseline and stamps its version in each proposal's evidence. If the baseline changed after a proposal was written, that proposal becomes `superseded`.
 - You confirm the version mapping. Version numbers made for the notes may differ from the team's build labels, and the page footer says so.
@@ -24,7 +27,7 @@ Each proposal is a small file in `_inbox/`:
 
 ```yaml
 id: P-0007
-target: data/milestones.yml
+target: project/hub/milestones.yml
 proposal: {id: M3, title: "UAT passed", date: 2026-10-16}
 evidence:
   - {source: tldv-sync, ref: "2026-10-16 weekly sync"}
@@ -42,7 +45,7 @@ status: proposed          # you set: accepted | edited | rejected; the agent set
 3. **The routine group.** Low-risk items with strong evidence, such as merge counts from the scripts and changes tied to a merged pull request. You accept the group in one reply, or open any item first.
 4. **Attention items, one at a time.** Dates, scope, status, budget, anything low-confidence, and anything whose evidence is `internal`. Each is a short card: what is proposed, where it will go, the evidence with links, the confidence and the visibility.
 5. **Short replies work.** You answer accept, edit (say the change), reject (say why) or defer: for example "accept 1 to 18, edit 19: the date is the 16th, reject 20, defer the rest". Where your tool offers tappable choices, the agent uses them.
-6. **Recorded.** Each decision is written to the proposal: status, who, when and why. Accepted values merge into `data/`, decided proposals move to `_inbox/decided/`, and deferred ones stay. Git history keeps the trail.
+6. **Recorded.** Each decision is written to the proposal: status, who, when and why. Accepted values merge into the `hub/` files, decided proposals move to `_inbox/decided/`, and deferred ones stay. Git history keeps the trail.
 
 Each proposal is a small file, so you can also set `status` in it by hand and tell the agent to apply it.
 
@@ -54,7 +57,7 @@ Each proposal is a small file, so you can also set `status` in it by hand and te
 
 **The agent does:** proposes only what has evidence, marks the rest `unverified` rather than guessing, and summarises how many items need attention. On this first seeding nothing is accepted without your reply, though you can accept the routine group in one go.
 
-**Done when** `_inbox/` is empty, `data/` holds the verified files, and `state.yml` shows the covered-through date.
+**Done when** `_inbox/` is empty, every Hub section has a verified source file, `validate` passes in strict mode, and `state.yml` shows the covered-through date.
 
 ## If it goes wrong
 

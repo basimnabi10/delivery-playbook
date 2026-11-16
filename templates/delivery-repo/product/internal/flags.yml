@@ -1,0 +1,6 @@
+# Feature flags that decide whether a change counts as shipped. Each: {id, default, set_in, on_page, reason}.
+schema: flags
+updated: 0000-00-00
+covered_through: null
+proposals: []
+flags: []

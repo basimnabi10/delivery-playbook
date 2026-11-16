@@ -1,0 +1,8 @@
+# Security and data handling cards. Each: {id, title, text, last_verified}.
+schema: security
+updated: 0000-00-00
+covered_through: null
+proposals: []
+cards: []
+note: ""
+caveat: ""

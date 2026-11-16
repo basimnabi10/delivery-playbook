@@ -1,0 +1,5 @@
+# Manifest of the copies in this folder. Each item: {id, title, date, audience, visibility, source, source_ref, retrieved, hash, path, gist}.
+schema: manifest
+kind: meetings
+updated: 0000-00-00
+items: []

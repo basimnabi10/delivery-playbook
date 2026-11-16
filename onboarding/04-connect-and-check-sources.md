@@ -13,7 +13,10 @@ The agent tests every source in `registry.yml`, connector first and browser fall
 2. If that fails and the registry allows it, opens the page in your signed-in browser and reads the page title and latest item. It checks the browser pane is visible first, and reads the page twice before calling the source unreadable.
 3. If that fails too, marks the source manual and tells you exactly what to paste or export.
 4. Records the result in `state.yml` under `sources_checked`: source id, method used, read depth (titles only, partial or full), time, result and a note. Raw content it read goes only to `local/` (gitignored), never to shared data.
-5. Reports the gaps in plain language.
+5. Checks what the registry claims against the facts: any cadence field (for example "weekly sync") against the calendar, and the registry's repo list against the repos the Hub counts, so a repo that is counted but not listed, or listed but never counted, shows up as a gap.
+6. Looks for sources people name in chat but the registry does not list (a timesheet linked in a channel, a tracker mentioned in a meeting) and offers to add them, with a visibility tag and a read method.
+7. For every source, lists the access it needs (for example read on one channel, read on one folder), so you can grant the narrowest scope.
+8. Reports the gaps in plain language.
 
 What a result looks like:
 

@@ -1,0 +1,217 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schemas/team.schema.json",
+  "title": "team",
+  "description": "Who is on the project and who holds each function.",
+  "type": "object",
+  "properties": {
+    "functions": {
+      "type": "object",
+      "properties": {
+        "project-management": {
+          "type": "object",
+          "properties": {
+            "owner": {
+              "type": "string"
+            },
+            "backup": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": true
+        },
+        "product-management": {
+          "type": "object",
+          "properties": {
+            "owner": {
+              "type": "string"
+            },
+            "backup": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": true
+        },
+        "design": {
+          "type": "object",
+          "properties": {
+            "owner": {
+              "type": "string"
+            },
+            "backup": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": true
+        },
+        "qa": {
+          "type": "object",
+          "properties": {
+            "owner": {
+              "type": "string"
+            },
+            "backup": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": true
+        }
+      },
+      "required": [],
+      "additionalProperties": true
+    },
+    "people": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "org": {
+            "enum": [
+              "internal",
+              "client"
+            ]
+          },
+          "role": {
+            "type": "string"
+          },
+          "functions": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "project-management",
+                "product-management",
+                "design",
+                "qa"
+              ]
+            }
+          },
+          "handles": {
+            "type": "object"
+          },
+          "tier": {
+            "enum": [
+              "light",
+              "full"
+            ]
+          },
+          "client_facing": {
+            "type": "boolean"
+          },
+          "engagement": {
+            "enum": [
+              "billed",
+              "shadow"
+            ]
+          },
+          "status": {
+            "enum": [
+              "proposed",
+              "confirmed",
+              "left-client",
+              "inactive"
+            ]
+          },
+          "introduced_to_client": {
+            "type": "boolean"
+          },
+          "receives": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "hub_access": {
+            "enum": [
+              "view",
+              "comment"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "org"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "sow_threads": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string"
+          },
+          "functions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "people": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "readers": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "readers_note": {
+      "type": "string"
+    },
+    "code_owners": {
+      "type": "object",
+      "properties": {
+        "people": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "functions",
+    "people"
+  ],
+  "additionalProperties": true
+}
