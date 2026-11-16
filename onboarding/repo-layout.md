@@ -5,61 +5,101 @@ Every delivery repo has the same shape, so people and agents know where a fact l
 ## Two tiers, two stages
 
 - **Tiers.** Each function folder (`project/`, `product/`, `qa/`, `design/`) has a `hub/` tier and an `internal/` tier. `hub/` is client-safe, validated, and the only input to the Delivery Hub besides the root control files. `internal/` is never rendered. Visibility is decided by the path, so the scan always knows what to check.
-- **Stages.** Stage 1 (S1) is everything needed to generate the Hub. Stage 2 (S2) is context that helps people and agents but is not needed to build the page. Stage is tagged per file in `structure.yml`, not per folder, because some must-haves are internal (code state, the runbook).
+- **Stages.** Stage 1 (S1) is everything needed to generate the Hub. Stage 2 (S2) is context that helps people and agents but is not needed to build the page. Stage is tagged per file in `structure.yml`, not per folder, because some must-haves are internal (code state, the runbook); a folder is S1 when anything in it is. `structure.yml` is the one source for the tags, and it lists folders as well as files, so an empty folder is covered. The tree below must match it: `scripts/selftest.py` fails if a path in the tree has no entry, if an entry has no path, or if a stage tag differs.
 
 ## Layout
 
+One line per path, two spaces per level. A name with a placeholder (`YYYY-MM-DD`, `<slug>`, `vX.Y`) stands for a glob. `scripts/` and `playbook/` are copied in by `new_delivery_repo.py`, so the starter folder in the playbook does not hold them.
+
 ```
 <client>-<project>-delivery/
-  README.md  AGENTS.md  project.yml  registry.yml  team.yml  state.yml      root control files
-  playbook/  scripts/  _inbox/  out/  local/  .github/                       local/ is gitignored
+  README.md                          S2  what this repo is and how to start a session
+  AGENTS.md                          S2  points to playbook/AGENTS.md
+  project.yml                        S1  the project brief
+  registry.yml                       S1  where information lives and who may see it
+  team.yml                           S1  who is on the project
+  state.yml                          S1  progress, source checks and what the published page covers
+  playbook/                          S2  the pinned, read-only copy of the playbook
+  scripts/                           S2  the checks, copied from the playbook by new_delivery_repo.py
+  _inbox/                            S2  proposals waiting for a decision
+  out/                               S2  rendered pages
+  local/                             S2  gitignored private notes and fetched content, created in Step 0
+  .github/                           S2  the validate workflow and CODEOWNERS
 
-  project/                          owner: project-management
-    hub/
-      phases.yml  milestones.yml     S1  phase bands; milestones with unique ids, sorted by date
+  project/                           S1  owner: project-management
+    README.md                        S2  what the folder is for
+    hub/                             S1  client-safe
+      phases.yml                     S1  phase bands
+      milestones.yml                 S1  milestones with unique ids, sorted by date
       weekly-prs.yml                 S1  counts, week rule, time zone, script version (written by count_prs.py)
-      weeks/YYYY-MM-DD.yml           S1  last-week block: shipped, decided in the sync, next, waiting on the client
+      weeks/                         S1  one file per week
+        YYYY-MM-DD.yml               S1  last-week block: shipped, decided in the sync, next, waiting on the client
       hours.yml                      S1  only when the Hours page is on; role-level totals, no names or rates
-    internal/
+    internal/                        S1  never rendered
       hub-operations/                S1  agents read this first
-        update-prompt.md  runbook.md  playbook-deviations.md  decisions.md
-        published/YYYY-MM-DD-vNN.json    the embedded data block as published, to check the repo against the page
-        reviews/YYYY-MM-DD-<slug>.md     step reviews, shadow-cycle results, refresh reports
+        update-prompt.md             S1  the filled-in weekly prompt
+        runbook.md                   S1  the weekly run, in order
+        playbook-deviations.md       S1  anything done differently from the playbook, with the reason
+        decisions.md                 S1  decisions about this project's use of the playbook
+        published/                   S2  the embedded data block as published, to check the repo against the page
+          YYYY-MM-DD-vNN.json        S2
+        reviews/                     S2  step reviews, shadow-cycle results and refresh reports
       meetings/                      S2
-        index.yml                        manifest: date, title, client or internal, source, visibility, one-line gist
-        summaries/YYYY-MM-DD-<slug>.md   short, dense, written for AI reading; read first
-        transcripts/YYYY-MM-DD-<slug>.md full transcript; opened only when the user asks
+        index.yml                    S2  manifest: date, title, client or internal, source, visibility, one-line gist
+        summaries/                   S2  short, dense, written for AI reading; read first
+          YYYY-MM-DD-<slug>.md       S2
+        transcripts/                 S2  full transcripts, YYYY-MM-DD-<slug>.md; opened only when the user asks
       documents/                     S2
-        index.yml                        manifest
-        <slug>.md                        proposals, kickoff material, client-shared documents, as markdown
+        index.yml                    S2  manifest
+        <slug>.md                    S2  proposals, kickoff material and client-shared documents, as markdown
       risks-and-dependencies.yml     S2  open dependencies on the client, risks, conflicts (claim, stated by, date)
 
-  product/                          owner: product-management
-    hub/
+  product/                           S1  owner: product-management
+    README.md                        S2  what the folder is for
+    hub/                             S1  client-safe
       capabilities.yml               S1  areas; each item has a since-release and a status
       security.yml                   S1  the cards, a note and a caveat, each card with a last-verified date
       versions.yml                   S1  release label, period, status, PR range, internal tags
-      releases/vX.Y.yml              S1  one file per release: highlights, changes (area, tag, environment, text,
-                                         refs, date), notes for IT, in progress, ids of try-it prompts and limitations
-    internal/
+      releases/                      S1  one file per release
+        vX.Y.yml                     S1  highlights, changes (area, tag, environment, text, refs, date), notes for IT, in progress, ids of prompts and limitations
+    internal/                        S1  never rendered
       code-state.yml                 S1  per repo: covered-through commit, production versus main, unmerged branches, tags
       flags.yml                      S1  feature flags: default, where set, on the page or left off, and why
-      requirements/<slug>.md         S2  full requirements documents
-      architecture/index.yml         S2  locations only, no copies: repo, path, branch, what it covers, last checked
-      integrations.yml  roadmap.yml  S2
+      requirements/                  S2
+        <slug>.md                    S2  full requirements documents
+      architecture/                  S2
+        index.yml                    S2  locations only, no copies: repo, path, branch, what it covers, last checked
+      integrations.yml               S2
+      roadmap.yml                    S2
 
-  qa/                               owner: qa
-    hub/
+  qa/                                S1  owner: qa
+    README.md                        S2  what the folder is for
+    hub/                             S1  client-safe
       try-it-prompts.yml             S1  curated, client-safe prompts: category, prompt, what a good answer does
       known-limitations.yml          S1  register: text, area, opened in, status, resolved in
-    internal/
-      runs/  bug-sheet/<tab>.csv  test-plans/  release-gate.yml     S2  pass rates stay internal; never a credentials tab
+    internal/                        S2  never rendered; pass rates stay internal
+      runs/                          S2  run results
+      bug-sheet/                     S2  bug-sheet tabs as CSV; never a credentials tab
+      test-plans/                    S2
+        <slug>.md                    S2
+      release-gate.yml               S2
+      uat-suite*/                    S2  optional: one folder per test suite
 
-  design/                           owner: design
-    hub/                             empty stub: nothing on the page comes from design until a section needs it
-    internal/                        S2  figma.yml (links, not copies), briefs/, prototypes/, decisions/, deltas/index.yml, handoff/
+  design/                            S1  owner: design
+    README.md                        S2  what the folder is for
+    hub/                             S1  an empty stub: nothing on the page comes from design until a section needs it
+    internal/                        S2  never rendered
+      figma.yml                      S2  links, not copies
+      briefs/                        S2
+        <slug>.md                    S2
+      prototypes/                    S2
+        <slug>.md                    S2
+      handoff/                       S2
+        <slug>.md                    S2
+      decisions/                     S2
+      deltas/                        S2
+        index.yml                    S2  locations of design-delta documents
 ```
-
 Each function folder also holds a `README.md` that names its owner, its scope and what the Hub reads from it.
 
 ## What each Hub section reads
@@ -95,20 +135,21 @@ Each function folder also holds a `README.md` that names its owner, its scope an
 - **Summary shape,** about 300 words and fixed, so the agent can rely on it:
   - front matter: date, title, client or internal, attendees by role, transcript hash, `generated: true`;
   - sections: Decisions, Actions (owner and due date), Asks of the client, Blockers and risks, Status changes, Open questions, Claims to verify;
-  - one line per bullet, each ending with a transcript timestamp.
+  - one line per bullet, each ending with a transcript timestamp in the form `[hh:mm:ss]`; a section with nothing in it holds the bullet `None`.
 - **A summary is regenerated only when its transcript hash changes.** `validate` warns when it has gone stale.
 - **Tagging.** Meetings the client attended are tagged client-visible. Internal stand-ups and similar are internal.
 - **Reading order:** `index.yml`, then the summary, then (on request only) the transcript.
 
 ## Weekly refresh
 
-- The weekly run refreshes every copy listed in a manifest: new meetings with transcript and summary, Drive documents by declared id, and bug-sheet tabs.
-- A file is rewritten only when the source's content hash has changed. The retrieved date, the hash and the summary update with it.
-- A failed read is recorded as a gap and the old copy stays. A deleted or newly restricted source stops that item and is flagged.
-- The run cannot push. It prepares the refresh as a branch and pull request for the PM to merge, and never writes to `main`.
-- The secret and restricted-terms scans run before the pull request opens, and a failed scan blocks it.
-- The run summary lists what was refreshed, what failed, and anything that changes Hub content.
-- The repo list the run fetches comes from `registry.yml`, never from a runbook, so it always covers every repo the project has.
+The refresh is split in two, because a script cannot call a connector and a model should not do the comparing.
+
+- **The agent fetches.** It reads each source through its connector and puts what it fetched in `local/incoming/` (gitignored, so raw content is never committed by accident). It lists every manifest item in `local/incoming/incoming.yml` with an id, a status (`ok`, `failed`, `deleted` or `restricted`) and the path to the content. A new item is added to its manifest first, with no hash.
+- **The script compares and writes.** `scripts/refresh.py` compares each content hash with the manifest's and rewrites a copy only when the hash changed, updating `retrieved` and the hash. A failed read is recorded as a gap and the old copy stays. A deleted or newly restricted source is flagged and left alone for a person to decide. The scans run on the rewritten copies before anything is staged, and a finding puts every copy back.
+- **The agent writes the summaries.** The script lists, in `local/incoming/needs-summary.yml`, each copy and meeting whose summary must be regenerated. The summary is the agent's work. A document needs one over about 1,500 words, and every meeting needs one.
+- **The run report** goes in `project/internal/hub-operations/reviews/`: what was refreshed, what failed, what was flagged, what was not fetched, and anything that changes Hub content.
+- **The hand-off** is `sync.py`: a branch and a pull request for the PM to merge. `refresh.py --sync` does it, and refuses while an item is flagged or a summary is still pending. The run never writes to `main`.
+- The repo list the run fetches comes from `registry.yml`, never from a runbook, so it always covers every repo the project has. The whole run, in order, is in `project/internal/hub-operations/runbook.md`.
 
 ## One-off meeting backfill
 
@@ -128,5 +169,7 @@ Each function folder also holds a `README.md` that names its owner, its scope an
 | `check_writers.py` | A pull request may only change its author's function folders |
 | `codeowners.py` | Writes `.github/CODEOWNERS` from `team.yml`; `hub/` folders also route to the PM |
 | `sync.py` | The single door: validate, branch, commit, push, pull request |
+| `redact.py` | Replaces each secret with `[REDACTED:<rule>]` and records rule, count and date in the manifest entry |
+| `refresh.py` | The deterministic half of the weekly refresh: hashes, rewrites, gaps, flags, the scan, the summaries list and the report |
 
-Planned, with their interfaces in [`scripts/README.md`](../scripts/README.md): `build`, `extract_from_page`, `check_render` and `refresh`.
+Planned, with their interfaces in [`scripts/README.md`](../scripts/README.md): `build`, `extract_from_page`, `check_render` and `upgrade_playbook`.

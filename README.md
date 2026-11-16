@@ -50,7 +50,7 @@ Only a project manager creates a delivery repo. If the person is not a PM, stop 
 2. Clone this playbook into a temporary folder outside the working folder:
    `git clone --depth 1 https://github.com/basimnabi10/delivery-playbook <temp>/delivery-playbook`
    Use the latest tag if one exists, otherwise the default branch. If the clone fails (for example, there is no network), give the person the exact command to run in their own terminal, or ask them to download the repo as a ZIP and unzip it into a temp folder. Then continue.
-3. Run `python3 <temp>/delivery-playbook/scripts/new_delivery_repo.py --name <client>-<project>-delivery --dest <working folder>`. It copies the starter folder from `templates/delivery-repo/` into place, copies `scripts/` into the repo's own `scripts/`, copies everything else into a pinned, read-only `playbook/` folder (not `.git/`, `.github/`, `templates/delivery-repo/` or `scripts/`), writes the playbook version and today's date into `state.yml`, and makes the first commit. If it cannot run, do the same by hand, then `git init -b main`, `git add .` and `git commit -m "Start delivery repo from Delivery Playbook <version>"`.
+3. Run `python3 <temp>/delivery-playbook/scripts/new_delivery_repo.py --name <client>-<project>-delivery --dest <working folder>`. It copies the starter folder from `templates/delivery-repo/` into place, copies `scripts/` into the repo's own `scripts/`, copies everything else into a pinned, read-only `playbook/` folder (not `.git/`, `.github/` or `scripts/`), writes the playbook version and today's date into `state.yml`, and makes the first commit. If it cannot run, do the same by hand, then `git init -b main`, `git add .` and `git commit -m "Start delivery repo from Delivery Playbook <version>"`.
 4. Never edit `playbook/` from now on. It is a pinned, read-only copy. Upgrades arrive by pull request.
 5. Install the script packages and the secret-scan hook: `pip install -r scripts/requirements.txt` and `sh scripts/install_hooks.sh`. Run `python3 scripts/selftest.py` to prove the scripts work. If Python is missing, say so and give the person the install step.
 6. Ask the person's approval, and ask which GitHub owner should hold the repo (an organisation, or their own account). Then run `gh repo create <owner>/<client>-<project>-delivery --private --source .`, with no `--push`. Then confirm the repo is private: `gh repo view <owner>/<client>-<project>-delivery --json isPrivate` must report `true`. If it does not, stop and tell the person before anything is pushed. Once it reports `true`, run `git push -u origin main`. This first commit is the only one made straight to `main`. If `gh` is unavailable or not signed in, give the exact commands instead, in the same order. (`new_delivery_repo.py --create-remote <owner>` does these three steps in this order, and stops if the repo is not private.)
@@ -79,8 +79,8 @@ admin/                     checklist, decisions and checks to verify, sources, p
 functions/                 per-function guides (project and product management first)
 schemas/                   JSON Schemas for every project data file, and structure.yml, the content map
 templates/                 delivery-repo/ (the starter folder copied into each new delivery repo) and the Delivery Hub template (planned)
-scripts/                   validate, count_prs, scan_visibility, sync, check_writers, codeowners, new_delivery_repo, selftest (built);
-                           build, extract_from_page, check_render, refresh (planned)
+scripts/                   validate, count_prs, scan_visibility, sync, check_writers, codeowners, new_delivery_repo, redact, refresh, selftest (built);
+                           build, extract_from_page, check_render, upgrade_playbook (planned)
 ```
 
 ## Who can read and change this repo
@@ -92,4 +92,4 @@ scripts/                   validate, count_prs, scan_visibility, sync, check_wri
 
 ## Status
 
-This is a v1 draft. The schemas and the scripts that check, count, scan and sync are built and tested (`python3 scripts/selftest.py`). The Delivery Hub template and the scripts that depend on it (`build`, `extract_from_page`, `check_render`) and `refresh` are planned: see [scripts/README.md](scripts/README.md). Several tool behaviours still need checking in a real session: see [admin/decisions-and-verification.md](admin/decisions-and-verification.md).
+This is a v1 draft. The schemas and the scripts that check, count, scan and sync are built and tested (`python3 scripts/selftest.py`). The Delivery Hub template and the scripts that depend on it (`build`, `extract_from_page`, `check_render`) and `upgrade_playbook` are planned: see [scripts/README.md](scripts/README.md). Several tool behaviours still need checking in a real session: see [admin/decisions-and-verification.md](admin/decisions-and-verification.md).

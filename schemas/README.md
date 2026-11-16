@@ -4,7 +4,7 @@ JSON Schemas (draft 2020-12) for every project data file, versioned with the pla
 
 ## `structure.yml`
 
-The content map. For each path or glob it says the schema, the stage (S1 feeds the Delivery Hub, S2 is context), the kind of file, and the minimum number of files. It also maps each top-level folder to the function that owns it. See [the repo layout](../onboarding/repo-layout.md).
+The content map. For each path or glob it says the schema, the stage (S1 feeds the Delivery Hub, S2 is context), the kind of file, and the minimum number of files. It also lists every folder, so an empty folder is covered, and maps each top-level folder to the function that owns it. It is the one source for the stage tags, and the selftest checks the tree in the layout page against it. See [the repo layout](../onboarding/repo-layout.md).
 
 ## The schemas
 

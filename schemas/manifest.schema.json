@@ -53,6 +53,10 @@
             "type": "string",
             "minLength": 1
           },
+          "source_id": {
+            "type": "string",
+            "minLength": 1
+          },
           "source_ref": {
             "type": "string"
           },
@@ -67,7 +71,35 @@
             "type": "string"
           },
           "gist": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 160,
+            "pattern": "^[^\\n]*$"
+          },
+          "redactions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "rule": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "date": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                }
+              },
+              "required": [
+                "rule",
+                "count",
+                "date"
+              ],
+              "additionalProperties": false
+            }
           }
         },
         "required": [
