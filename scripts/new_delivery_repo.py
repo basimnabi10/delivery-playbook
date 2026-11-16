@@ -6,9 +6,11 @@
 
 Run it from a clone of the playbook. It:
   1. copies templates/delivery-repo/ into the new folder
-  2. copies scripts/ into the new folder's scripts/ (so no script lives on one machine only)
+  2. copies this script's own scripts/ folder into the new folder's scripts/ (so no script lives on one machine only,
+     and it works the same from a playbook clone or from inside a delivery repo)
   3. copies the rest of the playbook into playbook/ as a pinned, read-only copy
-     (not .git, .github, templates/delivery-repo or scripts, which are already in place)
+     (not .git, .github or scripts, which are in place already). The starter folder stays in playbook/templates/,
+     so the scripts' self-test can build a sample repo from inside a delivery repo too
   4. writes the playbook version into state.yml, and makes the first commit on main
 With --create-remote OWNER it then creates the GitHub repo WITHOUT pushing, checks that it is private,
 and only then pushes. The person must approve before the agent runs it with --create-remote.
@@ -54,14 +56,14 @@ def main(argv=None):
         print(f"ERROR: {tpl} not found. Run this from a clone of the playbook."); return 2
 
     shutil.copytree(tpl, dest, dirs_exist_ok=True, ignore=IGNORE)
-    shutil.copytree(pb / "scripts", dest / "scripts", dirs_exist_ok=True, ignore=IGNORE)
+    shutil.copytree(HERE, dest / "scripts", dirs_exist_ok=True, ignore=IGNORE)
     skip = {".git", ".github", "scripts", "local", "__pycache__"}
     (dest / "playbook").mkdir(exist_ok=True)
     for item in sorted(pb.iterdir()):
         if item.name in skip:
             continue
         if item.name == "templates":
-            shutil.copytree(item, dest / "playbook" / "templates", ignore=shutil.ignore_patterns("delivery-repo", "__pycache__"))
+            shutil.copytree(item, dest / "playbook" / "templates", ignore=IGNORE)
         elif item.is_dir():
             shutil.copytree(item, dest / "playbook" / item.name, ignore=IGNORE)
         else:

@@ -1,4 +1,5 @@
 #!/bin/sh
-# Blocks a commit that contains a token, key or credential pattern. Installed by scripts/install_hooks.sh.
+# Blocks a commit that fails the same scan validate.py runs: in hub/ and internal/ secrets, restricted terms and
+# (in hub/) money amounts; in every other staged file, secrets only. Installed by scripts/install_hooks.sh.
 root="$(git rev-parse --show-toplevel)"
-exec python3 "$root/scripts/scan_visibility.py" --root "$root" --staged --secrets-only
+exec python3 "$root/scripts/scan_visibility.py" --root "$root" --staged

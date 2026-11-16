@@ -55,8 +55,10 @@ def find_root(start=None):
 
 
 def schemas_dir(root):
-    """Inside a delivery repo the schemas live in playbook/schemas; in the playbook repo, in schemas/."""
-    for cand in (Path(root) / "playbook" / "schemas", Path(__file__).resolve().parent.parent / "schemas"):
+    """Inside a delivery repo the schemas live in playbook/schemas; in the playbook repo, in schemas/.
+    The scripts' own repo is tried last, so a delivery repo can validate another root, such as the starter folder."""
+    here = Path(__file__).resolve().parent.parent
+    for cand in (Path(root) / "playbook" / "schemas", here / "schemas", here / "playbook" / "schemas"):
         if (cand / "structure.yml").exists():
             return cand
     raise SystemExit("ERROR: cannot find the playbook schemas (playbook/schemas/structure.yml)")

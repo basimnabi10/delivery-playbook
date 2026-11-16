@@ -1,17 +1,26 @@
-# The delivery repo's content map: which file feeds the Delivery Hub (stage S1) or gives
-# context (stage S2), who writes it, and which schema checks it.
-# `validate` reads this file. A missing S1 file fails validation; a missing S2 file is only reported.
-# kind: yaml (default) | frontmatter (a markdown file whose front matter is checked) | text | csv
-# min: for a glob, the least number of files expected. when: a registry setting that must be true.
-version: 1
+# The delivery repo's content map: which file or folder feeds the Delivery Hub (stage S1) or gives
+# context (stage S2), who writes it, and which schema checks it. This is the single source for stage tags:
+# onboarding/repo-layout.md is checked against it by scripts/selftest.py.
+# `validate` reads this file. A missing S1 file or folder fails validation in strict mode; a missing S2 one is only reported.
+#
+# files:  one entry per file or glob.
+#   kind: yaml (default) | frontmatter (a markdown file whose front matter is checked) | text | json | csv
+#   min:  for a glob, the least number of files expected.   when: a registry setting that must be true.
+# dirs:   one entry per folder, so an empty folder is covered too. A trailing slash is required.
+#   optional: true means the folder may be absent (it is created later, or by a person's own choice).
+#   Rule: the parent of an S1 entry is S1 (checked by the selftest).
+version: 2
 files:
   # Root control files
+  - {path: README.md,    kind: text,       stage: S2}
+  - {path: AGENTS.md,    kind: text,       stage: S2}
   - {path: project.yml,  schema: project,  stage: S1, owner: project-management}
   - {path: registry.yml, schema: registry, stage: S1, owner: project-management}
   - {path: team.yml,     schema: team,     stage: S1, owner: project-management}
   - {path: state.yml,    schema: state,    stage: S1, owner: any}
 
   # project/  owner: project-management
+  - {path: project/README.md,                 kind: text, stage: S2}
   - {path: project/hub/phases.yml,            schema: phases,     stage: S1}
   - {path: project/hub/milestones.yml,        schema: milestones, stage: S1}
   - {path: project/hub/weekly-prs.yml,        schema: weekly-prs, stage: S1}
@@ -29,6 +38,7 @@ files:
   - {path: project/internal/risks-and-dependencies.yml, schema: risks, stage: S2}
 
   # product/  owner: product-management
+  - {path: product/README.md,              kind: text, stage: S2}
   - {path: product/hub/capabilities.yml,   schema: capabilities, stage: S1}
   - {path: product/hub/security.yml,       schema: security,     stage: S1}
   - {path: product/hub/versions.yml,       schema: versions,     stage: S1}
@@ -41,17 +51,68 @@ files:
   - {path: product/internal/roadmap.yml,      stage: S2}
 
   # qa/  owner: qa
+  - {path: qa/README.md,                   kind: text, stage: S2}
   - {path: qa/hub/try-it-prompts.yml,      schema: try-it-prompts,    stage: S1}
   - {path: qa/hub/known-limitations.yml,   schema: known-limitations, stage: S1}
   - {path: qa/internal/release-gate.yml,   stage: S2}
   - {path: "qa/internal/test-plans/*.md",  schema: copy, kind: frontmatter, stage: S2}
 
   # design/  owner: design. design/hub/ is an empty stub until something on the page comes from design.
+  - {path: design/README.md,               kind: text, stage: S2}
   - {path: design/internal/figma.yml,      stage: S2}
   - {path: design/internal/deltas/index.yml, schema: manifest, stage: S2}
   - {path: "design/internal/briefs/*.md",     schema: copy, kind: frontmatter, stage: S2}
   - {path: "design/internal/prototypes/*.md", schema: copy, kind: frontmatter, stage: S2}
   - {path: "design/internal/handoff/*.md",    schema: copy, kind: frontmatter, stage: S2}
+
+dirs:
+  # Root folders. scripts/ and playbook/ are copied in by new_delivery_repo.py, so the starter folder does not hold them.
+  - {path: playbook/, stage: S2}
+  - {path: scripts/,  stage: S2}
+  - {path: _inbox/,   stage: S2}
+  - {path: out/,      stage: S2}
+  - {path: local/,    stage: S2, optional: true}     # gitignored, created in Step 0
+  - {path: .github/,  stage: S2}
+
+  # project/
+  - {path: project/,                                  stage: S1}
+  - {path: project/hub/,                              stage: S1}
+  - {path: project/hub/weeks/,                        stage: S1}
+  - {path: project/internal/,                         stage: S1}
+  - {path: project/internal/hub-operations/,          stage: S1}
+  - {path: project/internal/hub-operations/published/, stage: S2}
+  - {path: project/internal/hub-operations/reviews/,  stage: S2}
+  - {path: project/internal/meetings/,                stage: S2}
+  - {path: project/internal/meetings/summaries/,      stage: S2}
+  - {path: project/internal/meetings/transcripts/,    stage: S2}
+  - {path: project/internal/documents/,               stage: S2}
+
+  # product/
+  - {path: product/,                                  stage: S1}
+  - {path: product/hub/,                              stage: S1}
+  - {path: product/hub/releases/,                     stage: S1}
+  - {path: product/internal/,                         stage: S1}
+  - {path: product/internal/requirements/,            stage: S2}
+  - {path: product/internal/architecture/,            stage: S2}
+
+  # qa/
+  - {path: qa/,                                       stage: S1}
+  - {path: qa/hub/,                                   stage: S1}
+  - {path: qa/internal/,                              stage: S2}
+  - {path: qa/internal/runs/,                         stage: S2}
+  - {path: qa/internal/bug-sheet/,                    stage: S2}
+  - {path: qa/internal/test-plans/,                   stage: S2}
+  - {path: "qa/internal/uat-suite*/",                 stage: S2, optional: true}   # test-suite folders, one per suite
+
+  # design/
+  - {path: design/,                                   stage: S1}
+  - {path: design/hub/,                               stage: S1}                  # an empty stub is valid
+  - {path: design/internal/,                          stage: S2}
+  - {path: design/internal/briefs/,                   stage: S2}
+  - {path: design/internal/prototypes/,               stage: S2}
+  - {path: design/internal/handoff/,                  stage: S2}
+  - {path: design/internal/decisions/,                stage: S2}
+  - {path: design/internal/deltas/,                   stage: S2}
 
 # Which function owns each top-level folder (used by check_writers and the CODEOWNERS generator)
 folders:

@@ -13,6 +13,7 @@ Modes:
 """
 import argparse
 import json
+import re
 import sys
 from datetime import date, timedelta
 from pathlib import Path
@@ -28,6 +29,10 @@ PRIMARY = {  # schema -> key that must not be empty once the project is past Ste
     "phases": "phases", "milestones": "milestones", "weekly-prs": "weeks", "capabilities": "areas",
     "security": "cards", "versions": "versions", "release": "changes",
 }
+HUB_HEADER = ("schema", "updated", "covered_through", "proposals")
+SUMMARY_SECTIONS = ["Decisions", "Actions", "Asks of the client", "Blockers and risks",
+                    "Status changes", "Open questions", "Claims to verify"]
+TIMESTAMP_RX = re.compile(r"\[\d{2}:\d{2}:\d{2}\]\s*$")   # a transcript timestamp, [hh:mm:ss]
 WEEKDAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
 
 
@@ -49,6 +54,21 @@ def pick_mode(mode, state):
 
 
 def word_count(text): return len(text.split())
+
+
+def check_meeting_body(rel, text, body, res):
+    """A meeting summary body: seven fixed sections, every bullet ends with a transcript timestamp."""
+    heads = {m.group(1).strip() for m in re.finditer(r"^#{1,6}\s+(.+?)\s*#*\s*$", body, re.M)}
+    for section in SUMMARY_SECTIONS:
+        if section not in heads:
+            res.error(rel, f"meeting summary is missing the section '{section}'")
+    start = len(text[:text.index(body)].splitlines()) if body and body in text else 0
+    for n, line in enumerate(body.splitlines(), 1):
+        st = line.strip()
+        if st[:2] in ("- ", "* ") and st[2:].strip().rstrip(".").lower() != "none" and not TIMESTAMP_RX.search(st):
+            res.error(rel, f"line {start + n}: a bullet does not end with a transcript timestamp such as [00:12:30]")
+    if word_count(body) > 400:
+        res.warn(rel, f"summary body is {word_count(body)} words; keep it to about 300 and under 400")
 
 
 def main(argv=None):
@@ -95,7 +115,7 @@ def main(argv=None):
         if when and not get_path(registry or {}, when, False):
             continue
         pattern, stage, kind = entry["path"], entry["stage"], entry.get("kind", "yaml")
-        matches = sorted(p for p in root.glob(pattern) if p.is_file() and p.name not in ("README.md", ".gitkeep"))
+        matches = sorted(p for p in root.glob(pattern) if p.is_file() and ("*" not in pattern or p.name not in ("README.md", ".gitkeep")))
         need = entry.get("min", 1)
         if len(matches) < need:
             msg = f"missing ({stage})" if need == 1 and "*" not in pattern else f"expected at least {need} file(s) matching, found {len(matches)} ({stage})"
@@ -119,6 +139,10 @@ def main(argv=None):
                 schema_errors(rel, fm, entry["schema"])
                 if entry["schema"] == "copy" and word_count(body) > 1500 and not fm.get("summary"):
                     res.error(rel, "copy is over about 1,500 words and has no summary: in its front matter")
+                if entry["schema"] == "copy" and fm.get("summary") and word_count(str(fm["summary"])) > 150:
+                    res.warn(rel, f"summary is {word_count(str(fm['summary']))} words; keep it to about 150")
+                if entry["schema"] == "meeting-summary":
+                    check_meeting_body(rel, text, body, res)
                 if entry["schema"] == "meeting-summary":
                     tr = m.parent.parent / "transcripts" / m.name
                     if tr.exists() and fm.get("transcript_hash") and fm["transcript_hash"] != sha256_text(tr.read_text(encoding="utf-8")):
@@ -145,6 +169,35 @@ def main(argv=None):
                 key = PRIMARY.get(entry["schema"])
                 if key and isinstance(doc, dict) and doc.get(key) == []:
                     (res.error if strict else res.warn)(rel, f"'{key}' is empty (a stub, no content yet)")
+
+    # folders, so an empty folder is covered too
+    for entry in structure.get("dirs", []) or []:
+        if any(p.is_dir() for p in root.glob(entry["path"].rstrip("/"))) or entry.get("optional"):
+            continue
+        msg = f"folder is missing ({entry['stage']})"
+        if entry["stage"] == "S1":
+            (res.error if strict else res.warn)(entry["path"], msg)
+        else:
+            res.note(entry["path"], msg)
+
+    # every YAML file under a hub/ folder starts with the same header
+    for fn in structure.get("folders", {}):
+        for f in sorted((root / fn / "hub").rglob("*")) if (root / fn / "hub").is_dir() else []:
+            if f.suffix not in (".yml", ".yaml") or not f.is_file():
+                continue
+            rel = str(f.relative_to(root))
+            doc = data.get(rel)
+            if doc is None:
+                try:
+                    doc = load_yaml(f)
+                except Exception:  # noqa: BLE001  (a parse error is reported above)
+                    continue
+            if not isinstance(doc, dict):
+                res.error(rel, "hub header: the file is empty or not a mapping")
+                continue
+            for field in HUB_HEADER:
+                if field not in doc:
+                    res.error(rel, f"hub header: missing field '{field}'")
 
     proj = data.get("project.yml", {}).get("project", {})
     for f in ("id", "name", "client"):

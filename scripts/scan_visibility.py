@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 """scan_visibility: look for secrets, restricted terms and deny-listed names.
 
+What it looks for depends on where the file is. Secrets are looked for in every text file. In `hub/` it also
+looks for money amounts and the registry's forbidden terms, and in `hub/` and `internal/` (transcripts and
+copied documents included) for the registry's restricted terms. A deny-list adds names that must appear nowhere.
+
 Used three ways:
-  * as the pre-commit hook:          scan_visibility.py --staged --secrets-only
+  * as the pre-commit hook:          scan_visibility.py --staged    (the same checks validate runs, on the staged files)
   * inside validate and sync:        scan_visibility.py --paths <root>
   * as the playbook genericity check: scan_visibility.py --deny-list local/deny-list.txt --paths .
+To replace the secrets it finds, run redact.py.
 
 It never prints the text it matched, only the file, the line and the rule name.
 Exit code 0 means clean, 1 means something was found.
@@ -24,7 +29,8 @@ SECRET_PATTERNS = {
     "slack-token": r"\bxox[abprs]-[A-Za-z0-9-]{10,}\b",
     "google-api-key": r"\bAIza[0-9A-Za-z_\-]{35}\b",
     "private-key": r"-----BEGIN (?:[A-Z]+ )?PRIVATE KEY-----",
-    "secret-assignment": r"(?i)\b(?:password|passwd|secret|api[_-]?key|access[_-]?token)\b\s*[:=]\s*['\"]?[A-Za-z0-9/+_\-]{16,}",
+    # two groups: the key (kept when redacting) and the value (replaced)
+    "secret-assignment": r"(?i)(\b(?:password|passwd|secret|api[_-]?key|access[_-]?token)\b\s*[:=]\s*['\"]?)([A-Za-z0-9/+_\-]{16,})",
 }
 HUB_FIGURE = r"[$€£]\s?\d[\d,.]*"          # a money amount on a client-visible page
 SKIP_DIRS = {".git", "local", "playbook", "node_modules", "__pycache__"}
