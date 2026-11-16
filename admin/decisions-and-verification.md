@@ -24,6 +24,8 @@ Nothing here needs a decision from the PM. The first list records what is decide
 - Copies of documents and meetings are dated snapshots with a source, version, retrieved date, visibility tag and content hash. Meetings keep a full transcript and a short summary; the agent reads the summary first and opens a transcript only when asked. The weekly run refreshes every copy listed in a manifest, as a branch and pull request, and a file is rewritten only when its source's hash changed.
 - Cross-references use ids, never position, and the repo may never be older than the page it feeds.
 - Hours stay out of the repo, with one exception: role-level totals in `project/hub/hours.yml`, only when the Hours page is switched on. The Hours page is off until Step 6 asks.
+- The Delivery Hub template is built: `templates/delivery-hub/` holds the page skeleton, the stylesheet, the client script, the design spec and a complete fictional sample. `scripts/build.py` builds the page from the `hub/` files and `scripts/check_render.py` checks it. The timeline chart is drawn in the browser from the data block embedded in the page, so the chart and an exec's tool read the same data.
+- The Sprints page has its own data file, `project/hub/sprints.yml`, required only when `project.yml` says `sprints.used: true`. The earlier layout had no file for it.
 
 ## To verify
 
@@ -45,6 +47,10 @@ Nothing here needs a decision from the PM. The first list records what is decide
 | 14 | Merged-PR detection | `count_prs` counts a pull request from a "Merge pull request #N" or "(#N)" commit subject. Rebase merges leave no number | Check against a repo's real history. Where it undercounts, run it with `--source gh` |
 | 15 | CI workflow | The starter's `validate.yml` assumes GitHub Actions is available on the repo and uses `actions/checkout` and `actions/setup-python` | Confirm it runs on a new delivery repo. On Free, `sync.py` stays the gate that matters |
 | 16 | Role-level hours in the repo | The one hours exception is readable by devs and execs, who have Read on the repo | Confirm role-level totals are acceptable there, or keep the Hours page off |
+| 17 | The Hub in real browsers | The page has been built, its script run in a simulated browser, and its HTML checked, but never opened in a real browser, at phone width, or in dark mode | Open the sample build in a desktop and a phone browser, in light and dark, with the keyboard, before the first publish. Then compare it with the project's hand-built page |
+| 18 | Fonts and publishing | The page loads three Google fonts and uses `#sprints`, `#hours` and release ids as its only hashes. Whether each path's publishing feature allows both is not checked | Verify in the first publish. Without the fonts, the page falls back to system fonts and stays readable |
+| 19 | Pull requests per sprint | The Sprints page adds the weekly counts for weeks that end within a sprint's dates, so a sprint that starts mid-week is approximate | Confirm this is acceptable, or add a per-sprint count to `count_prs.py` |
+| 20 | Brand assets in a public repo | The CodingCops logo is in this public repo so the Hub can show it by default. The MIT license does not grant rights to it, and the repo says so | Confirm the owner is content with the logo being public, or move the files out and have each delivery repo supply them through `hub.brand` |
 
 Checks for item 6. Any "no" means keeping the browser fallback for v1.
 

@@ -1,0 +1,45 @@
+schema: milestones
+updated: '2026-11-16'
+covered_through: '2026-11-15'
+proposals: []
+milestones:
+- id: M1
+  title: Kick-off
+  date: '2026-03-02'
+  status: done
+- id: M2
+  title: Development starts
+  date: '2026-03-16'
+  status: done
+- id: M3
+  title: First end-to-end demo
+  date: '2026-04-27'
+  status: done
+- id: M4
+  title: Staging goes live
+  date: '2026-05-11'
+  status: done
+- id: M5
+  title: Final Phase 1 demo
+  date: '2026-06-12'
+  status: done
+- id: M6
+  title: Phase 2 kick-off
+  date: '2026-07-06'
+  status: done
+- id: M7
+  title: Acceptance testing passed
+  date: '2026-09-18'
+  status: done
+- id: M8
+  title: Production launch
+  date: '2026-10-02'
+  status: done
+- id: M9
+  title: Exports and sharing on production
+  date: '2026-11-27'
+  status: upcoming
+- id: M10
+  title: Phase 2 target end
+  date: '2026-12-18'
+  status: upcoming

@@ -1,0 +1,62 @@
+schema: release
+updated: '2026-11-16'
+covered_through: '2026-11-15'
+proposals: []
+version: v1.1
+highlights:
+- Search is faster and highlights where the match is.
+- Version history with restore, and the first reports.
+changes:
+- id: C-013
+  area: Search
+  tag: improved
+  environment: production
+  text: Results for large libraries appear about twice as fast.
+  refs:
+  - 'api #88'
+  date: '2026-10-12'
+- id: C-014
+  area: Search
+  tag: new
+  environment: production
+  text: The first result is highlighted, with the matching passage shown.
+  refs:
+  - 'web #91'
+  date: '2026-10-14'
+- id: C-015
+  area: Documents
+  tag: new
+  environment: production
+  text: Version history with restore.
+  refs:
+  - 'web #94'
+  - 'api #90'
+  date: '2026-10-20'
+- id: C-016
+  area: Reports
+  tag: new
+  environment: production
+  text: Usage and storage reports with charts and drill-down lists.
+  refs:
+  - 'web #97'
+  date: '2026-10-27'
+- id: C-017
+  area: Administration
+  tag: new
+  environment: staging
+  text: Audit log of sign-ins, sharing changes and deletions.
+  refs:
+  - 'api #96'
+  date: '2026-10-29'
+it_notes:
+- Version history keeps the last 20 versions of each document.
+- The audit log is on staging only for now and reaches production in the next update.
+limitation_ids:
+- L1
+- L2
+try_it_ids:
+- P1
+- P2
+- P3
+- P4
+- P5

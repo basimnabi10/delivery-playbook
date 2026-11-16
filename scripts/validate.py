@@ -27,7 +27,7 @@ import scan_visibility  # noqa: E402
 
 PRIMARY = {  # schema -> key that must not be empty once the project is past Step 5
     "phases": "phases", "milestones": "milestones", "weekly-prs": "weeks", "capabilities": "areas",
-    "security": "cards", "versions": "versions", "release": "changes",
+    "security": "cards", "versions": "versions", "release": "changes", "sprints": "sprints",
 }
 HUB_HEADER = ("schema", "updated", "covered_through", "proposals")
 SUMMARY_SECTIONS = ["Decisions", "Actions", "Asks of the client", "Blockers and risks",
@@ -96,7 +96,7 @@ def main(argv=None):
             res.error(rel, f"cannot parse: {str(e).splitlines()[0]}")
             return None
 
-    registry, state = load("registry.yml"), load("state.yml")
+    registry, state, project_doc = load("registry.yml"), load("state.yml"), load("project.yml")
     mode = pick_mode(args.mode, state)
     strict = mode == "strict"
     data = {}  # rel path -> parsed content, for cross checks
@@ -112,8 +112,10 @@ def main(argv=None):
 
     for entry in structure["files"]:
         when = entry.get("when")
-        if when and not get_path(registry or {}, when, False):
-            continue
+        if when:
+            src, _, path = (when.partition(":") if ":" in when else ("registry", "", when))
+            if not get_path((project_doc if src == "project" else registry) or {}, path, False):
+                continue
         pattern, stage, kind = entry["path"], entry["stage"], entry.get("kind", "yaml")
         matches = sorted(p for p in root.glob(pattern) if p.is_file() and ("*" not in pattern or p.name not in ("README.md", ".gitkeep")))
         need = entry.get("min", 1)

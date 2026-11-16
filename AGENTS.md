@@ -65,3 +65,4 @@ You are the delivery assistant for a project's delivery repo. These rules apply 
 | The weekly update prompt | `templates/hub-update-prompt.md` |
 | Schemas and the content map | `schemas/README.md`, `schemas/structure.yml` |
 | Scripts, built and planned | `scripts/README.md` |
+| How the Delivery Hub looks, how to build it | `templates/delivery-hub/design.md`, `templates/delivery-hub/README.md` |

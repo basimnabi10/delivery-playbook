@@ -1,0 +1,33 @@
+schema: security
+updated: '2026-11-16'
+covered_through: '2026-11-15'
+proposals: []
+cards:
+- id: hosting
+  title: Hosting
+  text: Runs on the client's own cloud account, with staging and production in separate projects.
+  last_verified: '2026-11-09'
+- id: signin
+  title: Sign-in and sessions
+  text: Company Google accounts only. Idle sessions sign out after 8 hours, with a warning first.
+  last_verified: '2026-11-09'
+- id: encryption
+  title: Data in transit and at rest
+  text: All traffic uses HTTPS, and stored files and database contents are encrypted at rest.
+  last_verified: '2026-11-09'
+- id: access
+  title: Who sees what
+  text: People only see documents their team has been given access to. Sharing outside the company needs a separate
+    permission.
+  last_verified: '2026-11-09'
+- id: audit
+  title: Audit trail
+  text: Sign-ins, sharing changes and deletions are recorded in a log that admins can read.
+  last_verified: '2026-11-09'
+- id: releases
+  title: Production releases
+  text: Only the project owner releases to production, and only a build that has already run on staging.
+  last_verified: '2026-11-09'
+note: Production is limited to Acme accounts. Developer accounts were removed before launch.
+caveat: Exports are still in acceptance testing. Until they are signed off, avoid exporting reports that contain
+  personal data.

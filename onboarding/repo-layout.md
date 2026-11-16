@@ -32,6 +32,7 @@ One line per path, two spaces per level. A name with a placeholder (`YYYY-MM-DD`
       phases.yml                     S1  phase bands
       milestones.yml                 S1  milestones with unique ids, sorted by date
       weekly-prs.yml                 S1  counts, week rule, time zone, script version (written by count_prs.py)
+      sprints.yml                    S1  only when the project uses formal sprints: goal, dates, delivered, carried over
       weeks/                         S1  one file per week
         YYYY-MM-DD.yml               S1  last-week block: shipped, decided in the sync, next, waiting on the client
       hours.yml                      S1  only when the Hours page is on; role-level totals, no names or rates
@@ -112,6 +113,7 @@ Each function folder also holds a `README.md` that names its owner, its scope an
 | Delivery timeline | `project/hub/phases.yml`, `milestones.yml`, `weekly-prs.yml` | PM; counts from the script |
 | Security and data handling | `product/hub/security.yml`, environments in `project.yml` | Product |
 | Release history | `product/hub/releases/*`, `qa/hub/try-it-prompts.yml`, `qa/hub/known-limitations.yml` | Product; QA for prompts and limitations |
+| Sprints page (optional) | `project/hub/sprints.yml` | PM |
 | Hours page (optional) | `project/hub/hours.yml` | PM |
 | Embedded data block | generated from the files above by the build script, never written by hand | Script |
 
@@ -171,5 +173,7 @@ The refresh is split in two, because a script cannot call a connector and a mode
 | `sync.py` | The single door: validate, branch, commit, push, pull request |
 | `redact.py` | Replaces each secret with `[REDACTED:<rule>]` and records rule, count and date in the manifest entry |
 | `refresh.py` | The deterministic half of the weekly refresh: hashes, rewrites, gaps, flags, the scan, the summaries list and the report |
+| `build.py` | Builds the Delivery Hub from the `hub/` files with the template in `templates/delivery-hub/` |
+| `check_render.py` | Static checks on the built page |
 
-Planned, with their interfaces in [`scripts/README.md`](../scripts/README.md): `build`, `extract_from_page`, `check_render` and `upgrade_playbook`.
+Planned, with their interfaces in [`scripts/README.md`](../scripts/README.md): `extract_from_page` and `upgrade_playbook`. The page's look is specified in [the design spec](../templates/delivery-hub/design.md).

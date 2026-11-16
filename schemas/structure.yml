@@ -5,7 +5,8 @@
 #
 # files:  one entry per file or glob.
 #   kind: yaml (default) | frontmatter (a markdown file whose front matter is checked) | text | json | csv
-#   min:  for a glob, the least number of files expected.   when: a registry setting that must be true.
+#   min:  for a glob, the least number of files expected.   when: a setting that must be true, read from registry.yml,
+#         or from project.yml when written "project:path".
 # dirs:   one entry per folder, so an empty folder is covered too. A trailing slash is required.
 #   optional: true means the folder may be absent (it is created later, or by a person's own choice).
 #   Rule: the parent of an S1 entry is S1 (checked by the selftest).
@@ -25,6 +26,7 @@ files:
   - {path: project/hub/milestones.yml,        schema: milestones, stage: S1}
   - {path: project/hub/weekly-prs.yml,        schema: weekly-prs, stage: S1}
   - {path: "project/hub/weeks/*.yml",         schema: week,       stage: S1, min: 1}
+  - {path: project/hub/sprints.yml,           schema: sprints,    stage: S1, when: "project:sprints.used"}
   - {path: project/hub/hours.yml,             schema: hours,      stage: S1, when: pages.hours.enabled}
   - {path: project/internal/hub-operations/update-prompt.md,        kind: text, stage: S1}
   - {path: project/internal/hub-operations/runbook.md,              kind: text, stage: S1}

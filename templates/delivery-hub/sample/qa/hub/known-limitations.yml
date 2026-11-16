@@ -1,0 +1,21 @@
+schema: known-limitations
+updated: '2026-11-16'
+covered_through: '2026-11-15'
+proposals: []
+limitations:
+- id: L1
+  text: Files over 50 MB cannot be uploaded.
+  area: Documents
+  opened_in: v0.5
+  status: open
+- id: L2
+  text: Search does not look inside scanned images.
+  area: Search
+  opened_in: v1.1
+  status: resolved
+  resolved_in: v1.2
+- id: L3
+  text: PDF exports of very wide tables are cut off at the page edge.
+  area: Reports
+  opened_in: v1.2
+  status: open

@@ -1,0 +1,15 @@
+schema: phases
+updated: '2026-11-16'
+covered_through: '2026-11-15'
+proposals: []
+phases:
+- id: PH1
+  name: 'Phase 1: build'
+  start: '2026-03-02'
+  end: '2026-06-12'
+  dates_status: confirmed
+- id: PH2
+  name: 'Phase 2: collaboration'
+  start: '2026-07-06'
+  end: '2026-12-18'
+  dates_status: inferred

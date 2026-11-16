@@ -192,6 +192,87 @@
       "items": {
         "type": "object"
       }
+    },
+    "hub": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "product": {
+          "type": "string"
+        },
+        "client": {
+          "type": "string"
+        },
+        "prepared_by": {
+          "type": "string"
+        },
+        "eyebrow_tag": {
+          "type": "string"
+        },
+        "lede": {
+          "type": "string"
+        },
+        "weekday": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        },
+        "brand": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "logo_light": {
+              "type": "string"
+            },
+            "logo_dark": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": true
+        },
+        "principles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1
+              },
+              "tone": {
+                "enum": [
+                  "primary",
+                  "go"
+                ]
+              }
+            },
+            "required": [
+              "label",
+              "text"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "footer_notes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [],
+      "additionalProperties": true
     }
   },
   "required": [

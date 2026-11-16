@@ -1,0 +1,59 @@
+schema: release
+updated: '2026-11-16'
+covered_through: '2026-11-15'
+proposals: []
+version: v1.0
+highlights:
+- First production release on 2 October, after a full round of acceptance testing.
+- Roles, folders, tags and an owner for every document.
+changes:
+- id: C-008
+  area: Administration
+  tag: new
+  environment: production
+  text: Sign-in with company Google accounts only.
+  refs:
+  - 'web #60'
+  date: '2026-09-04'
+- id: C-009
+  area: Administration
+  tag: new
+  environment: production
+  text: Roles for owner, editor and viewer, set per team.
+  refs:
+  - 'api #52'
+  date: '2026-09-09'
+- id: C-010
+  area: Documents
+  tag: new
+  environment: production
+  text: Folders, tags and an owner for every document.
+  refs:
+  - 'web #64'
+  - 'api #55'
+  date: '2026-09-15'
+- id: C-011
+  area: Platform
+  tag: note
+  environment: production
+  text: Production went live on 2 October with a build that had already run on staging.
+  refs:
+  - 'infra #21'
+  date: '2026-10-02'
+- id: C-012
+  area: Search
+  tag: improved
+  environment: production
+  text: Search covers the whole library, including documents in shared folders.
+  refs:
+  - 'api #70'
+  date: '2026-09-22'
+it_notes:
+- Production accepts Acme accounts only. Developer accounts were removed before launch.
+- Upload limit is 50 MB per file.
+- Idle sessions sign out after 8 hours.
+limitation_ids:
+- L1
+try_it_ids:
+- P1
+- P2

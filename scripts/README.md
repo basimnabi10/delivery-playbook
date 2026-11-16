@@ -15,13 +15,15 @@ Deterministic work lives here, not in the model: counting, validating, scanning 
 | `check_writers.py` | A pull request may only change the function folders its author holds. Runs in CI |
 | `codeowners.py` | Writes `.github/CODEOWNERS` from `team.yml`. `hub/` folders also route to the PM. `--check` runs in CI |
 | `sync.py` | The single door for changes: validate, branch `<function>/<topic>`, scan, commit, push, open the pull request. It stops at the first failure. If `gh` is missing it prints the exact commands |
+| `build.py` | Builds the Delivery Hub page from the `hub/` files and the root control files, using `templates/delivery-hub/`. Runs `validate` first. Embeds the data block the chart uses, checked against `schemas/hub-block.schema.json`. `--sample` builds the fictional sample; `--write-published` saves the embedded block for the repo-versus-page check |
+| `check_render.py` | Static checks on a built page: one self-contained file, only the two font hosts, no network calls, dark theme and phone breakpoint present, links and labels resolve, the embedded block matches the `hub/` files, every release lists as many changes as its data, and nothing the client must not see. It reads the HTML only, so a person still looks at the page in a browser |
 | `new_delivery_repo.py` | Creates a delivery repo from `templates/delivery-repo/`, copies in `scripts/` and a pinned `playbook/`, stamps the version, and makes the first commit. With `--create-remote OWNER` it creates the repo without pushing, checks it is private, and only then pushes |
 | `redact.py` | Replaces each secret with `[REDACTED:<rule>]` and records rule, count and date under `redactions` in the file's manifest entry. Never prints or stores the matched text, reports only file, line and rule, and is safe to run twice. A file with no manifest entry is still redacted |
 | `refresh.py` | The deterministic half of the weekly refresh. The agent fetches sources through its connectors into `local/incoming/` and lists them in `incoming.yml` (id, status `ok`, `failed`, `deleted` or `restricted`, content path). The script compares hashes and rewrites a copy only when its hash changed, records a failed read as a gap and keeps the old copy, flags a deleted or newly restricted item, and scans before anything is staged. It writes `needs-summary.yml` (the summaries the agent must regenerate) and a run report in `project/internal/hub-operations/reviews/`, and with `--sync` hands the branch and pull request to `sync.py`. It never touches `main` |
 | `selftest.py` | Builds a sample repo and checks that each script passes and fails when it should |
 | `requirements.txt` | The two Python packages |
 
-Typical weekly order: preflight, ingest into `_inbox/`, `count_prs.py`, `refresh.py`, `validate.py`, build and check the page, then `sync.py`.
+Typical weekly order: preflight, ingest into `_inbox/`, `count_prs.py`, `refresh.py`, `validate.py`, `build.py`, `check_render.py` and a look at the page in a browser, then `sync.py`.
 
 ## Planned
 
@@ -29,7 +31,5 @@ These are not built yet. Their interfaces are fixed here so the rest of the play
 
 | Script | Input | Output |
 | --- | --- | --- |
-| `build.py` | the `hub/` files, the root control files and the Hub template | the page in `out/preview/`, with the embedded data block generated from the files and checked against `schemas/hub-block.schema.json`. A wrong number is fixed in the data, never in the HTML |
 | `extract_from_page.py` | a published Hub page | one proposal per section in `_inbox/`, each stamped with the page's version, and a check that the change counts match the page's embedded block. Used when a project already has a page |
-| `check_render.py` | a rendered page | pass or fail for desktop and phone width, light and dark mode, script errors, a working chart and filters, matching counts, and none of the strings in `rules.never_on_client_pages` |
 | `upgrade_playbook.py` | a newer playbook tag | a pull request that moves `playbook/` and `scripts/` to that tag |

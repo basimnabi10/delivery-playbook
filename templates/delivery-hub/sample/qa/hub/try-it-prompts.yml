@@ -1,0 +1,30 @@
+schema: try-it-prompts
+updated: '2026-11-16'
+covered_through: '2026-11-15'
+proposals: []
+suite: acceptance-set
+prompts:
+- id: P1
+  category: Search
+  prompt: Find the onboarding checklist and tell me who owns it.
+  good_answer: Finds the right document and names its owner, without listing similar documents.
+- id: P2
+  category: Permissions
+  prompt: Open the finance team's budget folder as a viewer from another team.
+  good_answer: Is refused with a clear message, and the attempt appears in the audit log.
+- id: P3
+  category: Versions
+  prompt: Restore the previous version of any document you own.
+  good_answer: Restores it, keeps the newer version in the history, and shows who restored it.
+- id: P4
+  category: Reports
+  prompt: Show storage used by each team this month.
+  good_answer: Shows a chart and a list that add up to the same total.
+- id: P5
+  category: Search
+  prompt: Search for a phrase that only appears in the middle of a long document.
+  good_answer: Shows the matching passage and highlights it.
+- id: P6
+  category: Export
+  prompt: Export the usage report to CSV after filtering to one team.
+  good_answer: The file holds only that team's rows and the filter is noted in the file.

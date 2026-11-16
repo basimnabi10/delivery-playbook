@@ -1,0 +1,24 @@
+# Sample. Fictional.
+project:
+  id: acme-portal
+  name: Acme Portal
+  client: Acme Corp
+  summary: A customer portal for Acme's field teams
+  contract: time-and-materials
+timeline:
+  start: '2026-03-02'
+  target_end: '2026-12-18'
+sprints:
+  used: true
+shared_artefacts: []
+conflicts: []
+environments:
+  staging: https://staging.example.com
+  production: https://portal.example.com
+hub:
+  prepared_by: CodingCops
+  weekday: Monday
+  brand:
+    name: CodingCops
+    logo_light: ''
+    logo_dark: ''
