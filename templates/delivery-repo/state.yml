@@ -1,7 +1,9 @@
 # Progress and source checks. Written by the agent.
 playbook_version: ""
+playbook_date: ""
 onboarding:
   step: 1
   done: []
 covered_through: null
+page: {version: null, covered_through: null, published_on: null}   # what the published Hub page says; the repo must not be older
 sources_checked: []

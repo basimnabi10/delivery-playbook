@@ -1,0 +1,11 @@
+# Written by scripts/count_prs.py. Do not edit by hand.
+schema: weekly-prs
+updated: 0000-00-00
+covered_through: null
+proposals: []
+week_rule: "to be set in registry.yml (rules.counting)"
+time_zone: UTC
+script_version: "not run yet"
+total: 0
+partial_week: false
+weeks: []

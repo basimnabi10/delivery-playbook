@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schemas/proposal.schema.json",
+  "title": "proposal",
+  "description": "One proposal in _inbox/, waiting for or recording a decision.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target": {
+      "type": "string",
+      "minLength": 1
+    },
+    "proposal": {},
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "minLength": 1
+          },
+          "ref": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "source"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "confidence": {
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ]
+    },
+    "visibility": {
+      "enum": [
+        "client-visible",
+        "internal",
+        "restricted"
+      ]
+    },
+    "status": {
+      "enum": [
+        "proposed",
+        "accepted",
+        "edited",
+        "rejected",
+        "deferred",
+        "superseded"
+      ]
+    },
+    "decided_by": {
+      "type": "string"
+    },
+    "decided_at": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "baseline_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "target",
+    "proposal",
+    "evidence",
+    "confidence",
+    "visibility",
+    "status"
+  ],
+  "additionalProperties": true
+}

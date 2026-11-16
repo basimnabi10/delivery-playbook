@@ -5,14 +5,14 @@ Say "run setup check" and the agent proves each capability with a harmless actio
 | # | Capability | Harmless test | Passes when | If it fails |
 | --- | --- | --- | --- | --- |
 | 1 | Write to the workspace | Create and delete `local/.dryrun` | The file appears, then disappears | A: reconnect the folder. B: check the working directory and sandbox mode |
-| 2 | Run commands | `git status` and the playbook's validate script self-test | Both print results | Check the approval prompt was accepted |
+| 2 | Run commands | `git status`, then `python3 scripts/selftest.py` (the scripts' self-test, in a throwaway folder) | Both print results, and the self-test ends with "OK" | Check the approval prompt was accepted. If Python or its packages are missing, `pip install -r scripts/requirements.txt` |
 | 3 | GitHub CLI | `gh auth status`, then `gh repo view` on the delivery repo | Signed in, repo opens | Sign in from inside the session; otherwise give the agent a fine-grained token, in a local file or pasted ([Step 0](00-prerequisites.md#github-sign-in-and-tokens)) or use the terminal fallback |
 | 4 | Reach GitHub | `git ls-remote` on the delivery repo | References are listed | A: ask the PMO to allow GitHub egress. B: set `network_access = true` |
 | 5 | Commit | Commit a scratch file on a throwaway branch `dryrun/<you>`, then delete the branch | The commit is created | B: approve the `.git` write, or use `scripts/sync` |
-| 6 | Secret scan | Try to commit a fake token | The hook blocks it | Install the hook (0.8) |
+| 6 | Secret scan | Install the hook with `sh scripts/install_hooks.sh`, then try to commit a fake token on a throwaway branch | The hook blocks it, and the output names the rule without printing the token | Install the hook (0.8) |
 | 7 | Connectors | Read one item you name from each: a Slack channel, a calendar entry, the restricted drive folder, a tldv meeting | Each returns the item | Re-authorise that connector. Never test with a broad Drive search |
 | 8 | Browser fallback | Open a test tab and read the title of your Rocket.Chat page | The title is read | Sign in to the site; enable the extension for the tool |
-| 9 | Render | Render the sample page from the pinned template into `out/dryrun/` | An HTML file is created and validates | Check the playbook version is pinned and scripts run |
+| 9 | Build | Run `python3 scripts/validate.py`, then, when `scripts/build.py` exists, build the sample page into `out/dryrun/` | `validate` ends with "OK" (warnings are fine before Step 5), and the page is created | Check the playbook version is pinned and scripts run. Until `build.py` exists, mark this row "cannot verify" |
 | 10 | Repo plan and rulesets | `gh api repos/<owner>/<repo>/rulesets` on the delivery repo | Rulesets are listed, or the call returns 403 or an empty list | Report "main is not protected" with the reason (free plan, or no ruleset yet), and record the compensating controls: the single door (`sync`), `validate` and the secret scan |
 | 11 | Token type | `GET https://api.github.com/user` with the token in an environment variable, reading only the response headers | `X-OAuth-Scopes` present means classic, absent means fine-grained. The token is never printed | Never echo any part of the token. Classify from the headers only |
 | 12 | Private repo | `gh repo view <owner>/<repo> --json isPrivate` after the repo is created and before the first push | `isPrivate` is true | Stop and tell the person. Make the repo private before anything is pushed |

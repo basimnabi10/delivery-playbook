@@ -11,11 +11,13 @@ The end product is the **Delivery Hub**: one shareable set of pages (release not
 | [2. Ingestion channels registry](02-ingestion-channels.md) | PM answers, agent writes | `registry.yml` |
 | [3. Team registry](03-team-registry.md) | PM answers, agent writes | `team.yml` and a generated CODEOWNERS |
 | [4. Connect and check sources](04-connect-and-check-sources.md) | Agent tests, PM fixes gaps | A sources report: what was read, and how |
-| [5. Seed the starting data](05-seed-starting-data.md) | Agent proposes, PM verifies | Verified files in `data/`, `_inbox/` empty |
+| [5. Seed the starting data](05-seed-starting-data.md) | Agent proposes, PM verifies | Verified `hub/` files, `_inbox/` empty |
 | [6. Review and publish](06-review-and-publish.md) | PM approves | The Delivery Hub and its link |
 | [7. Branch, push, merge, set the rhythm](07-weekly-rhythm.md) | Agent commits, PM approves | A merged pull request and a weekly routine |
 
 **Already running?** If the project already shares reports, pages or folders with the client, follow [adopting a running project](adopting-a-running-project.md) alongside Steps 1 to 7. It treats what the client already sees as a baseline to check, not as the truth.
+
+Where every file lives, and who writes it, is in [the repo layout](repo-layout.md).
 
 **How the steps move.** The agent leads. When a step's "Done when" is met, it says so in one line and starts the next step. You can say "pause" or "what's next?" at any time. Progress is kept in `state.yml`, so a later session, or another machine, resumes where you stopped. Three gates always wait for you: accepting proposals (Step 5), publishing (Step 6) and merging a pull request (Step 7).
 

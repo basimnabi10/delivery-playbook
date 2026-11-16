@@ -1,1 +1,1 @@
-Planned: `workflows/validate.yml` (schema and visibility checks on every pull request) and a generated `CODEOWNERS`. Both are produced by the playbook scripts; see `playbook/scripts/`.
+`workflows/validate.yml` runs `scripts/validate.py`, `scripts/check_writers.py` and `scripts/codeowners.py --check` on every pull request. `CODEOWNERS` is generated from `team.yml` by `scripts/codeowners.py`. On the GitHub Free plan a private repo cannot require these checks to pass, so `scripts/sync.py` is the gate that matters.

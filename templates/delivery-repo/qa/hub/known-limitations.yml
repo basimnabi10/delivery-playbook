@@ -1,0 +1,6 @@
+# Register. Each: {id, text, area, opened_in, status: open | resolved, resolved_in}. Releases refer to these by id.
+schema: known-limitations
+updated: 0000-00-00
+covered_through: null
+proposals: []
+limitations: []

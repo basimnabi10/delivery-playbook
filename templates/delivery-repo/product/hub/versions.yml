@@ -1,0 +1,7 @@
+# Release labels and periods. Each: {id, label, period_start, period_end, status, pr_range, tags}.
+schema: versions
+updated: 0000-00-00
+covered_through: null
+proposals: []
+versions:
+  - {id: v0.1, label: "v0.1", status: planned}

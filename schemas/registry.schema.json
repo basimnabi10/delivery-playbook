@@ -1,0 +1,238 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schemas/registry.schema.json",
+  "title": "registry",
+  "description": "Where project information lives, and who may see what comes from it.",
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "object",
+      "properties": {
+        "repos": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "production_branch": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "repos",
+        "production_branch"
+      ],
+      "additionalProperties": true
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "ref": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "string"
+          },
+          "visibility": {
+            "enum": [
+              "client-visible",
+              "internal",
+              "restricted"
+            ]
+          },
+          "read": {
+            "enum": [
+              "connector",
+              "api",
+              "browser",
+              "manual"
+            ]
+          },
+          "commercial": {
+            "type": "boolean"
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "visibility": {
+                  "enum": [
+                    "client-visible",
+                    "internal",
+                    "restricted"
+                  ]
+                },
+                "commercial": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "additionalProperties": true
+            }
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "visibility",
+          "read"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "restricted_drive_folder": {
+      "type": "string"
+    },
+    "versioning": {
+      "type": "object"
+    },
+    "pages": {
+      "type": "object",
+      "properties": {
+        "delivery-hub": {
+          "type": "object",
+          "properties": {
+            "audience": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "required": [],
+          "additionalProperties": true
+        },
+        "hours": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "basis": {
+              "enum": [
+                "",
+                "allocation",
+                "logged"
+              ]
+            }
+          },
+          "required": [
+            "enabled"
+          ],
+          "additionalProperties": true
+        }
+      },
+      "required": [],
+      "additionalProperties": true
+    },
+    "rules": {
+      "type": "object",
+      "properties": {
+        "never_on_client_pages": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "counting": {
+          "type": "object",
+          "properties": {
+            "merged_pr": {
+              "type": "string"
+            },
+            "week_rule": {
+              "type": "string"
+            },
+            "week_ends": {
+              "enum": [
+                "",
+                "monday",
+                "tuesday",
+                "wednesday",
+                "thursday",
+                "friday",
+                "saturday",
+                "sunday"
+              ]
+            },
+            "time_zone": {
+              "type": "string"
+            },
+            "script": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": true
+        },
+        "publishing": {
+          "type": "object",
+          "properties": {
+            "draft_only": {
+              "type": "boolean"
+            },
+            "weekly_slot": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": true
+        },
+        "scan": {
+          "type": "object",
+          "properties": {
+            "hub_forbidden": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "restricted": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "required": [],
+          "additionalProperties": true
+        }
+      },
+      "required": [],
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "code",
+    "sources",
+    "pages",
+    "rules"
+  ],
+  "additionalProperties": true
+}

@@ -1,0 +1,4 @@
+# Open dependencies on the client, risks and conflicts. Each: {id, kind, text, owner, status, claim, stated_by, date}.
+schema: risks
+updated: 0000-00-00
+items: []
