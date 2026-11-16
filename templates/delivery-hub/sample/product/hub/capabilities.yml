@@ -1,0 +1,61 @@
+schema: capabilities
+updated: '2026-11-16'
+covered_through: '2026-11-15'
+proposals: []
+areas:
+- id: search
+  name: Search
+  items:
+  - id: S1
+    text: Finds documents by title, content and owner across the whole library
+    since_release: v0.5
+    status: live
+  - id: S2
+    text: Highlights the first result and shows where the match is in the document
+    since_release: v1.1
+    status: live
+  - id: S3
+    text: Saved searches that notify you when new matches appear
+    since_release: v1.2
+    status: planned
+- id: documents
+  name: Documents
+  items:
+  - id: D1
+    text: Upload PDF, Word and text files up to **50 MB**, with progress and a clear message when something fails
+    since_release: v0.5
+    status: live
+  - id: D2
+    text: Folders, tags and an owner for every document
+    since_release: v1.0
+    status: live
+  - id: D3
+    text: Version history with restore
+    since_release: v1.1
+    status: live
+- id: admin
+  name: Administration
+  items:
+  - id: A1
+    text: Sign-in with company Google accounts only
+    since_release: v1.0
+    status: live
+  - id: A2
+    text: Roles for owner, editor and viewer, set per team
+    since_release: v1.0
+    status: live
+  - id: A3
+    text: Audit log of sign-ins, sharing and deletions
+    since_release: v1.1
+    status: beta
+- id: reports
+  name: Reports
+  items:
+  - id: R1
+    text: Usage and storage reports with charts and drill-down lists
+    since_release: v1.1
+    status: live
+  - id: R2
+    text: Export to CSV and PDF with your filters kept
+    since_release: v1.2
+    status: beta

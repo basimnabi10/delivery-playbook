@@ -1,0 +1,54 @@
+schema: release
+updated: '2026-11-16'
+covered_through: '2026-11-15'
+proposals: []
+version: v0.5
+highlights:
+- Upload, storage and search work end to end on staging.
+- A demo of the full flow for Acme on 27 April.
+changes:
+- id: C-003
+  area: Documents
+  tag: new
+  environment: staging
+  text: Upload PDF, Word and text files, stored encrypted.
+  refs:
+  - 'web #14'
+  - 'api #9'
+  date: '2026-04-14'
+- id: C-004
+  area: Search
+  tag: new
+  environment: staging
+  text: Search finds documents by title and content.
+  refs:
+  - 'api #15'
+  date: '2026-04-24'
+- id: C-005
+  area: Platform
+  tag: new
+  environment: staging
+  text: Staging environment goes live for the Acme team.
+  refs:
+  - 'infra #7'
+  date: '2026-05-11'
+- id: C-006
+  area: Documents
+  tag: improved
+  environment: staging
+  text: Upload shows progress and a clear message when a file is too large.
+  refs:
+  - 'web #31'
+  date: '2026-05-28'
+- id: C-007
+  area: Search
+  tag: fixed
+  environment: staging
+  text: Searching for a phrase in quotes now matches the phrase.
+  refs:
+  - 'api #38'
+  date: '2026-06-05'
+it_notes:
+- Staging is available to the Acme team on company Google accounts only.
+limitation_ids:
+- L1

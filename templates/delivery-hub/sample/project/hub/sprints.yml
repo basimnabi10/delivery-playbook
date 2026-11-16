@@ -1,0 +1,34 @@
+schema: sprints
+updated: '2026-11-16'
+covered_through: '2026-11-15'
+proposals: []
+sprints:
+- id: S9
+  name: Sprint 9
+  goal: Make search fast on large libraries.
+  start: '2026-10-05'
+  end: '2026-10-16'
+  delivered:
+  - Search index rebuilt
+  - First-result highlighting
+  carried_over:
+  - Search filters by owner
+- id: S10
+  name: Sprint 10
+  goal: Reports can be exported.
+  start: '2026-10-19'
+  end: '2026-10-30'
+  delivered:
+  - CSV export
+  - Filters kept in exports
+  carried_over:
+  - PDF layout polish
+- id: S11
+  name: Sprint 11
+  goal: Start sharing links and fix testing findings.
+  start: '2026-11-02'
+  end: '2026-11-13'
+  delivered:
+  - PDF export
+  - Upload progress fix
+  carried_over: []

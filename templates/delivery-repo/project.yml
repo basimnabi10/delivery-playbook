@@ -12,3 +12,11 @@ shared_artefacts: []   # running projects: see playbook/onboarding/adopting-a-ru
 conflicts: []   # claims in existing artefacts, checked against the facts
 environments: {}
 draft_team: []
+hub:   # optional settings for the Delivery Hub page; see playbook/templates/delivery-hub/README.md
+  title: ""            # page title. Default: "<product> Release Notes"
+  product: ""          # product name shown on the page. Default: project.name
+  prepared_by: CodingCops
+  brand: {name: CodingCops, logo_light: "", logo_dark: ""}   # logo files are embedded when given; otherwise a text wordmark
+  weekday: Monday      # the weekday the page is refreshed, for the "Updated weekly" note
+  principles: []       # [{label, text, tone: primary | go}]; default: three generic ones
+  footer_notes: []     # default: three generic notes

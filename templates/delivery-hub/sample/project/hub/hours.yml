@@ -1,0 +1,41 @@
+schema: hours
+updated: '2026-11-16'
+covered_through: '2026-11-15'
+proposals: []
+basis: logged
+scope:
+  from: '2026-10-05'
+  to: '2026-11-13'
+rows:
+- week_ending: '2026-10-18'
+  sprint: Sprint 9
+  role: Developer
+  hours: 240
+- week_ending: '2026-10-18'
+  sprint: Sprint 9
+  role: QA
+  hours: 60
+- week_ending: '2026-10-18'
+  sprint: Sprint 9
+  role: Project management
+  hours: 30
+- week_ending: '2026-11-01'
+  sprint: Sprint 10
+  role: Developer
+  hours: 236
+- week_ending: '2026-11-01'
+  sprint: Sprint 10
+  role: QA
+  hours: 64
+- week_ending: '2026-11-01'
+  sprint: Sprint 10
+  role: Design
+  hours: 24
+- week_ending: '2026-11-15'
+  sprint: Sprint 11
+  role: Developer
+  hours: 244
+- week_ending: '2026-11-15'
+  sprint: Sprint 11
+  role: QA
+  hours: 58

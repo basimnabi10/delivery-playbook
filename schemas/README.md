@@ -12,7 +12,7 @@ The content map. For each path or glob it says the schema, the stage (S1 feeds t
 | --- | --- |
 | `project`, `registry`, `team`, `state` | The root control files. Open for extra fields, strict about the fields the steps ask for |
 | `proposal` | One file in `_inbox/`: target, evidence, confidence, visibility and status (`proposed`, `accepted`, `edited`, `rejected`, `deferred`, `superseded`) |
-| `phases`, `milestones`, `weekly-prs`, `week`, `hours` | `project/hub/` |
+| `phases`, `milestones`, `weekly-prs`, `week`, `sprints`, `hours` | `project/hub/` (`sprints` and `hours` are optional pages) |
 | `capabilities`, `security`, `versions`, `release` | `product/hub/`; one `release` file per release |
 | `try-it-prompts`, `known-limitations` | `qa/hub/` |
 | `code-state`, `flags` | `product/internal/` |

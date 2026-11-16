@@ -1,0 +1,22 @@
+schema: release
+updated: '2026-11-16'
+covered_through: '2026-11-15'
+proposals: []
+version: v0.1
+highlights:
+- Project set up, design direction agreed and the first screens designed.
+changes:
+- id: C-001
+  area: Platform
+  tag: note
+  environment: internal-testing
+  text: Repositories, environments and the build pipeline were set up.
+  refs:
+  - 'infra #1'
+  date: '2026-03-09'
+- id: C-002
+  area: Platform
+  tag: design
+  environment: internal-testing
+  text: Design direction and the first set of screens agreed with Acme.
+  date: '2026-03-20'

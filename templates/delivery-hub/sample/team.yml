@@ -1,0 +1,36 @@
+functions:
+  project-management:
+    owner: dana
+  product-management:
+    owner: dana
+  design:
+    owner: priya
+  qa:
+    owner: omar
+people:
+- id: dana
+  name: Dana Ortiz
+  org: internal
+  role: delivery-lead
+  functions:
+  - project-management
+  - product-management
+  handles:
+    github: dana-o
+- id: priya
+  name: Priya Nair
+  org: internal
+  role: designer
+  functions:
+  - design
+  handles:
+    github: priya-n
+- id: omar
+  name: Omar Haddad
+  org: internal
+  role: qa-engineer
+  functions:
+  - qa
+  handles:
+    github: omar-h
+readers: []

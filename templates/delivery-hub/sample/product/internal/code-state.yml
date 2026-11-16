@@ -1,0 +1,13 @@
+schema: code-state
+updated: '2026-11-16'
+covered_through: '2026-11-15'
+proposals: []
+repos:
+- name: acme/portal-web
+  covered_through_commit: a1b2c3d
+  production_commit: a1b2c3d
+  main_commit: e4f5a6b
+  unmerged_branches:
+  - feature/sharing
+  tags:
+  - v1.1

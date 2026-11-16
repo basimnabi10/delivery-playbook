@@ -1,0 +1,17 @@
+playbook_version: sample
+playbook_date: '2026-11-16'
+onboarding:
+  step: 7
+  done:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+covered_through: '2026-11-15'
+page:
+  version: null
+  covered_through: null
+  published_on: null
+sources_checked: []

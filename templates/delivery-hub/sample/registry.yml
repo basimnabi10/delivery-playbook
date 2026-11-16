@@ -1,0 +1,42 @@
+code:
+  repos:
+  - acme/portal-web
+  - acme/portal-api
+  - acme/portal-infra
+  production_branch: main
+sources:
+- id: slack-client
+  type: slack
+  ref: '#acme-client'
+  visibility: client-visible
+  read: connector
+restricted_drive_folder: ''
+versioning:
+  scheme: release per month
+pages:
+  delivery-hub:
+    audience:
+    - client
+    - team
+    - execs
+  hours:
+    enabled: true
+    basis: logged
+rules:
+  never_on_client_pages:
+  - credentials
+  - internal links
+  - test pass rates
+  - developer names
+  counting:
+    merged_pr: merged into the production branch
+    week_rule: Weeks run Monday to Sunday, UTC. A pull request merged on a Sunday night counts in that week.
+    week_ends: sunday
+    time_zone: UTC
+    script: count_prs
+  publishing:
+    draft_only: true
+    weekly_slot: Monday morning
+  scan:
+    hub_forbidden: []
+    restricted: []

@@ -1,0 +1,6 @@
+# Optional. Used when project.yml says sprints.used: true. Each sprint: {id, name, goal, start, end, delivered: [], carried_over: []}.
+schema: sprints
+updated: 0000-00-00
+covered_through: null
+proposals: []
+sprints: []

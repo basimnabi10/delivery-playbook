@@ -1,0 +1,20 @@
+schema: week
+updated: '2026-11-16'
+covered_through: '2026-11-15'
+proposals: []
+week_ending: '2026-11-15'
+shipped:
+- text: '**Exports on staging.** Reports can be exported as CSV or PDF from the Reports page, and the export keeps
+    the filters you applied.'
+- text: '**Faster search.** Results for large document libraries appear about twice as fast, and the first result
+    is highlighted.'
+- text: '**Fixes from testing.** The upload progress bar no longer sticks at 99 percent, and long file names wrap
+    instead of overflowing.'
+decided_in_sync:
+- text: Sharing links will expire after 30 days by default, and an admin can change that per team.
+- text: The Reports page keeps its current layout. A saved-views feature is planned for the next phase.
+next:
+- text: Exports move to production once they have been tested on staging with the Acme team.
+- text: 'Sharing links: the permission model and expiry settings are in development.'
+waiting_on_client:
+- text: A list of the report columns Acme wants in the default export.

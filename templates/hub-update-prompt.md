@@ -31,9 +31,11 @@ publish, merge, send or overwrite anything.
    label each change's environment: production, staging or internal-testing.
 6. Switches: include the Hours page only if pages.hours.enabled is true, and
    the Sprints page only if sprints.used is true.
-7. Render a preview into out/preview/. Scan it for every string in
+7. Build the preview with scripts/build.py (into out/preview/), then run
+   scripts/check_render.py. Scan the page for every string in
    rules.never_on_client_pages and for any person marked
-   introduced_to_client: false. Fix or report each match.
+   introduced_to_client: false. Fix the data, never the HTML, and report each
+   match.
 8. Verify each client-visible claim against the registry and the repos, and
    each number against the script output. Run scripts/validate.py. If it
    fails, stop and report the errors: never chain it with ';'.

@@ -1,0 +1,59 @@
+schema: release
+updated: '2026-11-16'
+covered_through: '2026-11-15'
+proposals: []
+version: v1.2
+highlights:
+- Reports can be exported as CSV or PDF, with your filters kept.
+- Sharing links are in development.
+changes:
+- id: C-018
+  area: Reports
+  tag: new
+  environment: staging
+  text: Export to CSV, with the filters you applied.
+  refs:
+  - 'web #103'
+  date: '2026-11-05'
+- id: C-019
+  area: Reports
+  tag: new
+  environment: staging
+  text: Export to PDF.
+  refs:
+  - 'web #107'
+  date: '2026-11-12'
+- id: C-020
+  area: Documents
+  tag: fixed
+  environment: staging
+  text: The upload progress bar no longer sticks at 99 percent.
+  refs:
+  - 'web #105'
+  date: '2026-11-09'
+- id: C-021
+  area: Documents
+  tag: fixed
+  environment: staging
+  text: Long file names wrap instead of overflowing.
+  refs:
+  - 'web #108'
+  date: '2026-11-13'
+- id: C-022
+  area: Platform
+  tag: note
+  environment: internal-testing
+  text: 'Sharing links: the permission model is in internal testing.'
+  refs:
+  - 'api #101'
+  date: '2026-11-11'
+it_notes:
+- Exports are generated on the server and expire after 24 hours.
+in_progress:
+- Sharing links with expiry and a per-team default.
+- Saved searches that notify you of new matches.
+limitation_ids:
+- L1
+- L3
+try_it_ids:
+- P6

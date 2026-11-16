@@ -1,0 +1,35 @@
+schema: versions
+updated: '2026-11-16'
+covered_through: '2026-11-15'
+proposals: []
+versions:
+- id: v0.1
+  label: v0.1
+  title: Kick-off and design
+  period_start: '2026-03-02'
+  period_end: '2026-03-31'
+  status: released
+- id: v0.5
+  label: v0.5
+  title: Platform foundations
+  period_start: '2026-04-01'
+  period_end: '2026-06-12'
+  status: released
+- id: v1.0
+  label: v1.0
+  title: First production release
+  period_start: '2026-07-06'
+  period_end: '2026-10-02'
+  status: released
+- id: v1.1
+  label: v1.1
+  title: Search, versions and reports
+  period_start: '2026-10-05'
+  period_end: '2026-10-30'
+  status: released
+- id: v1.2
+  label: v1.2
+  title: Exports and sharing
+  period_start: '2026-11-02'
+  period_end: '2026-11-15'
+  status: in-progress
