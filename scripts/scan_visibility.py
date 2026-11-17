@@ -3,7 +3,8 @@
 
 What it looks for depends on where the file is. Secrets are looked for in every text file. In `hub/` it also
 looks for money amounts and the registry's forbidden terms, and in `hub/` and `internal/` (transcripts and
-copied documents included) for the registry's restricted terms. A deny-list adds names that must appear nowhere.
+copied documents included) for the registry's restricted terms. In a built page (an .html file) it also looks for
+the playbook's script names, which only team-only text uses. A deny-list adds names that must appear nowhere.
 
 Used three ways:
   * as the pre-commit hook:          scan_visibility.py --staged    (the same checks validate runs, on the staged files)
@@ -33,6 +34,9 @@ SECRET_PATTERNS = {
     "secret-assignment": r"(?i)(\b(?:password|passwd|secret|api[_-]?key|access[_-]?token)\b\s*[:=]\s*['\"]?)([A-Za-z0-9/+_\-]{16,})",
 }
 HUB_FIGURE = r"[$€£]\s?\d[\d,.]*"          # a money amount on a client-visible page
+# The playbook's own script file names. Team-only text names them, so a client page must not.
+SCRIPT_RX = re.compile(r"\b(?:" + "|".join(sorted(re.escape(p.stem) for p in Path(__file__).resolve().parent.glob("*.py")
+                                                 if not p.name.startswith("_"))) + r")\.py\b")
 SKIP_DIRS = {".git", "local", "playbook", "node_modules", "__pycache__"}
 SKIP_PARTS = [("out", "preview"), ("out", "dryrun")]
 
@@ -101,6 +105,7 @@ def scan(root, paths=("."), staged=False, secrets_only=False, deny_list=None, re
     for f, rel in gather(root, paths, staged):
         in_hub = "hub" in rel.parts[:-1]
         in_internal = "internal" in rel.parts[:-1]
+        is_page = rel.suffix in (".html", ".htm")
         text = f.read_text(encoding="utf-8", errors="replace")
         for n, line in enumerate(text.splitlines(), 1):
             for name, rx in secret_rx.items():
@@ -118,6 +123,8 @@ def scan(root, paths=("."), staged=False, secrets_only=False, deny_list=None, re
                 for rx in hub_forbidden:
                     if re.search(rx, line, re.I):
                         findings.append((str(rel), n, "hub:forbidden-term"))
+            if is_page and SCRIPT_RX.search(line):
+                findings.append((str(rel), n, "page:script-name"))
             if in_hub or in_internal:
                 for rx in restricted:
                     if re.search(rx, line, re.I):

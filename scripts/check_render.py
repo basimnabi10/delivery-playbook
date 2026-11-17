@@ -148,11 +148,12 @@ def main(argv=None):
     for name, rx in SECRETS.items():
         if re.search(rx, html): found.append(name)
     if re.search(scan_visibility.HUB_FIGURE, body): found.append("money amount")
+    if scan_visibility.SCRIPT_RX.search(body): found.append("script name")
     for rx in (get_path(reg, "rules.scan.hub_forbidden", []) or []):
         if re.search(rx, body, re.I): found.append("forbidden term")
     if re.search(r"\b(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|[a-z0-9-]+\.(internal|local))\b", body, re.I): found.append("internal address")
     if re.search(r"\b\d+\s?%\s*(pass|passed)\b|\bpass(ed)? rate\b", body, re.I): found.append("test pass rate")
-    check("nothing the client must not see (secrets, money, forbidden terms, internal addresses, pass rates)", not found, ", ".join(sorted(set(found))))
+    check("nothing the client must not see (secrets, money, forbidden terms, internal addresses, pass rates, script names)", not found, ", ".join(sorted(set(found))))
 
     bad = 0
     for name, ok, detail in results:

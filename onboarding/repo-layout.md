@@ -134,6 +134,8 @@ Each function folder also holds a `README.md` that names its owner, its scope an
 9. `validate` fails when an S1 file is missing and only reports a missing S2 file. While onboarding, it warns instead; it becomes strict once Step 5 is done. A running project that moves into this layout after Step 5 therefore lands Stage 1 as one pull request, with every S1 file and folder in it. A pull request that adds only part of Stage 1, such as one function folder, fails `validate`, and there is no partial or migration mode.
 10. The secret scan and the restricted-terms scan cover `internal/` as well as `hub/`. The secret-scan hook must be installed before `internal/` is populated, because it will hold client documents and meeting content.
 11. The repo is never behind the page it feeds. `state.yml` records the page's `covered_through`; `validate` fails when the repo's is older.
+12. A week ends on the day `rules.counting.week_ends` names, in `rules.counting.time_zone`, and is named by that last day: "week ending 9 Nov". With `week_ends: monday`, a week is named by its Monday. The page uses that one name everywhere: the stats, the chart and its table, and the last-week card.
+13. `rules.counting.week_rule` is written for the team and is never shown on the page, because it can name people and scripts. The page shows `rules.counting.client_text` when it is set, otherwise a fixed sentence that gives the week-end day and the time zone. The scan and `check_render.py` fail a built page that names one of the playbook's scripts.
 
 ## Meetings
 

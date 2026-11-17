@@ -248,6 +248,37 @@ def run_all(tmp):
     pj2["hub"] = {}; dump(dest / "project.yml", pj2)
     shutil.rmtree(dest / "out", ignore_errors=True); (dest / "out").mkdir(); (dest / "out/.gitkeep").write_text("")
 
+    print("4c. client-safe week text, week names and prompts without a category")
+    keep = {p: (dest / p).read_text() for p in ("registry.yml", "project/hub/weekly-prs.yml", "qa/hub/try-it-prompts.yml")}
+    wkdir = dest / "project/hub/weeks"; keep_weeks = {f.name: f.read_text() for f in wkdir.glob("*.yml")}
+    mon = "2026-11-09"   # a Monday
+    reg4 = yaml.safe_load(keep["registry.yml"])
+    reg4["rules"]["counting"].update({"week_ends": "monday", "week_rule": "Agreed with Dana Ortiz: count_prs.py buckets merges by Monday."}); dump(dest / "registry.yml", reg4)
+    wp = yaml.safe_load(keep["project/hub/weekly-prs.yml"])
+    wp.update(week_rule=reg4["rules"]["counting"]["week_rule"], weeks=[{"week_ending": "2026-11-02", "merged": 3}, {"week_ending": mon, "merged": 5}], total=8, partial_week=False)
+    dump(dest / "project/hub/weekly-prs.yml", wp)
+    for f in wkdir.glob("*.yml"): f.unlink()
+    dump(wkdir / f"{mon}.yml", hdr("week", week_ending=mon, shipped=[{"text": "Thing shipped"}], decided_in_sync=[], next=[], waiting_on_client=[]))
+    tp = yaml.safe_load(keep["qa/hub/try-it-prompts.yml"]); tp["prompts"][0].pop("category", None); dump(dest / "qa/hub/try-it-prompts.yml", tp)
+    b4 = sh([PY, "scripts/build.py"], cwd=dest); pg = pv.read_text() if b4.returncode == 0 else ""
+    check("the team's week_rule never reaches the page (no person, no script name); a client sentence is shown",
+          pg and "Dana Ortiz" not in pg and "count_prs.py" not in pg and "Weeks end on Monday (UTC)" in pg, b4.stdout[-300:])
+    check("with week_ends: monday, the last-week card and the busiest-week stat name the week by its Monday",
+          "Week ending 9 Nov 2026" in pg and "<dt>Busiest week ending</dt><dd>9 Nov</dd>" in pg and "<th>Week ending</th>" in pg)
+    check("a try-it prompt without a category gets no label", 'class="what"><b>' not in pg.split("Find X")[1][:200] and "General." not in pg if "Find X" in pg else False)
+    reg4["rules"]["counting"]["client_text"] = "Weeks run Tuesday to Monday."; dump(dest / "registry.yml", reg4)
+    sh([PY, "scripts/build.py"], cwd=dest)
+    check("rules.counting.client_text, when set, is the sentence the page shows", "Weeks run Tuesday to Monday." in pv.read_text() and "Weeks end on Monday" not in pv.read_text())
+    leak_page = tmp / "leaky-page.html"; leak_page.write_text(pv.read_text().replace("Thing shipped", "Ran validate.py"))
+    sv = sh([PY, "scripts/scan_visibility.py", "--paths", str(leak_page)], cwd=dest)
+    cr = sh([PY, "scripts/check_render.py", "--page", str(leak_page)], cwd=dest)
+    check("the scan and check_render fail a page that names one of the playbook's scripts",
+          sv.returncode == 1 and "page:script-name" in sv.stdout and cr.returncode == 1 and "script name" in cr.stdout, sv.stdout[-200:] + cr.stdout[-300:])
+    for p, text in keep.items(): (dest / p).write_text(text)
+    for f in wkdir.glob("*.yml"): f.unlink()
+    for name, text in keep_weeks.items(): (wkdir / name).write_text(text)
+    check("restored: validate passes again", sh([PY, "scripts/validate.py"], cwd=dest).returncode == 0)
+
     print("5. scan_visibility and the pre-commit hook")
     (dest / "local").mkdir(exist_ok=True)
     (dest / "local/deny-list.txt").write_text("Zebracorp\n")
