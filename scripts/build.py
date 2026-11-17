@@ -353,7 +353,7 @@ def build_release(ctx, v):
                 el = h(el)
                 refs = f'<span class="refs">{h(", ".join(ch["refs"]))}</span>' if ch.get("refs") else ""
                 d = f'<span class="d">{h(fmt_d(ch["date"]))}</span>' if ch.get("date") else '<span class="d"></span>'
-                lis.append(f'<li data-env="{ch["environment"]}"><span class="tags"><span class="tag {tc}">{h(tl)}</span><span class="env {ec}">{el}</span></span><span class="txt">{rich(ch["text"])}{refs}</span>{d}</li>')
+                lis.append(f'<li data-env="{ch["environment"]}" data-id="{h(ch["id"])}"><span class="tags"><span class="tag {tc}">{h(tl)}</span><span class="env {ec}">{el}</span></span><span class="txt">{rich(ch["text"])}{refs}</span>{d}</li>')
             gh.append(f'<div class="group" data-area="{slug(area)}"><h3>{h(headings.get(area) or readable(area))}</h3><ul class="changes">\n' + "\n".join(lis) + "\n</ul></div>")
         body.append(f'<details class="changelog">\n<summary><span class="sum-left">{CHEV}Detailed changelog<span class="sum-ver">{h(v["label"])}</span></span><span class="count">{plural(len(changes), "change")}</span></summary>\n<div class="groups">\n' + "\n".join(gh) + "\n</div>\n</details>")
     boxes = []

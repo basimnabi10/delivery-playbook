@@ -2,6 +2,10 @@
 local/
 registry.local.yml
 
+# Python caches, created whenever the scripts run
+__pycache__/
+*.pyc
+
 # Local previews
 out/preview/
 out/dryrun/

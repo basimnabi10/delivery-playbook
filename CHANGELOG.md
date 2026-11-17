@@ -52,3 +52,9 @@
 - Step 2 and the registry schema agree: `commercial` is true or false (a source the client already holds, such as the SOW, is `commercial: true`), and `read: none` marks a source that must never be read.
 - `team.yml`: function names beyond the four (such as `engineering`) are allowed and ignored by `check_writers.py`; a function's backups can be `backup` (one id or a list) or `backups`; `code_owners` can be the object or a plain list of ids. Migration: none needed, every older form still validates and is read.
 - Manifests: item paths resolve relative to the manifest's folder, and the project's documents manifest lists every copy under `product/internal/` and `qa/internal/` (layout rule 7, schema description).
+- Weekly run: one "Before a weekly run" block in the session-readiness page (Python packages, `gh` from its release with the checksum check, the self-test, and the worktree next to the checkout with relative paths), which the weekly prompt and the runbook start from. A weekly run asks for delete permission on the parent folder.
+- The runbook checks a Drive document's modified time against the copy's retrieved date before downloading it.
+- The delivery-repo `.gitignore` ignores Python caches (`__pycache__/`, `*.pyc`).
+- `scripts/extract_from_page.py`, built: one proposal per section from a published page, stamped with its version, after checking the change counts against the page's embedded block. `hub-block.schema.json` accepts an older block as shipped, so it can be stored under `published/`; only a current block is compared with `hub/`.
+- `scripts/compare_page.py`, built: compares the live page with the preview by id, falling back to text and references when the old page has no change ids. Built pages now carry each change's id (`data-id`).
+- `scripts/code_state.py`, built: writes `code-state.yml` from git as of the covered-through date, with unmerged branches defined in layout rule 15.

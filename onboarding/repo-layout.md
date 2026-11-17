@@ -69,7 +69,7 @@ One line per path, two spaces per level. A name with a placeholder (`YYYY-MM-DD`
       releases/                      S1  one file per release
         vX.Y.yml                     S1  highlights, changes (area, tag, environment, text, refs, date), notes for IT, in progress, ids of prompts and limitations
     internal/                        S1  never rendered
-      code-state.yml                 S1  per repo: covered-through commit, production versus main, unmerged branches, tags
+      code-state.yml                 S1  per repo, from git by code_state.py: covered-through commit, merge and deploy heads, unmerged branches, tags
       flags.yml                      S1  feature flags: default, where set, on the page or left off, and why
       requirements/                  S2
         <slug>.md                    S2  full requirements documents
@@ -138,6 +138,7 @@ Each function folder also holds a `README.md` that names its owner, its scope an
 12. A week ends on the day `rules.counting.week_ends` names, in `rules.counting.time_zone`, and is named by that last day: "week ending 9 Nov". With `week_ends: monday`, a week is named by its Monday. The page uses that one name everywhere: the stats, the chart and its table, and the last-week card.
 13. `rules.counting.week_rule` is written for the team and is never shown on the page, because it can name people and scripts. The page shows `rules.counting.client_text` when it is set, otherwise a fixed sentence that gives the week-end day and the time zone. The scan and `check_render.py` fail a built page that names one of the playbook's scripts.
 14. An employee's HR details (immigration, pay, medical) found in copied material never enter the repo. The copy keeps only what passes the restricted-terms check, and `project/internal/withheld.yml` records each omission by source and location, never its content (see `AGENTS.md`).
+15. An unmerged branch is a branch, other than the merge and deploy branches, whose head as of the covered-through date has commits that are not on the merge branch and whose last commit is no more than 30 days older than that date. `code_state.py` lists them in `code-state.yml`; nobody estimates them.
 
 ## Meetings
 
@@ -201,4 +202,4 @@ The refresh is split in two, because a script cannot call a connector and a mode
 | `build.py` | Builds the Delivery Hub from the `hub/` files with the template in `templates/delivery-hub/` |
 | `check_render.py` | Static checks on the built page |
 
-`upgrade_playbook.py` moves `playbook/` and `scripts/` to a newer playbook version together, by pull request. Planned, with its interface in [`scripts/README.md`](../scripts/README.md): `extract_from_page`. The page's look is specified in [the design spec](../templates/delivery-hub/design.md).
+`upgrade_playbook.py` moves `playbook/` and `scripts/` to a newer playbook version together, by pull request. `extract_from_page.py`, `compare_page.py` and `code_state.py` are described in [`scripts/README.md`](../scripts/README.md). The page's look is specified in [the design spec](../templates/delivery-hub/design.md).

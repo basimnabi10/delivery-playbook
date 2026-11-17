@@ -7,6 +7,7 @@ It builds a sample delivery repo, fills it with sample data, and checks that val
 scan_visibility, codeowners, check_writers, sync and the pre-commit hook pass and fail when they should.
 The setup check's "validate script self-test" is this script.
 """
+import json
 import os
 import re
 import shutil
@@ -197,7 +198,7 @@ def run_all(tmp):
     tamper("check_render fails when the viewport is missing", lambda t: t.replace("viewport-fit=cover", "x"), "viewport")
     tamper("check_render fails on an external script", lambda t: t.replace("<script>", '<script src="https://cdn.example.org/x.js"></script><script>', 1), "external resources")
     tamper("check_render fails on a money amount in the text", lambda t: t.replace("</main>", "<p>Costs $12,000.</p></main>"), "client must not see")
-    tamper("check_render fails when a release lists the wrong number of changes", lambda t: re.sub(r'<li data-env="[a-z-]+">', "<li>", t, count=1), "as many changes")
+    tamper("check_render fails when a release lists the wrong number of changes", lambda t: re.sub(r'<li data-env="[a-z-]+"( data-id="[^"]*")?>', "<li>", t, count=1), "as many changes")
 
     brk = dest / "project/hub/phases.yml"; keep = brk.read_text()
     brk.write_text(keep.replace("covered_through", "covered_x"))
@@ -941,6 +942,68 @@ def more(tmp, dest, remote):
     check("when the push fails, sync prints the push command with the new branch name, not HEAD",
           s3.returncode == 3 and "git push -u nowhere project/offline" in s3.stdout, s3.stdout[-300:])
     reset()
+
+    print("16b. extract_from_page, compare_page, code_state, older published blocks and the cache ignore")
+    pg17 = tmp / "s17.html"
+    sh([PY, str(HERE / "build.py"), "--sample", "--out", str(pg17)])
+    inbox = tmp / "inbox17"
+    ex = pe(str(HERE / "extract_from_page.py"), "--page", str(pg17), "--out", str(inbox))
+    props = [yaml.safe_load(f.read_text()) for f in sorted(inbox.glob("*.yml"))] if inbox.exists() else []
+    rels17 = [p for p in props if "/releases/" in p["target"]]
+    check("extract_from_page writes one proposal per section, each stamped with the page's version, and checks the counts",
+          ex.returncode == 0 and "counts match the embedded block" in ex.stdout and len(rels17) == 6
+          and {p["target"] for p in props} >= {"product/hub/capabilities.yml", "product/hub/security.yml", "project/hub/milestones.yml", "project/hub/phases.yml", "product/hub/versions.yml"}
+          and all(p["baseline_version"] == "2026-11-15" and p["status"] == "proposed" for p in props), ex.stdout[-300:])
+    v10 = next((p for p in rels17 if p["target"].endswith("v1.0.yml")), {})
+    vers = next((p for p in props if p["target"].endswith("versions.yml")), {}).get("proposal", {}).get("versions", [])
+    check("release proposals keep the page's change ids, and versions keep the labels and anchors the page used",
+          all(c["id"].startswith("C-") for c in v10.get("proposal", {}).get("changes", [])) and len(v10.get("proposal", {}).get("changes", [])) == 5
+          and any(v.get("section_id") == "first-production-release" for v in vers) and any(v["status"] == "unreleased" for v in vers), str(vers)[:300])
+    bad17 = tmp / "s17-bad.html"; bad17.write_text(re.sub(r'<li data-env="production" data-id="[^"]+">.*?</li>', "", pg17.read_text(), count=1, flags=re.S))
+    inbox2 = tmp / "inbox17b"
+    eb = pe(str(HERE / "extract_from_page.py"), "--page", str(bad17), "--out", str(inbox2))
+    check("a page whose changes do not match its embedded block is not extracted", eb.returncode == 1 and "COUNT" in eb.stdout and not inbox2.exists(), eb.stdout[-300:])
+    new17 = tmp / "s17-new.html"
+    new17.write_text(re.sub(r'<li data-env="staging" data-id="C-302">.*?</li>', "", pg17.read_text().replace("expires on a date you choose", "expires"), count=1, flags=re.S))
+    cp = pe(str(HERE / "compare_page.py"), "--old", str(pg17), "--new", str(new17), "--json")
+    rep = json.loads(cp.stdout) if cp.returncode == 0 else {}
+    r13 = next((r for r in rep.get("releases", []) if r["release"] == "v1.3"), {})
+    check("compare_page matches changes by id and reports what was changed and removed",
+          r13.get("matched") == 1 and len(r13.get("removed", [])) == 1 and [c["id"] for c in r13.get("changed", [])] == ["C-301"], cp.stdout[-400:])
+    noid = tmp / "s17-noid.html"; noid.write_text(re.sub(r' data-id="[^"]*"', "", pg17.read_text()))
+    cp2 = pe(str(HERE / "compare_page.py"), "--old", str(noid), "--new", str(pg17), "--json")
+    rep2 = json.loads(cp2.stdout) if cp2.returncode == 0 else {}
+    check("without change ids on the old page, changes are matched by text and references",
+          rep2.get("releases") and all(r["matched_by_text"] == r["matched"] and not r["added"] and not r["removed"] for r in rep2["releases"]), cp2.stdout[-400:])
+    pubd = dest / "project/internal/hub-operations/published"
+    (pubd / "2026-01-01-old.json").write_text(json.dumps({"page": "hand-built", "releases": [{"month": "March", "items": 3}]}))
+    r = pe("scripts/validate.py")
+    check("an older published block (another format) can be stored under published/", r.returncode == 0, r.stdout[-300:])
+    reset()
+    cs = tmp / "cs" / "web"; cs.mkdir(parents=True)
+    gcs = lambda *a, when=None: sh(["git", *a], cwd=cs, env={"GIT_COMMITTER_DATE": when, "GIT_AUTHOR_DATE": when} if when else None)  # noqa: E731
+    gcs("init", "-q", "-b", "main")
+    gcs("commit", "-q", "--allow-empty", "-m", "start", when="2026-09-01T12:00:00+00:00"); gcs("tag", "v1")
+    gcs("switch", "-q", "-c", "old-idea"); gcs("commit", "-q", "--allow-empty", "-m", "old idea", when="2026-09-20T12:00:00+00:00")
+    gcs("switch", "-q", "main"); gcs("switch", "-q", "-c", "feature/search"); gcs("commit", "-q", "--allow-empty", "-m", "search", when="2026-11-05T12:00:00+00:00")
+    gcs("switch", "-q", "main"); gcs("switch", "-q", "-c", "done"); gcs("commit", "-q", "--allow-empty", "-m", "done", when="2026-11-03T12:00:00+00:00")
+    gcs("switch", "-q", "main"); gcs("merge", "-q", "--no-ff", "-m", "Merge pull request #3 from a/done", "done", when="2026-11-04T12:00:00+00:00")
+    covered = gcs("rev-parse", "HEAD").stdout.strip()
+    gcs("commit", "-q", "--allow-empty", "-m", "later", when="2026-11-12T12:00:00+00:00"); gcs("tag", "v2")
+    cso = tmp / "cs.yml"
+    cr = pe(str(HERE / "code_state.py"), "--repo-path", f"web={cs}", "--through", "2026-11-08", "--out", str(cso))
+    cdoc = yaml.safe_load(cso.read_text()) if cso.exists() else {}
+    row = (cdoc.get("repos") or [{}])[0]
+    check("code_state records the merge branch's head as of the covered-through date, not a later commit",
+          cr.returncode == 0 and row.get("covered_through_commit") == covered and cdoc.get("covered_through") == "2026-11-08", cr.stdout + cr.stderr[-200:])
+    check("unmerged branches are the ones with commits not on the merge branch and activity in the last 30 days",
+          row.get("unmerged_branches") == ["feature/search"], str(row.get("unmerged_branches")))
+    check("tags are the ones reachable as of that date", row.get("tags") == ["v1"], str(row.get("tags")))
+    shutil.copy(cso, dest / "product/internal/code-state.yml")
+    check("its output passes the code-state schema", pe("scripts/validate.py").returncode == 0, pe("scripts/validate.py").stdout[-300:])
+    reset()
+    ign = sh(["git", "check-ignore", "-q", "scripts/__pycache__/x.cpython-310.pyc"], cwd=dest)
+    check("the starter .gitignore ignores Python caches", ign.returncode == 0)
 
     print("14. the selftest runs inside a generated delivery repo")
     if NESTED:

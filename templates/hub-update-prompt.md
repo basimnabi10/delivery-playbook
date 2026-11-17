@@ -13,6 +13,11 @@ A ready-made set of instructions for the weekly update of one artefact. Fill in 
 Update <artefact> for the week ending <week ending>. Draft only: do not
 publish, merge, send or overwrite anything.
 
+0. Before you start, do "Before a weekly run" in
+   playbook/onboarding/session-readiness.md: install the Python packages,
+   check gh (install it from its release with the checksum check), run
+   scripts/selftest.py, and make the worktree it describes. Work in that
+   worktree from here on.
 1. Read state.yml, registry.yml, project.yml, team.yml and project/internal/hub-operations/decisions.md.
    State the playbook version.
 2. Carry over any corrections still pending from the last review. Check
@@ -35,7 +40,9 @@ publish, merge, send or overwrite anything.
 6. Switches: include the Hours page only if pages.hours.enabled is true, and
    the Sprints page only if sprints.used is true.
 7. Build the preview with scripts/build.py (into out/preview/), then run
-   scripts/check_render.py. Scan the page for every string in
+   scripts/check_render.py. Compare it with the live page by id:
+   python3 scripts/compare_page.py --old <the live page> --new out/preview/index.html
+   and explain every difference it lists in the review summary. Scan the page for every string in
    rules.never_on_client_pages and for any person marked
    introduced_to_client: false. Fix the data, never the HTML, and report each
    match.
