@@ -318,7 +318,8 @@ def main(argv=None):
         res.error("state.yml", f"the repo is behind the page: covered_through {repo_cov} is older than the page's {pg_cov}. Sync the repo before publishing")
 
     # the published embedded block must match the hub/ files
-    pubs = sorted(docs("project/internal/hub-operations/published/").items())
+    pubs = sorted((k, v) for k, v in docs("project/internal/hub-operations/published/").items()
+                  if isinstance(v, dict) and v.get("schema_version") == 1)   # an older block is kept as shipped, not compared
     if pubs:
         rel, blk = pubs[-1]
         b_ms = {m["id"] for m in blk.get("milestones", [])}

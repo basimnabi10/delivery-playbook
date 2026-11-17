@@ -81,8 +81,8 @@ admin/                     checklist, decisions and checks to verify, sources, p
 functions/                 per-function guides (project and product management first)
 schemas/                   JSON Schemas for every project data file, and structure.yml, the content map
 templates/                 delivery-repo/ (the starter folder copied into each new delivery repo) and delivery-hub/ (the page template, design spec and sample)
-scripts/                   validate, count_prs, scan_visibility, sync, check_writers, codeowners, new_delivery_repo, redact, refresh, build, check_render, upgrade_playbook, selftest (built);
-                           extract_from_page (planned)
+scripts/                   validate, count_prs, scan_visibility, sync, check_writers, codeowners, new_delivery_repo, redact, refresh, build, check_render, upgrade_playbook,
+                           extract_from_page, compare_page, code_state, selftest (all built)
 ```
 
 ## Who can read and change this repo
