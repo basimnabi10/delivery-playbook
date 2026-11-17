@@ -107,3 +107,14 @@ def code_owner_ids(team):
     if isinstance(co, list):
         return [i for i in co if i]
     return list((co or {}).get("people") or [])
+
+
+def week_sentence(reg, ends=None, tz=None):
+    """The one sentence about weeks that may appear on the client page and in weekly-prs.yml: rules.counting.client_text,
+    else a fixed sentence from week_ends and time_zone. No free text written for the team is ever used."""
+    text = get_path(reg or {}, "rules.counting.client_text")
+    if text:
+        return str(text).strip()
+    ends = (ends or get_path(reg or {}, "rules.counting.week_ends") or "sunday").capitalize()
+    tz = tz or get_path(reg or {}, "rules.counting.time_zone") or "UTC"
+    return f"Weeks end on {ends} ({tz}), and each week is named by its last day."

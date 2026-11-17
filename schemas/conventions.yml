@@ -65,12 +65,16 @@ conventions:
     why: Deriving it from where the changes are deployed keeps it honest; manual suits projects whose labels are set by agreement with the client.
   - id: environments.set
     type: environments
-    description: The environments a change can be in, with their labels and order on the page.
+    description: >-
+      The environments a change can be in, in order from the one closest to the client's users (order 1). Each has an
+      id, a label for its chip, an order, an optional client_label (how a release whose changes reach no further than
+      it is named on the page, for example "On staging") and an optional deploy_note (one sentence for the page about
+      how changes move through it, shown only when written).
     recommended:
       - {id: production, label: Production, order: 1}
       - {id: staging, label: Staging, order: 2}
       - {id: internal-testing, label: Internal testing, order: 3}
-      - {id: design-only, label: Design only, order: 4}
+      - {id: design-only, label: Design only, order: 4, client_label: Design}
       - {id: project-setup, label: Project setup, order: 5}
     alternatives: [any list of environments the project actually has]
     why: These five cover most web projects and say honestly where each change is.

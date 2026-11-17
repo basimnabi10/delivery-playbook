@@ -33,7 +33,7 @@ from zoneinfo import ZoneInfo
 import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _common import SCRIPT_VERSION, find_root, get_path, load_yaml, run  # noqa: E402
+from _common import SCRIPT_VERSION, find_root, get_path, load_yaml, run, week_sentence  # noqa: E402
 
 DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
 MERGE_RX = re.compile(r"^Merge pull request #(\d+)")
@@ -84,7 +84,7 @@ def main(argv=None):
     branch = get_path(reg, "code.merge_branch") or get_path(reg, "code.production_branch") or "main"
     ends = (args.week_ends or get_path(reg, "rules.counting.week_ends") or "sunday").lower()
     tzname = args.time_zone or get_path(reg, "rules.counting.time_zone") or "UTC"
-    rule_text = get_path(reg, "rules.counting.week_rule") or f"weeks end {ends.capitalize()}, {tzname}"
+    rule_text = week_sentence(reg, ends, tzname)   # the client-safe sentence; no team free text
     tz = ZoneInfo(tzname)
     if not repos:
         raise SystemExit("ERROR: registry.yml lists no repos under code.repos")

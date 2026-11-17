@@ -250,6 +250,17 @@ def main(argv=None):
     if legacy.exists() and not (root / _conventions.LOG).exists():
         res.note(str(legacy.relative_to(root)), "the free-text deviations file is replaced by playbook-deviations.yml; record each deviation with scripts/conventions.py")
 
+    # how the project runs: the Sprints page follows delivery.method, and sprints need their length and start day
+    dlv = (data.get("project.yml") or {}).get("delivery") or {}
+    if dlv.get("method"):
+        used = bool(get_path(data.get("project.yml") or {}, "sprints.used", False))
+        if used != (dlv["method"] == "sprints"):
+            res.warn("project.yml", f"sprints.used is {str(used).lower()} but delivery.method is {dlv['method']}; the Sprints page follows sprints.used")
+        if dlv["method"] == "sprints" and not (dlv.get("sprint_days") and dlv.get("sprint_starts")):
+            res.warn("project.yml", "delivery.method is sprints: give sprint_days and sprint_starts (Step 1)")
+    elif "project.yml" in data:
+        res.warn("project.yml", "delivery.method is empty: say whether the project runs sprints, kanban or another way (Step 1)")
+
     proj = data.get("project.yml", {}).get("project", {})
     for f in ("id", "name", "client"):
         if "project.yml" in data and not proj.get(f):
@@ -258,6 +269,24 @@ def main(argv=None):
     # ---- cross checks (by id, never by position)
     def docs(prefix):
         return {k: v for k, v in data.items() if k.startswith(prefix)}
+
+    # the project's environments and release conventions
+    eff = _conventions.effective(root, project_doc or {})
+    env_ids = {e.get("id") for e in (eff.get("environments.set") or []) if isinstance(e, dict)}
+    for rel, doc in docs("product/hub/releases/").items():
+        for ch in (doc or {}).get("changes", []) or []:
+            if isinstance(ch, dict) and ch.get("environment") and ch["environment"] not in env_ids:
+                res.error(rel, f"change {ch.get('id')}: environment '{ch['environment']}' is not in the project's environments ({', '.join(sorted(env_ids))})")
+    pattern = eff.get("releases.id_pattern") or ""
+    vdoc = data.get("product/hub/versions.yml") or {}
+    if pattern:
+        for v in vdoc.get("versions", []) or []:
+            if isinstance(v, dict) and v.get("id") and not re.fullmatch(pattern, str(v["id"])):
+                res.error("product/hub/versions.yml", f"version id '{v['id']}' does not match the project's releases.id_pattern {pattern}")
+    if eff.get("releases.status_label") == "manual":
+        missing = [v.get("id") for v in vdoc.get("versions", []) or [] if isinstance(v, dict) and not v.get("page_status")]
+        if missing:
+            res.warn("product/hub/versions.yml", f"releases.status_label is manual, but {', '.join(map(str, missing))} have no page_status; they show their version status")
 
     ms = data.get("project/hub/milestones.yml", {}).get("milestones", [])
     ids = [m.get("id") for m in ms]
@@ -318,9 +347,8 @@ def main(argv=None):
                         res.error("project/hub/weekly-prs.yml", f"week ending {w['week_ending']} is not a {want}, which the registry's week rule says")
                 except ValueError:
                     res.error("project/hub/weekly-prs.yml", f"bad date {w.get('week_ending')}")
-        rule = get_path(registry or {}, "rules.counting.week_rule", "")
-        if rule and wk.get("week_rule") and rule != wk["week_rule"]:
-            res.warn("project/hub/weekly-prs.yml", "week_rule differs from registry.yml rules.counting.week_rule")
+        if get_path(registry or {}, "rules.counting.week_rule"):
+            res.warn("registry.yml", "rules.counting.week_rule is no longer used; delete it. The week comes from week_ends and time_zone (and client_text, if set)")
 
     # the repo must not be behind the published page
     pg_cov = get_path(state or {}, "page.covered_through")

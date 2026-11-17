@@ -59,14 +59,9 @@
             "minLength": 1
           },
           "environment": {
-            "enum": [
-              "production",
-              "staging",
-              "internal-testing",
-              "design-only",
-              "project-setup"
-            ],
-            "description": "Where the change is. design-only: a design decision with nothing deployed. project-setup: setting up the project (repositories, pipelines, access)."
+            "type": "string",
+            "minLength": 1,
+            "description": "The id of one of the project's environments (conventions environments.set; by default production, staging, internal-testing, design-only or project-setup). validate.py checks it against the project's set."
           },
           "text": {
             "type": "string",

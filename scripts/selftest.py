@@ -99,11 +99,12 @@ def run_all(tmp):
     reg = yaml.safe_load((dest / "registry.yml").read_text())
     reg["code"]["repos"] = ["acme/web"]
     reg["sources"] = [{"id": "slack-client", "type": "slack", "ref": "#acme", "visibility": "client-visible", "read": "connector"}]
-    reg["rules"]["counting"].update({"week_rule": "Monday to Sunday, UTC", "week_ends": "sunday", "time_zone": "UTC"})
+    reg["rules"]["counting"].update({"week_ends": "sunday", "time_zone": "UTC"})
     dump(dest / "registry.yml", reg)
     c = sh([PY, "scripts/count_prs.py", "--source", "git", "--repos-dir", str(repos), "--out", "project/hub/weekly-prs.yml"], cwd=dest)
     wk = yaml.safe_load((dest / "project/hub/weekly-prs.yml").read_text()) if c.returncode == 0 else {}
     check("counts 4 merged PRs once each (a repeated PR and a non-PR are ignored)", c.returncode == 0 and wk.get("total") == 4, c.stdout + c.stderr)
+    check("weekly-prs.yml carries the generated week sentence, never free text from the registry", wk.get("week_rule") == "Weeks end on Sunday (UTC), and each week is named by its last day.", str(wk.get("week_rule")))
     check("every week ends on the configured day", all(date.fromisoformat(w["week_ending"]).weekday() == 6 for w in wk.get("weeks", [])))
     check("the output passes its schema", sh([PY, "scripts/validate.py"], cwd=dest).returncode == 0)
 
@@ -256,14 +257,15 @@ def run_all(tmp):
     reg4 = yaml.safe_load(keep["registry.yml"])
     reg4["rules"]["counting"].update({"week_ends": "monday", "week_rule": "Agreed with Dana Ortiz: count_prs.py buckets merges by Monday."}); dump(dest / "registry.yml", reg4)
     wp = yaml.safe_load(keep["project/hub/weekly-prs.yml"])
-    wp.update(week_rule=reg4["rules"]["counting"]["week_rule"], weeks=[{"week_ending": "2026-11-02", "merged": 3}, {"week_ending": mon, "merged": 5}], total=8, partial_week=False)
+    wp.update(week_rule="Weeks end on Monday (UTC), and each week is named by its last day.", weeks=[{"week_ending": "2026-11-02", "merged": 3}, {"week_ending": mon, "merged": 5}], total=8, partial_week=False)
     dump(dest / "project/hub/weekly-prs.yml", wp)
     for f in wkdir.glob("*.yml"): f.unlink()
     dump(wkdir / f"{mon}.yml", hdr("week", week_ending=mon, shipped=[{"text": "Thing shipped"}], decided_in_sync=[], next=[], waiting_on_client=[]))
     tp = yaml.safe_load(keep["qa/hub/try-it-prompts.yml"]); tp["prompts"][0].pop("category", None); dump(dest / "qa/hub/try-it-prompts.yml", tp)
     b4 = sh([PY, "scripts/build.py"], cwd=dest); pg = pv.read_text() if b4.returncode == 0 else ""
-    check("the team's week_rule never reaches the page (no person, no script name); a client sentence is shown",
-          pg and "Dana Ortiz" not in pg and "count_prs.py" not in pg and "Weeks end on Monday (UTC)" in pg, b4.stdout[-300:])
+    check("an old free-text week_rule in the registry is ignored (never on the page) and validate says to delete it",
+          pg and "Dana Ortiz" not in pg and "count_prs.py" not in pg and "Weeks end on Monday (UTC)" in pg
+          and "rules.counting.week_rule is no longer used" in sh([PY, "scripts/validate.py"], cwd=dest).stdout, b4.stdout[-300:])
     check("with week_ends: monday, the last-week card and the busiest-week stat name the week by its Monday",
           "Week ending 9 Nov 2026" in pg and "<dt>Busiest week ending</dt><dd>9 Nov</dd>" in pg and "<th>Week ending</th>" in pg)
     check("a try-it prompt without a category gets no label", 'class="what"><b>' not in pg.split("Find X")[1][:200] and "General." not in pg if "Find X" in pg else False)
@@ -338,6 +340,58 @@ def run_all(tmp):
     more(tmp, dest, remote)
     feedback_section(tmp)
     upgrade_section(tmp)
+    second_shape(tmp)
+
+
+def second_shape(tmp):
+    """A second, small sample used only here: three environments (dev, uat, prod) and calendar versions."""
+    print("17. a second project shape: dev, UAT and prod, calendar versions")
+    t = date.today().isoformat()
+    sd = tmp / "shape2" / "acme-shape-delivery"
+    g = sh([PY, str(HERE / "new_delivery_repo.py"), "--name", "acme-shape-delivery", "--dest", str(sd), "--playbook", str(PLAYBOOK)])
+    if g.returncode != 0:
+        check("the second sample repo is created", False, g.stdout + g.stderr); return
+    cv = lambda *a: sh([PY, "scripts/conventions.py", *a], cwd=sd)  # noqa: E731
+    cv("set", "environments.set", "[{id: prod, label: Prod, order: 1}, {id: uat, label: UAT, order: 2, deploy_note: 'Every change is signed off on UAT before it reaches Prod.'}, {id: dev, label: Dev, order: 3}]",
+       "--reason", "the client runs dev, UAT and prod", "--by", "Dana Ortiz")
+    cv("set", "releases.scheme", "calendar", "--reason", "the product ships once a month", "--by", "Dana Ortiz")
+    cv("set", "releases.id_pattern", "^\\d{4}\\.\\d{2}$", "--reason", "calendar ids are always year.month", "--by", "Dana Ortiz")
+    dump(sd / "project/hub/phases.yml", hdr("phases", phases=[{"id": "PH1", "name": "Build", "start": "2026-09-07", "end": "2026-12-18", "dates_status": "confirmed"}]))
+    dump(sd / "project/hub/milestones.yml", hdr("milestones", milestones=[{"id": "M1", "title": "Kick-off", "date": "2026-09-07"}]))
+    dump(sd / "project/hub/weekly-prs.yml", hdr("weekly-prs", week_rule="Weeks end on Sunday (UTC), and each week is named by its last day.", time_zone="UTC",
+                                                 script_version="count_prs 1.0", total=3, partial_week=False, weeks=[{"week_ending": "2026-11-08", "merged": 3}]))
+    dump(sd / "project/hub/weeks" / f"{t}.yml", hdr("week", week_ending=t, shipped=[{"text": "Reports moved to UAT"}], decided_in_sync=[], next=[], waiting_on_client=[]))
+    (sd / "project/hub/weeks/.gitkeep").unlink(missing_ok=True)
+    dump(sd / "product/hub/capabilities.yml", hdr("capabilities", areas=[{"id": "A1", "name": "Reports", "items": [{"id": "A1.1", "text": "Monthly reports", "since_release": "2026.10", "status": "live"}]}]))
+    dump(sd / "product/hub/security.yml", hdr("security", cards=[{"id": "S1", "title": "Hosting", "text": "Client cloud.", "last_verified": t}]))
+    dump(sd / "product/hub/versions.yml", hdr("versions", versions=[{"id": "2026.10", "label": "2026.10", "status": "released"}, {"id": "2026.11", "label": "2026.11", "status": "in-progress"}]))
+    for stub in (sd / "product/hub/releases").glob("v*.yml"):
+        stub.unlink()
+    dump(sd / "product/hub/releases/2026.10.yml", hdr("release", version="2026.10", highlights=["Reports"], changes=[
+        {"id": "C1", "area": "reports", "tag": "new", "environment": "prod", "text": "Monthly reports"},
+        {"id": "C2", "area": "reports", "tag": "fixed", "environment": "uat", "text": "Totals fixed"}]))
+    dump(sd / "product/hub/releases/2026.11.yml", hdr("release", version="2026.11", highlights=[], changes=[{"id": "C3", "area": "exports", "tag": "new", "environment": "dev", "text": "CSV export"}]))
+    dump(sd / "product/internal/code-state.yml", hdr("code-state", repos=[{"name": "acme/web"}]))
+    dump(sd / "qa/hub/try-it-prompts.yml", hdr("try-it-prompts", prompts=[]))
+    dump(sd / "qa/hub/known-limitations.yml", hdr("known-limitations", limitations=[]))
+    pj = yaml.safe_load((sd / "project.yml").read_text()); pj["project"].update({"id": "acme-shape", "name": "Acme Shape", "client": "Acme Corp"})
+    pj["delivery"] = {"method": "kanban"}; pj["sprints"] = {"used": False}; dump(sd / "project.yml", pj)
+    reg = yaml.safe_load((sd / "registry.yml").read_text()); reg["code"]["repos"] = ["acme/web"]; dump(sd / "registry.yml", reg)
+    st = yaml.safe_load((sd / "state.yml").read_text()); st["onboarding"] = {"step": 6, "done": [1, 2, 3, 4, 5]}; st["covered_through"] = t; dump(sd / "state.yml", st)
+    b = sh([PY, "scripts/build.py"], cwd=sd)
+    page = (sd / "out/preview/index.html").read_text() if b.returncode == 0 else ""
+    cr = sh([PY, "scripts/check_render.py"], cwd=sd)
+    check("a project with dev, UAT and prod and calendar versions validates, builds and passes check_render", b.returncode == 0 and cr.returncode == 0, b.stdout[-400:] + cr.stdout[-300:])
+    text = re.sub(r"<[^>]+>", " ", re.sub(r"<script.*?</script>|<style.*?</style>", "", page, flags=re.S))
+    check("nothing on that page assumes staging, production or internal testing",
+          not re.search(r"(?i)staging|production|internal testing", text), ", ".join(sorted(set(re.findall(r"(?i)staging|production|internal testing", text)))))
+    check("the page uses the project's own environments: chips, the mixed label, the deploy note",
+          '>UAT<' in page and '>Prod<' in page and '>Dev<' in page and ">UAT and prod<" in page and "signed off on UAT before it reaches Prod" in page)
+    cv("set", "releases.status_label", "manual", "--reason", "labels are agreed with the client", "--by", "Dana Ortiz")
+    vd = yaml.safe_load((sd / "product/hub/versions.yml").read_text()); vd["versions"][0]["page_status"] = {"label": "Signed off", "tone": "production"}; dump(sd / "product/hub/versions.yml", vd)
+    sh([PY, "scripts/build.py"], cwd=sd)
+    p2 = (sd / "out/preview/index.html").read_text() if (sd / "out/preview/index.html").exists() else ""
+    check("with releases.status_label manual, labels come from page_status and the version status only", ">Signed off<" in p2 and ">In progress<" in p2 and ">UAT and prod<" not in p2)
 
 
 def upgrade_section(tmp):
@@ -782,6 +836,25 @@ def more(tmp, dest, remote):
     nm2 = sh([PY, str(HERE / "new_delivery_repo.py"), "--name", "acme-portal", "--name-pattern", "<client>-<project>", "--dest", str(tmp / "np2"), "--playbook", str(PLAYBOOK), "--no-commit"])
     check("new_delivery_repo checks the name against the recommended pattern, or the project's own with --name-pattern",
           nm.returncode == 2 and nm2.returncode == 0, nm.stdout + nm2.stdout[-200:])
+
+    print("8h. how the project runs, environments and release conventions")
+    pj = yaml.safe_load((dest / "project.yml").read_text())
+    pj["delivery"] = {"method": "sprints", "sprint_days": None, "sprint_starts": ""}; dump(dest / "project.yml", pj)
+    r = pe("scripts/validate.py")
+    check("sprints without a length or a start day are reported", r.returncode == 0 and "give sprint_days and sprint_starts" in r.stdout, r.stdout[-300:])
+    pj["delivery"] = {"method": "kanban"}; pj["sprints"] = {"used": True}; dump(dest / "project.yml", pj)
+    check("a kanban project with the Sprints page on is reported", "sprints.used is true but delivery.method is kanban" in pe("scripts/validate.py").stdout)
+    reset()
+    rel = dest / "product/hub/releases/v1.0.yml"; rd = yaml.safe_load(rel.read_text()); rd["changes"][0]["environment"] = "uat"; dump(rel, rd)
+    vfail("a change in an environment the project does not have fails", "environment 'uat' is not in the project's environments")
+    pe("scripts/conventions.py", "set", "environments.set", "[{id: production, label: Production, order: 1}, {id: uat, label: UAT, order: 2}]",
+       "--reason", "the client signs off on a UAT environment", "--by", "Dana Ortiz")
+    rd["changes"][0]["environment"] = "uat"; dump(rel, rd)
+    r0 = dest / "product/hub/releases/v0.1.yml"; r0d = yaml.safe_load(r0.read_text()); r0d["changes"][0]["environment"] = "production"; dump(r0, r0d)
+    check("with the project's own environments, the same change validates", pe("scripts/validate.py").returncode == 0, pe("scripts/validate.py").stdout[-300:])
+    pe("scripts/conventions.py", "set", "releases.id_pattern", "^\\d{4}\\.\\d{2}$", "--reason", "calendar versions", "--by", "Dana Ortiz")
+    vfail("a version id that does not match releases.id_pattern fails", "does not match the project's releases.id_pattern")
+    reset()
 
     print("9. the hub/ file header")
     h = dest / "project/hub/extra.yml"; h.write_text("note: no header here\n")

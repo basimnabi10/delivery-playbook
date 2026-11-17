@@ -11,6 +11,6 @@ pages:
   hours: {enabled: false, basis: ""}   # Step 6 asks. If true, project/hub/hours.yml is required. basis: allocation | logged
 rules:
   never_on_client_pages: [credentials, internal links, test pass rates, developer names]
-  counting: {merged_pr: "", week_rule: "", week_ends: sunday, time_zone: UTC, script: count_prs}   # week_ends: the day a week ends
+  counting: {merged_pr: "", week_ends: sunday, time_zone: UTC, script: count_prs}   # week_ends: the day a week ends; optional client_text
   publishing: {draft_only: true, weekly_slot: ""}
   scan: {hub_forbidden: [], restricted: []}   # regular expressions the scan looks for in hub/ and internal/
