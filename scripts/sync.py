@@ -5,12 +5,19 @@
 
 Order of work, and it stops at the first failure:
   1. validate.py must pass. If it fails, nothing is branched or committed.
-  2. create the branch <function>/<topic> from where you are (the agent never commits to main). It does this when
+  2. create the branch from where you are (the agent never commits to the base branch). Its name follows the
+     project's git.branch_naming convention, <function>/<topic> by default. It does this when
      you are on the base branch or on a detached HEAD (a worktree made from origin/main is detached). On any other
      branch it commits there.
   3. stage everything not ignored, then scan the staged files for secrets
   4. commit, push, and open the pull request with `gh`
 If `gh` is missing or not signed in, the exact commands to run yourself are printed instead.
+The base branch is --base, else code.merge_branch in registry.yml, else main.
+
+Working without a pull request is not a project setting. It is an exception for one task the person approved:
+record it first with `scripts/conventions.py exception git.pull_request_required --task "..." --reason "..." --by "..."`,
+then run sync with --exception D-nnn. sync pushes the branch, opens no pull request, says so, and adds the commit
+to the exception's entry in the deviation log. Bringing the branch into the base branch still needs the person.
 The pull request title is --title, or else the first line of the commit message.
 
 Stacked pull requests (a backfill in parts): check out the branch of the part below, then run sync with
@@ -23,7 +30,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _common import find_root, run  # noqa: E402
+from _common import find_root, get_path, load_yaml, run  # noqa: E402
+import _conventions  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 
@@ -45,13 +53,24 @@ def main(argv=None):
     ap.add_argument("-m", "--message", required=True)
     ap.add_argument("--body-file", help="markdown file for the pull request description")
     ap.add_argument("--title", help="pull request title (default: the first line of the commit message)")
-    ap.add_argument("--base", default="main", help="the branch the pull request targets; on it, the new branch starts from it")
+    ap.add_argument("--base", help="the branch the pull request targets (default: code.merge_branch, else main); on it, the new branch starts from it")
+    ap.add_argument("--exception", metavar="D-nnn", help="an active, approved exception to working with a pull request (see conventions.py exception)")
     ap.add_argument("--remote", default="origin")
     ap.add_argument("--dry-run", action="store_true", help="validate and show the plan, change nothing")
     ap.add_argument("--no-pr", action="store_true", help="push the branch but do not open a pull request")
     args = ap.parse_args(argv)
     root = Path(args.root).resolve() if args.root else find_root()
     git = lambda *a, **k: run(["git", *a], cwd=root, **k)  # noqa: E731
+    reg = load_yaml(root / "registry.yml") if (root / "registry.yml").exists() else {}
+    args.base = args.base or get_path(reg, "code.merge_branch") or get_path(reg, "code.production_branch") or "main"
+    conv = _conventions.effective(root)
+    exc = None
+    if args.exception:
+        entries, _ = _conventions.log_entries(root)
+        exc = next((e for e in entries if e.get("id") == args.exception), None)
+        if not exc or exc.get("kind") != "exception" or exc.get("convention") != "git.pull_request_required" or exc.get("status") != "active":
+            print(f"ERROR: {args.exception} is not an active exception for working without a pull request. Record the approved task first "
+                  "with scripts/conventions.py exception."); return 2
 
     if git("rev-parse", "--is-inside-work-tree").returncode != 0:
         print("ERROR: not inside a git repo"); return 2
@@ -65,7 +84,10 @@ def main(argv=None):
     if v.returncode != 0:
         print("\nsync: validate failed. Nothing was branched or committed."); return 2
 
-    branch = f"{args.function}/{args.topic}"
+    pattern = conv.get("git.branch_naming") or "<function>/<topic>"
+    branch = pattern.replace("<function>", args.function).replace("<topic>", args.topic)
+    if branch == pattern:
+        print(f"ERROR: the branch pattern {pattern!r} (git.branch_naming) has no <topic> placeholder"); return 2
     print(f"\nsync plan: branch {branch}, {len(files)} changed file(s)")
     for k, fs in group(files).items():
         print(f"  {k}: {len(fs)}")
@@ -73,7 +95,8 @@ def main(argv=None):
         print("sync: dry run, nothing changed"); return 0
 
     cur = git("rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
-    if cur in (args.base, "HEAD"):   # "HEAD" means detached: never commit there
+    protected = {args.base, "main", "master", get_path(reg, "code.merge_branch") or "main"}
+    if cur in protected or cur == "HEAD":   # never commit on a base branch; "HEAD" means detached
         if git("rev-parse", "--verify", "-q", f"refs/heads/{branch}").returncode == 0:
             print(f"ERROR: branch {branch} already exists. Pick another topic."); return 2
         if git("switch", "-c", branch).returncode != 0:
@@ -83,6 +106,12 @@ def main(argv=None):
     else:
         branch = cur
         print(f"sync: already on {branch}, committing there")
+    if exc is not None:   # record the change under the exception, in the same commit
+        entries, _ = _conventions.log_entries(root)
+        for e in entries:
+            if e.get("id") == exc["id"]:
+                e.setdefault("commits", []).append(f"{branch}: {args.message.strip().splitlines()[0]}")
+        _conventions.write_log(root, entries)
     git("add", "-A")
     s = run([sys.executable, str(HERE / "scan_visibility.py"), "--root", str(root), "--staged", "--secrets-only"])
     print(s.stdout.rstrip())
@@ -101,6 +130,10 @@ def main(argv=None):
         print(f"sync: the push failed ({p.stderr.strip().splitlines()[-1] if p.stderr.strip() else 'unknown'}).")
         print(f"Run this yourself, then open the pull request:\n  {push_cmd}"); return 3
     print(f"sync: pushed {branch}")
+    if exc is not None:
+        print(f"sync: no pull request, under exception {exc['id']} ({'; '.join(exc.get('tasks') or [])}). The commit is recorded in the "
+              f"deviation log. Bringing {branch} into {args.base} still needs the person's approval.")
+        return 0
     if args.no_pr:
         return 0
     title = args.title or args.message.strip().splitlines()[0]

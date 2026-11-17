@@ -65,8 +65,8 @@ Read `playbook/AGENTS.md` and follow it. Resume at the step recorded in `state.y
 
 ### 4. Always
 
-- Three gates always wait for the person: accepting proposals, publishing the Delivery Hub, and merging a pull request.
-- Nothing goes to `main` directly after the first commit. Branch, push, pull request, approval, merge.
+- Three gates always wait for the person: accepting proposals, publishing the Delivery Hub, and merging. No change reaches the base branch without the person approving it.
+- Recommended git workflow, after the first commit: branch, push, pull request, approval, merge, with nothing committed to `main` directly. A project may choose another workflow with a recorded reason (see [conventions](onboarding/conventions.md)); the merge gate stays either way.
 - Never read a password manager or credential store, and never put credentials in a repo. A person may choose to paste a GitHub token into a session; the agent warns about the risks and does not block it. See [Step 0](onboarding/00-prerequisites.md#github-sign-in-and-tokens).
 - Keep the playbook ledger as you work, and offer once to file it as issues: see `onboarding/feedback.md`.
 - The full rules are in `AGENTS.md`.

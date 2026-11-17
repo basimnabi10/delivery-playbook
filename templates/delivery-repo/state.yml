@@ -7,4 +7,5 @@ onboarding:
 covered_through: null
 page: {version: null, covered_through: null, published_on: null}   # what the published Hub page says; the repo must not be older
 sources_checked: []
+merge_approval: null   # {batch, approved_by, approved_on, pull_requests}: a batch the person approved for merging; cleared when done
 feedback: {last_prompted: null}   # the day the agent last offered to file playbook feedback

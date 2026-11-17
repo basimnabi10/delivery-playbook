@@ -63,7 +63,8 @@ def stage1_folders(pb, dest):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--name", required=True, help="<client>-<project>-delivery")
+    ap.add_argument("--name", required=True, help="<client>-<project>-delivery, or the project's own pattern (--name-pattern)")
+    ap.add_argument("--name-pattern", help="the repo name pattern, when the project overrides layout.repo_name_pattern (default: the recommendation)")
     ap.add_argument("--dest")
     ap.add_argument("--playbook", default=str(PLAYBOOK), help="path to the playbook clone (default: this one)")
     ap.add_argument("--create-remote", metavar="OWNER", help="create OWNER/<name> on GitHub, private, verify, then push")
@@ -71,8 +72,12 @@ def main(argv=None):
     args = ap.parse_args(argv)
     pb = Path(args.playbook).resolve()
     dest = Path(args.dest or args.name).resolve()
-    if not re.fullmatch(r"[a-z0-9]+(-[a-z0-9]+)+-delivery", args.name):
-        print("ERROR: the name must look like <client>-<project>-delivery, lowercase, with hyphens"); return 2
+    conv = load_yaml(pb / "schemas" / "conventions.yml") if (pb / "schemas" / "conventions.yml").exists() else {}
+    recommended = next((c["recommended"] for c in (conv or {}).get("conventions", []) if c["id"] == "layout.repo_name_pattern"), "<client>-<project>-delivery")
+    pattern = args.name_pattern or recommended
+    rx = "".join(r"[a-z0-9]+(-[a-z0-9]+)*" if part.startswith("<") else re.escape(part) for part in re.split(r"(<[^>]+>)", pattern) if part)
+    if not re.fullmatch(rx, args.name):
+        print(f"ERROR: the name must follow {pattern}, lowercase, with hyphens"); return 2
     if dest.exists() and any(dest.iterdir()):
         print(f"ERROR: {dest} is not empty"); return 2
     tpl = pb / "templates" / "delivery-repo"
@@ -126,7 +131,11 @@ def main(argv=None):
         print("\nNext, with the person's approval, create the repo WITHOUT pushing, and check it is private:\n"
               f"  gh repo create <owner>/{args.name} --private --source . --remote origin\n"
               f"  gh repo view <owner>/{args.name} --json isPrivate      # must say true\n"
-              "  git push -u origin main                                # only after it says true")
+              "  git push -u origin main                                # only after it says true\n"
+              "Recommended next (git.protect_base_branch): protect main with a ruleset that requires pull requests.")
+        if args.name_pattern and args.name_pattern != recommended:
+            print(f"This repo's name follows {args.name_pattern} instead of {recommended}. Record why once the repo exists:\n"
+                  f'  python3 scripts/conventions.py set layout.repo_name_pattern "{args.name_pattern}" --reason "..." --by "..."')
         return 0
     if not shutil.which("gh"):
         print("ERROR: gh is not installed. Run the commands above yourself."); return 2

@@ -4,7 +4,7 @@ Step 1 captured names and roles. Now complete each person's handles, say who hol
 
 **You do:** answer the interview.
 
-1. **Internal team.** Each person's role and handles (GitHub, Slack, Rocket.Chat, work email). Name the owner and a backup for each function: project management, product management, design and QA. One person may hold both, and in a small team a developer may hold a function; mark that person `tier: light` for the shorter checklist. Say who is client-facing (`client_facing: true`) and whether each person is `billed` to the client or a `shadow` (present but not billed). The owner of a shared folder or document is not automatically the client's contact: record each person's role in the project separately from who owns a file.
+1. **Internal team.** Each person's role and handles (GitHub, Slack, Rocket.Chat, work email). **Recommended: you, the PM or lead, own all four functions from the start**: project management, product management, design and QA. When a function gets its own person, they become its owner and you become its backup; until then nobody else has to be named. From then on, pull requests for that function's folder are authored by the person who holds it. One person may hold both, and in a small team a developer may hold a function; mark that person `tier: light` for the shorter checklist. Say who is client-facing (`client_facing: true`) and whether each person is `billed` to the client or a `shadow` (present but not billed). The owner of a shared folder or document is not automatically the client's contact: record each person's role in the project separately from who owns a file.
 2. **Client team.** The sponsor, approvers, IT or technical contact and day-to-day contacts, each with organisation, role, work email, and what they receive (for example the Delivery Hub link) and whether each may only view the Hub or also comment (`hub_access: view | comment`). Mark anyone who has left the client `status: left-client`, and anyone who has gone quiet `status: inactive`: they stay in the file for history and receive nothing.
 3. **Sales/BD.** The account owner and BD rep. They are used to route change requests and commercial questions, and their channels are normally tagged `restricted`.
 4. **Execs.** The exec sponsor and any exec who follows the project.
@@ -22,8 +22,8 @@ The client team is listed for context and routing only. They are never added to 
 functions:
   project-management: {owner: dana, backup: lee}
   product-management: {owner: dana}        # one person, two functions
-  design: {owner: priya}
-  qa: {owner: omar}
+  design: {owner: priya, backup: dana}     # handed over from dana, who stays as backup
+  qa: {owner: omar, backup: dana}
 people:
   - {id: dana, name: Dana Ortiz, org: internal, role: delivery-lead, client_facing: true, engagement: billed,
      functions: [project-management, product-management],
