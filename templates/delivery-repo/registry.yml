@@ -3,7 +3,7 @@ code:
   repos: []
   merge_branch: main       # the branch pull requests merge into; count_prs.py counts merges on it
   # deploy_branch: production   # optional, when production deploys from a different branch
-sources: []   # each: id, type, ref, visibility, read (connector | api | browser | manual); optional owner, url, files, commercial
+sources: []   # each: id, type, ref, visibility, read (connector | api | browser | manual | none); optional owner, url, files, commercial (true or false)
 restricted_drive_folder: ""
 versioning: {}
 pages:

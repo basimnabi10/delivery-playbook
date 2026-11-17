@@ -87,3 +87,23 @@ def say(msg=""):
 def die(msg, code=1):
     print(msg, file=sys.stderr, flush=True)
     raise SystemExit(code)
+
+
+def function_people(cfg):
+    """A function's owner and backups as a list of ids. team.yml may say backup: id, backup: [ids] or backups: [ids]."""
+    cfg = cfg or {}
+    ids = [cfg["owner"]] if cfg.get("owner") else []
+    for key in ("backup", "backups"):
+        val = cfg.get(key)
+        for i in ([val] if isinstance(val, str) else (val or [])):
+            if i and i not in ids:
+                ids.append(i)
+    return ids
+
+
+def code_owner_ids(team):
+    """code_owners in team.yml: {people: [ids], reason} or, in older files, a plain list of ids."""
+    co = (team or {}).get("code_owners")
+    if isinstance(co, list):
+        return [i for i in co if i]
+    return list((co or {}).get("people") or [])

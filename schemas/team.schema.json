@@ -10,12 +10,31 @@
       "properties": {
         "project-management": {
           "type": "object",
+          "description": "A function's owner and backups. backup may be one id or a list; backups is a list. Both are read.",
           "properties": {
             "owner": {
               "type": "string"
             },
             "backup": {
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              ]
+            },
+            "backups": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
             }
           },
           "required": [],
@@ -23,12 +42,31 @@
         },
         "product-management": {
           "type": "object",
+          "description": "A function's owner and backups. backup may be one id or a list; backups is a list. Both are read.",
           "properties": {
             "owner": {
               "type": "string"
             },
             "backup": {
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              ]
+            },
+            "backups": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
             }
           },
           "required": [],
@@ -36,12 +74,31 @@
         },
         "design": {
           "type": "object",
+          "description": "A function's owner and backups. backup may be one id or a list; backups is a list. Both are read.",
           "properties": {
             "owner": {
               "type": "string"
             },
             "backup": {
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              ]
+            },
+            "backups": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
             }
           },
           "required": [],
@@ -49,12 +106,31 @@
         },
         "qa": {
           "type": "object",
+          "description": "A function's owner and backups. backup may be one id or a list; backups is a list. Both are read.",
           "properties": {
             "owner": {
               "type": "string"
             },
             "backup": {
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              ]
+            },
+            "backups": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
             }
           },
           "required": [],
@@ -62,7 +138,39 @@
         }
       },
       "required": [],
-      "additionalProperties": true
+      "additionalProperties": {
+        "type": "object",
+        "description": "A function's owner and backups. backup may be one id or a list; backups is a list. Both are read.",
+        "properties": {
+          "owner": {
+            "type": "string"
+          },
+          "backup": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            ]
+          },
+          "backups": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      },
+      "description": "The four playbook functions, plus any others the project uses (such as engineering). check_writers.py and codeowners.py only act on the four."
     },
     "people": {
       "type": "array",
@@ -89,13 +197,10 @@
           "functions": {
             "type": "array",
             "items": {
-              "enum": [
-                "project-management",
-                "product-management",
-                "design",
-                "qa"
-              ]
-            }
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "The functions this person holds. Names beyond the four playbook functions are allowed and ignored by check_writers.py."
           },
           "handles": {
             "type": "object"
@@ -192,21 +297,33 @@
       "type": "string"
     },
     "code_owners": {
-      "type": "object",
-      "properties": {
-        "people": {
+      "description": "Who approves shared files. Either {people: [ids], reason} or, in older files, a plain list of ids.",
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "people": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": true
+        },
+        {
           "type": "array",
           "items": {
             "type": "string",
             "minLength": 1
           }
-        },
-        "reason": {
-          "type": "string"
         }
-      },
-      "required": [],
-      "additionalProperties": true
+      ]
     }
   },
   "required": [

@@ -19,9 +19,9 @@ Before the interview, the agent shows which connectors this session can reach (f
 Every source gets two tags:
 
 - **Visibility:** `client-visible` (the client can read it, so facts may be used freely), `internal` (never quoted on client pages; anything derived from it needs your promotion), or `restricted` (read into `local/` or the restricted drive only, never into shared data).
-- **Read method:** `connector`, `api`, `browser` or `manual`. Connector is tried first, then a read-only API call (the registry names the credential route, such as the name of an environment variable, never its value), then the browser; manual means you paste or export it.
+- **Read method:** `connector`, `api`, `browser`, `manual` or `none`. `none` is for a source that must never be read, such as an estimate sheet: it is listed so everyone knows it exists, and the agent never opens it. Connector is tried first, then a read-only API call (the registry names the credential route, such as the name of an environment variable, never its value), then the browser; manual means you paste or export it.
 
-Optional fields: `owner` (who maintains the source), `url` for browser reads (an address that opens in the browser, not a link that redirects to a desktop app; for Slack, the `https://app.slack.com/client/<workspace>/<channel>` form) and, for a Drive folder, `files:` to set visibility per file or child folder, which overrides the folder's tag. A file with commercial terms that the client already holds is marked `commercial: client-holds`; it stays out of shared data either way. If someone mentions a source in chat that is not in the registry, such as a link to a timesheet, the agent proposes adding it instead of leaving it out.
+Optional fields: `owner` (who maintains the source), `url` for browser reads (an address that opens in the browser, not a link that redirects to a desktop app; for Slack, the `https://app.slack.com/client/<workspace>/<channel>` form) and, for a Drive folder, `files:` to set visibility per file or child folder, which overrides the folder's tag. `commercial: true` marks a source or file that holds commercial terms (rates, totals, payment terms, estimates), including one the client already holds, such as the SOW; it stays out of shared data either way. The field is a yes or no, nothing else. If someone mentions a source in chat that is not in the registry, such as a link to a timesheet, the agent proposes adding it instead of leaving it out.
 
 If you are unsure, tag a source `internal`. You can loosen it later; a wrong `client-visible` cannot be taken back once published.
 
@@ -39,7 +39,8 @@ sources:
   - {id: rc-team,        type: rocketchat,  ref: "#p-acme",          visibility: internal,       read: browser}
   - {id: tldv-sync,      type: tldv,        ref: "Acme weekly sync", visibility: client-visible, read: connector}
   - {id: mail-client,    type: gmail,       ref: "domain:acme.com",  visibility: client-visible, read: connector}
-  - {id: drive-sow,      type: drive-file,  file_id: "<id>",         visibility: client-visible, read: connector}
+  - {id: drive-sow,      type: drive-file,  file_id: "<id>",         visibility: client-visible, read: connector, commercial: true}
+  - {id: drive-estimate, type: drive-sheet, file_ids: ["<id>"],      visibility: restricted,     read: none,      commercial: true}
   - {id: drive-hours,    type: drive-sheet, file_ids: ["<id>"],      visibility: internal,       read: connector}
   - {id: jira,           type: jira,        ref: "ACME",            visibility: client-visible, read: browser}
 restricted_drive_folder: "<folder id>"

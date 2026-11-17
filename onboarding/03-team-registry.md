@@ -49,6 +49,10 @@ readers: [team:acme-portal-devs, team:delivery-execs]   # GitHub teams with Read
 code_owners: {people: [dana], reason: "single owner while the repo's plan allows no ruleset"}
 ```
 
+A function may name more than one backup: `backup: [lee, sam]` or `backups: [lee, sam]`; both forms are read. Function names beyond the four playbook functions, such as `engineering`, may be listed under `functions:` and in a person's `functions`. They are kept for routing and ignored by `check_writers.py` and `codeowners.py`, which act on the four only.
+
+**If your `team.yml` predates this.** Nothing has to change: a single `backup`, `backups` as a list, and `code_owners` written as a plain list of ids (`code_owners: [dana]`) all validate and are read by the scripts. The object form, with a `reason`, is preferred for new files.
+
 **The agent does**
 
 - Writes `team.yml` and validates it: every function has an owner, owners are internal, and every person has an organisation and a role.

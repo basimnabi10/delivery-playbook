@@ -4,6 +4,8 @@
   python3 scripts/check_writers.py --base origin/main --head HEAD --author <github handle>
 
 Function folders (project/, product/, qa/, design/) belong to the function in schemas/structure.yml.
+A function's holders are its owner, its backup or backups (one id or a list), and anyone who lists it under their
+own functions. Functions beyond the four (such as engineering) may be listed in team.yml and are ignored here.
 Shared files (project.yml, registry.yml, team.yml, playbook/, scripts/, .github/) are not checked here:
 CODEOWNERS routes them to a code owner for approval. Exit code 1 on a violation.
 """
@@ -12,7 +14,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _common import find_root, load_yaml, run, schemas_dir  # noqa: E402
+from _common import find_root, function_people, load_yaml, run, schemas_dir  # noqa: E402
 
 
 def functions_of(team, handle):
@@ -22,7 +24,7 @@ def functions_of(team, handle):
     for p in mine:
         fns.update(p.get("functions", []) or [])
         for fn, cfg in (team.get("functions") or {}).items():
-            if p.get("id") in ((cfg or {}).get("owner"), (cfg or {}).get("backup")):
+            if p.get("id") in function_people(cfg):   # owner, backup (one or a list) or backups
                 fns.add(fn)
     return bool(mine), fns
 
