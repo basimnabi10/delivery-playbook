@@ -43,6 +43,16 @@
             "type": "string",
             "minLength": 1
           },
+          "short_label": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Optional short label for the phase's band on the timeline, used when the full name does not fit."
+          },
+          "gap_short_label": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Optional short label for the band of the gap before this phase."
+          },
           "start": {
             "type": "string",
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$"

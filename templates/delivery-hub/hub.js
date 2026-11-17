@@ -107,7 +107,7 @@
     if (!host || !data) return;
     var wc = data.weekly_counts || { weeks: [] };
     var weeks = wc.weeks || [];
-    var phases = (data.phases || []).map(function (p) { return { name: p.name, a: d(p.start), b: d(p.end) + DAY }; }).sort(function (x, y) { return x.a - y.a; });
+    var phases = (data.phases || []).map(function (p) { return { name: p.name, short: p.short_label || '', gapShort: p.gap_short_label || '', a: d(p.start), b: d(p.end) + DAY }; }).sort(function (x, y) { return x.a - y.a; });
     var miles = (data.milestones || []).slice().sort(function (x, y) { return d(x.date) - d(y.date); });
     if (!weeks.length && !phases.length && !miles.length) { host.innerHTML = '<p class="empty-note">The timeline will appear when phases, milestones or weekly counts are added.</p>'; return; }
 
@@ -173,7 +173,7 @@
       tb.innerHTML = '';
       allWeeks.forEach(function (w) {
         var tr = document.createElement('tr');
-        tr.innerHTML = '<td>' + fmtT(w.t) + (w.partial ? ' (partial)' : '') + '</td><td>' + esc(phaseOf(w.t)) + '</td><td class="num">' + (w.v === null ? 'not yet counted' : w.v) + '</td>';
+        tr.innerHTML = '<td>' + fmtT(w.t + 6 * DAY) + (w.partial ? ' (partial)' : '') + '</td><td>' + esc(phaseOf(w.t)) + '</td><td class="num">' + (w.v === null ? 'not yet counted' : w.v) + '</td>';
         tb.appendChild(tr);
       });
     }
@@ -190,7 +190,7 @@
       });
     }
 
-    host.setAttribute('aria-label', 'Timeline from the week of ' + fmtT(t0) + ' to the week of ' + fmtT(t0 + (NW - 1) * WEEK) + ', shaded by phase. ' +
+    host.setAttribute('aria-label', 'Timeline from the week ending ' + fmtT(t0 + 6 * DAY) + ' to the week ending ' + fmtT(t0 + (NW - 1) * WEEK + 6 * DAY) + ', shaded by phase. ' +
       phases.map(function (p) { return p.name + ' runs from ' + fmtT(p.a) + ' to ' + fmtT(p.b - DAY); }).join('. ') + (phases.length ? '. ' : '') +
       'Bars show pull requests merged per week, ' + (wc.total || 0) + ' in total. ' + miles.length + ' milestones are marked.');
 
@@ -218,12 +218,13 @@
       phases.forEach(function (p, k) {
         var c = 'c' + (k % 2);
         if (k === curI) {
-          bands.push({ a: p.a, b: tToday, cls: 'ph-' + (k % 2), tc: c, labels: [p.name.toUpperCase() + ': ELAPSED', 'ELAPSED', 'EL'] });
-          bands.push({ a: tToday, b: p.b, cls: 'ph-left', tc: 'left', labels: [p.name.toUpperCase() + ': TIME LEFT', 'TIME LEFT', 'LEFT'] });
+          bands.push({ a: p.a, b: tToday, cls: 'ph-' + (k % 2), tc: c, labels: [p.name.toUpperCase() + ': ELAPSED', 'ELAPSED'] });
+          bands.push({ a: tToday, b: p.b, cls: 'ph-left', tc: 'left', labels: [p.name.toUpperCase() + ': TIME LEFT', 'TIME LEFT'] });
         } else {
-          bands.push({ a: p.a, b: p.b, cls: 'ph-' + (k % 2), tc: c, labels: [p.name.toUpperCase(), p.name.split(':')[0].toUpperCase(), 'P' + (k + 1)] });
+          bands.push({ a: p.a, b: p.b, cls: 'ph-' + (k % 2), tc: c, labels: [p.name.toUpperCase()].concat(p.short ? [p.short.toUpperCase()] : [], [p.name.split(':')[0].toUpperCase()]) });
         }
-        if (k + 1 < phases.length && phases[k + 1].a > p.b) bands.push({ a: p.b, b: phases[k + 1].a, cls: 'ph-gap', tc: 'gap', labels: ['GAP'] });
+        var nx = phases[k + 1];
+        if (nx && nx.a > p.b) bands.push({ a: p.b, b: nx.a, cls: 'ph-gap', tc: 'gap', labels: ['GAP BEFORE ' + nx.name.toUpperCase()].concat(nx.gapShort ? [nx.gapShort.toUpperCase()] : []), last: 'GAP' });
       });
       bands.forEach(function (bd) {
         var xa = x(bd.a), xb = Math.min(x(bd.b), W - m.r), w = xb - xa;
@@ -232,11 +233,12 @@
           ? el('rect', { x: xa, y: m.t, width: w, height: ph, fill: 'url(#left-hatch)' })
           : el('rect', { x: xa, y: m.t, width: w, height: ph, class: bd.cls }));
         svg.appendChild(el('rect', { x: xa, y: SY, width: Math.max(0, w - 1), height: SH, rx: 3, class: bd.cls === 'ph-left' ? 'ph-left-bg' : bd.cls }));
-        for (var k = 0; k < bd.labels.length; k++) {
-          if (bd.labels[k].length * CH + 10 <= w) {
-            var st = el('text', { x: xa + 5, y: SY + 12.5, class: 'st-t ' + bd.tc }); st.textContent = bd.labels[k]; svg.appendChild(st); break;
-          }
-        }
+        /* the first label that fits; otherwise the first one cut from its start, never a made-up abbreviation */
+        var lab = '';
+        for (var k = 0; k < bd.labels.length && !lab; k++) if (bd.labels[k].length * CH + 10 <= w) lab = bd.labels[k];
+        if (!lab) { var fit = Math.floor((w - 10) / CH) - 1; if (fit >= 3) lab = bd.labels[0].slice(0, fit).replace(/\s+$/, '') + '\u2026'; }
+        if (!lab && bd.last && bd.last.length * CH + 10 <= w) lab = bd.last;
+        if (lab) { var st = el('text', { x: xa + 5, y: SY + 12.5, class: 'st-t ' + bd.tc }); st.textContent = lab; svg.appendChild(st); }
       });
       for (var v = 0; v <= max; v += step) {
         svg.appendChild(el('line', { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), class: 'grid' }));
@@ -285,9 +287,9 @@
       allWeeks.forEach(function (w) {
         var xa = x(w.t), cx = xa + band / 2, ph2 = phaseOf(w.t);
         var what = w.v === null ? 'not yet counted' : w.v + ' pull request' + (w.v === 1 ? '' : 's');
-        var hit = el('rect', { x: xa, y: m.t, width: band, height: ph, class: 'hit', tabindex: '0', 'aria-label': 'Week of ' + fmtT(w.t) + ': ' + what + ', ' + ph2 });
+        var hit = el('rect', { x: xa, y: m.t, width: band, height: ph, class: 'hit', tabindex: '0', 'aria-label': 'Week ending ' + fmtT(w.t + 6 * DAY) + ': ' + what + ', ' + ph2 });
         function show() {
-          tip.textContent = 'Week of ' + fmtT(w.t) + ' \u00b7 ' + what + '\n' + ph2;
+          tip.textContent = 'Week ending ' + fmtT(w.t + 6 * DAY) + ' \u00b7 ' + what + '\n' + ph2;
           tip.style.left = Math.max(118, Math.min(W - 118, cx)) + 'px'; tip.style.top = (y(w.v || 0) - 10) + 'px'; tip.hidden = false;
         }
         hit.addEventListener('mouseenter', show); hit.addEventListener('focus', show);

@@ -37,3 +37,7 @@
 - `versions.yml`: an optional `section_id` keeps an earlier page's release anchors; the generated `v1-4` style id stays as an alias. `validate` fails when two releases share an anchor.
 - `versions.yml`: a new `unreleased` status for the next version with changes already on staging. It is never the current version and shows as the next release on staging. Migration: a next version marked `planned` only to keep it from being current can be changed to `unreleased`.
 - Try-it prompts take an optional `short_list` flag; `security.yml` takes optional `note_links` and `caveat_links`; `phases.yml` takes an optional timeline `explainer`.
+- The client page no longer prints the team's week rule: it shows `rules.counting.client_text`, or a fixed sentence with the week-end day and time zone, in the chart note and the embedded block. The scan and `check_render.py` fail a built page that names one of the playbook's scripts.
+- A week is named by its last day everywhere on the page ("Week ending 9 Nov"; the Monday when `week_ends: monday`): the stats, the chart's tooltips and table, and the last-week card (layout rule 12).
+- Try-it prompts may leave out `category`; the page then shows no label instead of a stand-in.
+- Timeline band labels: an optional `short_label` per phase and `gap_short_label` for the gap before it; without them a narrow band's name is cut from its start ("GAP BEF…"), never shortened to a made-up "P2".

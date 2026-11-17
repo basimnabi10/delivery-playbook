@@ -47,7 +47,8 @@
           },
           "category": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "description": "Optional. Shown as a label before what a good answer does; with no category, no label is shown."
           },
           "prompt": {
             "type": "string",
@@ -64,7 +65,6 @@
         },
         "required": [
           "id",
-          "category",
           "prompt",
           "good_answer"
         ],

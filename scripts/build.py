@@ -81,6 +81,16 @@ def rich(s):
     return t
 
 
+def client_week_rule(reg, wk):
+    """The week-rule sentence the client sees. The registry's week_rule is written for the team and is never shown."""
+    text = get_path(reg, "rules.counting.client_text")
+    if text:
+        return str(text).strip()
+    ends = (get_path(reg, "rules.counting.week_ends") or "sunday").capitalize()
+    tz = wk.get("time_zone") or get_path(reg, "rules.counting.time_zone") or "UTC"
+    return f"Weeks end on {ends} ({tz}), and each week is named by its last day."
+
+
 def plural(n, one, many=None): return f"{n} {one if n == 1 else (many or one + 's')}"
 
 
@@ -225,10 +235,8 @@ def build_lastweek(ctx, current):
     if not ctx["weeks"]:
         return ""
     w = ctx["weeks"][-1]
-    start = (D(w["week_ending"]).toordinal() - 6)
-    start_s = date.fromordinal(start).isoformat()
     prs = next((x["merged"] for x in ctx["weekly"].get("weeks", []) if x["week_ending"] == w["week_ending"]), None)
-    bits = [f"Week of {fmt_dy(start_s)}"] + ([current["label"]] if current else []) + ([plural(prs, "pull request") + " merged"] if prs is not None else [])
+    bits = [f"Week ending {fmt_dy(w['week_ending'])}"] + ([current["label"]] if current else []) + ([plural(prs, "pull request") + " merged"] if prs is not None else [])
     lw_date = h(" \u00b7 ".join(bits))
     parts = []
     for key, title in (("shipped", "Shipped"), ("decided_in_sync", "Decided in the weekly sync"), ("next", "Next"), ("waiting_on_client", "Waiting on the client")):
@@ -271,7 +279,7 @@ def build_timeline(ctx, num, product, repos):
     if repos: stats.append(("Repositories", repos))
     stats.append(("Releases", len(ctx["versions"])))
     if busiest and busiest["merged"]:
-        stats.append(("Busiest week", fmt_d(date.fromordinal(D(busiest["week_ending"]).toordinal() - 6).isoformat())))
+        stats.append(("Busiest week ending", fmt_d(busiest["week_ending"])))
     stats.append(("Time left in current phase", None))
     def stat_row(k, v):
         ident = ' id="phase-left"' if v is None else ""
@@ -279,7 +287,7 @@ def build_timeline(ctx, num, product, repos):
         return "<div><dt>" + h(k) + "</dt><dd" + ident + ">" + shown + "</dd></div>"
     sd = "\n".join(stat_row(k, v) for k, v in stats)
     notes = []
-    if wk.get("week_rule"): notes.append(f"Pull request counts {('cover ' + plural(repos, 'repository', 'repositories') + '. ') if repos else ''}{wk['week_rule'].rstrip('.')}.")
+    if weeks: notes.append(f"Pull request counts {('cover ' + plural(repos, 'repository', 'repositories') + '. ') if repos else ''}{ctx['week_rule_client'].rstrip('.')}.")
     if wk.get("partial_week"): notes.append("The latest week is partial.")
     inferred = [p["name"] for p in ctx["phases"] if p.get("dates_status") == "inferred"]
     if inferred: notes.append(f"Dates for {', '.join(inferred)} are inferred and not yet confirmed.")
@@ -291,7 +299,7 @@ def build_timeline(ctx, num, product, repos):
             f'<figure class="chart">\n<figcaption><strong>Delivery timeline</strong><span>{h(span)}</span></figcaption>\n'
             '<div class="chart-plot" id="pr-chart" role="img" aria-label="Delivery timeline"></div>\n<ul class="phase-legend" id="phase-legend" aria-label="Chart key"></ul>\n'
             '<ol class="milestones" id="milestones"></ol>\n<details class="table-view">\n<summary>Show data table</summary>\n'
-            '<div class="table-wrap"><table id="pr-table"><thead><tr><th>Week of</th><th>Phase</th><th class="count">Pull requests</th></tr></thead><tbody></tbody></table></div>\n</details>\n'
+            '<div class="table-wrap"><table id="pr-table"><thead><tr><th>Week ending</th><th>Phase</th><th class="count">Pull requests</th></tr></thead><tbody></tbody></table></div>\n</details>\n'
             + (f'<p class="chart-note">{h(" ".join(notes))}</p>\n' if notes else "") + "</figure>\n</section>")
 
 
@@ -365,7 +373,9 @@ def build_release(ctx, v):
     if prompts:
         envs = release_env(rel)
         where = " in production" if "production" in envs else (" on staging" if "staging" in envs else "")
-        def pli(p): return f'<li><q>{h(p["prompt"])}</q><button class="copy" type="button">Copy</button><span class="what"><b>{h(p["category"])}.</b> {h(p["good_answer"])}</span></li>'
+        def pli(p):
+            label = f'<b>{h(p["category"])}.</b> ' if p.get("category") else ""
+            return f'<li><q>{h(p["prompt"])}</q><button class="copy" type="button">Copy</button><span class="what">{label}{h(p["good_answer"])}</span></li>'
         short = [p for p in prompts if p.get("short_list")]
         first, more = (short, [p for p in prompts if not p.get("short_list")]) if short else (prompts[:3], prompts[3:])
         t = f'<div class="tryit"><h3>Try it{where}</h3>\n<p class="tryit-note">Each prompt says what a good answer does.</p>\n<ul class="prompts">\n' + "\n".join(pli(p) for p in first) + "\n</ul>"
@@ -450,10 +460,11 @@ def build_block(ctx, project, covered, env_cfg):
     wk = ctx["weekly"]
     return {
         "schema_version": 1, "project": {"id": project["id"], "name": project["name"]}, "generated": date.today().isoformat(), "covered_through": covered,
-        "phases": [{"id": p["id"], "name": p["name"], "start": p["start"], "end": p["end"], "dates_status": p.get("dates_status", "confirmed")} for p in ctx["phases"]],
+        "phases": [{"id": p["id"], "name": p["name"], "start": p["start"], "end": p["end"], "dates_status": p.get("dates_status", "confirmed"),
+                    **{k: p[k] for k in ("short_label", "gap_short_label") if p.get(k)}} for p in ctx["phases"]],
         "milestones": [{"id": m["id"], "title": m["title"], "date": m["date"], "status": m.get("status", "")} for m in ctx["milestones"]],
         "releases": rels,
-        "weekly_counts": {"week_rule": wk.get("week_rule", "n/a"), "time_zone": wk.get("time_zone", "UTC"), "total": wk.get("total", 0), "partial_week": bool(wk.get("partial_week")),
+        "weekly_counts": {"week_rule": ctx["week_rule_client"], "time_zone": wk.get("time_zone", "UTC"), "total": wk.get("total", 0), "partial_week": bool(wk.get("partial_week")),
                           "weeks": [{"week_ending": w["week_ending"], "merged": w["merged"]} for w in wk.get("weeks", [])]},
         "environments": env_cfg,
     }
@@ -489,6 +500,7 @@ def main(argv=None):
     ctx = load_all(root)
     project = ctx["project"].get("project", {})
     cfg = ctx["project"].get("hub") or {}
+    ctx["week_rule_client"] = client_week_rule(ctx["registry"], ctx["weekly"])
     ctx["env_label"] = {**ENV_LABEL, "staging": ("env-stg", cfg.get("staging_label") or "Staging")}
     product = cfg.get("product") or project.get("name") or "Project"
     client = cfg.get("client") or project.get("client") or ""

@@ -68,6 +68,12 @@
               "confirmed",
               "inferred"
             ]
+          },
+          "short_label": {
+            "type": "string"
+          },
+          "gap_short_label": {
+            "type": "string"
           }
         },
         "required": [

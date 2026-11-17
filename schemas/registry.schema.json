@@ -167,6 +167,11 @@
             "week_rule": {
               "type": "string"
             },
+            "client_text": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The one sentence about the week rule that the client page shows. week_rule is for the team and is never shown. Without client_text the page says which day weeks end on, in which time zone, and that a week is named by its last day."
+            },
             "week_ends": {
               "enum": [
                 "",
