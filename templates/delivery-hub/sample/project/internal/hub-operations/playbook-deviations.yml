@@ -1,0 +1,5 @@
+# The project's choices that differ from the playbook's recommendations, and exceptions for one approved task.
+# Written by scripts/conventions.py and scripts/sync.py. Do not edit by hand. See playbook/onboarding/conventions.md.
+schema: deviations
+updated: 2026-11-16
+entries: []

@@ -24,6 +24,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _common import (find_root, get_path, load_yaml, schemas_dir, sha256_text,  # noqa: E402
                      split_front_matter)
 import scan_visibility  # noqa: E402
+import _conventions  # noqa: E402
 
 PRIMARY = {  # schema -> key that must not be empty once the project is past Step 5
     "phases": "phases", "milestones": "milestones", "weekly-prs": "weeks", "capabilities": "areas",
@@ -190,9 +191,11 @@ def main(argv=None):
                 if key and isinstance(doc, dict) and doc.get(key) == []:
                     (res.error if strict else res.warn)(rel, f"'{key}' is empty (a stub, no content yet)")
 
-    # folders, so an empty folder is covered too
+    # folders, so an empty folder is covered too. A Stage 2 folder the project chose to leave out
+    # (conventions: layout.optional_folders) is not reported.
+    left_out = set(_conventions.effective(root, project_doc or {}).get("layout.optional_folders") or [])
     for entry in structure.get("dirs", []) or []:
-        if any(p.is_dir() for p in root.glob(entry["path"].rstrip("/"))) or entry.get("optional"):
+        if any(p.is_dir() for p in root.glob(entry["path"].rstrip("/"))) or entry.get("optional") or entry["path"] in left_out:
             continue
         msg = f"folder is missing ({entry['stage']})"
         if entry["stage"] == "S1":
@@ -238,6 +241,14 @@ def main(argv=None):
             if seen.get(a, v["id"]) != v["id"]:
                 res.error("product/hub/versions.yml", f"page anchor '{a}' is used by both {seen[a]} and {v['id']}")
             seen.setdefault(a, v["id"])
+
+    # the project's conventions and the deviation log agree (no conventions block: nothing to check, as in v1.0)
+    for msg in _conventions.problems(root, project_doc or {}, structure):
+        where, _, text = msg.partition(": ")
+        res.error(where, text)
+    legacy = root / "project/internal/hub-operations/playbook-deviations.md"
+    if legacy.exists() and not (root / _conventions.LOG).exists():
+        res.note(str(legacy.relative_to(root)), "the free-text deviations file is replaced by playbook-deviations.yml; record each deviation with scripts/conventions.py")
 
     proj = data.get("project.yml", {}).get("project", {})
     for f in ("id", "name", "client"):

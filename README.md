@@ -29,6 +29,8 @@ Playbook address: https://github.com/basimnabi10/delivery-playbook
 | Product, design or QA joining a project | [Step 0](onboarding/00-prerequisites.md), then clone the project's delivery repo, open it and say which function you hold: [joining a project](onboarding/joining.md) |
 | A dev or an exec | Nothing to set up. Read and comment on the delivery repo's pull requests and issues, and open the Delivery Hub link |
 
+The playbook recommends; your project decides. The git workflow, release numbering, environments and parts of the layout are recommendations you can change for your project with a recorded reason: see [conventions](onboarding/conventions.md). Client safety, secrets, visibility and the three approval gates are rules.
+
 If the agent cannot run something, it gives you the exact command to run in your own terminal. Problems with the playbook itself: ask the agent to note them, or open an issue.
 
 ---

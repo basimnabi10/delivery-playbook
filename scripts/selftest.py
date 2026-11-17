@@ -683,6 +683,53 @@ def more(tmp, dest, remote):
     check("the project's documents manifest lists a QA copy by a path relative to its own folder", r.returncode == 0 and "listed but the file is missing" not in r.stdout, r.stdout[-300:])
     reset()
 
+    print("8f. conventions: recommendations, overrides and the deviation log")
+    cv = lambda *a: pe("scripts/conventions.py", *a)  # noqa: E731
+    logf = dest / "project/internal/hub-operations/playbook-deviations.yml"
+    r = pe("scripts/validate.py")
+    check("a repo with no conventions block validates and follows every recommendation",
+          r.returncode == 0 and "no active overrides" in cv("list", "--active").stdout and "git.flow" in cv("list").stdout, r.stdout[-300:])
+    pj_before = (dest / "project.yml").read_text()
+    r = cv("set", "git.flow", "gitflow", "--by", "Dana Ortiz")
+    check("an override without a reason is refused and nothing is written", r.returncode == 1 and "reason" in r.stdout and (dest / "project.yml").read_text() == pj_before, r.stdout)
+    r = cv("set", "git.flow", "gitflow", "--reason", "the client's release process needs a develop branch", "--by", "Dana Ortiz", "--today", "2026-11-17")
+    pjd = yaml.safe_load((dest / "project.yml").read_text()); lg = yaml.safe_load(logf.read_text())
+    check("set writes the choice into project.yml and an active entry into the deviation log together",
+          r.returncode == 0 and pjd["conventions"]["git"]["flow"]["choice"] == "gitflow" and lg["entries"][-1]["status"] == "active"
+          and lg["entries"][-1]["convention"] == "git.flow" and lg["entries"][-1]["decided_by"] == "Dana Ortiz", r.stdout)
+    check("set keeps every other line of project.yml, comments included", all(l in (dest / "project.yml").read_text() for l in pj_before.splitlines() if l.startswith("#")))
+    check("the override validates, and preflight lists it in one line", pe("scripts/validate.py").returncode == 0 and "git.flow: 'gitflow' instead of 'github-flow'" in cv("list", "--active").stdout)
+    keep_pj = (dest / "project.yml").read_text()
+    (dest / "project.yml").write_text(keep_pj.replace("needs a develop branch", "prefers it"))
+    vfail("a choice whose reason differs from the log fails validate", "does not match conventions.git.flow")
+    pjd["conventions"]["git"]["flow"].pop("reason"); dump(dest / "project.yml", pjd)
+    vfail("an override without a reason fails validate", "differs from the recommendation but has no reason")
+    (dest / "project.yml").write_text(keep_pj.replace("  git:\n    flow:", "  git:\n    flowz:"))
+    vfail("an unknown convention fails validate", "is not a playbook convention")
+    (dest / "project.yml").write_text(keep_pj + "")
+    pjd = yaml.safe_load(keep_pj); pjd["conventions"]["git"]["pull_request_required"] = {"choice": False, "reason": "faster"}; dump(dest / "project.yml", pjd)
+    vfail("working without pull requests cannot be a standing project choice", "only an exception for one approved task")
+    check("conventions.py refuses to set a task-only convention", cv("set", "git.pull_request_required", "false", "--reason", "x", "--by", "Dana Ortiz").returncode == 1)
+    (dest / "project.yml").write_text(keep_pj)
+    r = cv("set", "git.flow", "github-flow", "--by", "Dana Ortiz", "--today", "2026-11-18")
+    lg = yaml.safe_load(logf.read_text()); pjd = yaml.safe_load((dest / "project.yml").read_text())
+    check("setting the recommendation again removes the choice and retires the log entry, and validates",
+          r.returncode == 0 and not (pjd.get("conventions") or {}).get("git") and lg["entries"][-1]["status"] == "retired" and pe("scripts/validate.py").returncode == 0, r.stdout)
+    lg["entries"][-1]["status"] = "active"; dump(logf, lg)
+    vfail("an active log entry with no matching choice in project.yml fails validate", "does not override it")
+    reset()
+    r = cv("set", "layout.optional_folders", "[qa/internal/runs/]", "--reason", "QA runs are kept in the client's test tool", "--by", "Dana Ortiz")
+    shutil.rmtree(dest / "qa/internal/runs")
+    v = pe("scripts/validate.py")
+    check("a Stage 2 folder the project chose to leave out is not reported", r.returncode == 0 and v.returncode == 0 and "qa/internal/runs/" not in v.stdout, r.stdout + v.stdout[-300:])
+    check("a Stage 1 folder cannot be left out", cv("set", "layout.optional_folders", "[design/hub/]", "--reason", "x", "--by", "Dana Ortiz").returncode == 1)
+    reset()
+    logf.unlink(); (logf.parent / "playbook-deviations.md").write_text("# Playbook deviations\n")
+    v = pe("scripts/validate.py")
+    check("an older repo with the free-text deviations file and no log still validates, with a note to migrate",
+          v.returncode == 0 and "replaced by playbook-deviations.yml" in v.stdout, v.stdout[-300:])
+    reset()
+
     print("9. the hub/ file header")
     h = dest / "project/hub/extra.yml"; h.write_text("note: no header here\n")
     r = pe("scripts/validate.py")

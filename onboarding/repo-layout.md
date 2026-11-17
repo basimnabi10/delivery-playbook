@@ -40,7 +40,7 @@ One line per path, two spaces per level. A name with a placeholder (`YYYY-MM-DD`
       hub-operations/                S1  agents read this first
         update-prompt.md             S1  the filled-in weekly prompt
         runbook.md                   S1  the weekly run, in order
-        playbook-deviations.md       S1  anything done differently from the playbook, with the reason
+        playbook-deviations.yml      S2  the log of overrides and task exceptions, with reasons (written by conventions.py)
         decisions.md                 S1  decisions about this project's use of the playbook
         playbook-ledger.yml          S2  what was wrong, unclear or missing in the playbook; private, raw text allowed
         published/                   S2  the embedded data block as published, to check the repo against the page

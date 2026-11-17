@@ -1,0 +1,88 @@
+# The playbook's overridable conventions: choices that belong to a project. Each has the playbook's recommendation,
+# the alternatives and the reason for the recommendation. onboarding/conventions.md explains them in prose.
+# A project records a different choice in project.yml (conventions:) with a reason, through scripts/conventions.py,
+# which also writes the deviation log. Rules that protect the client or the data are not here and cannot be overridden.
+#
+#   type:  one-of (the choice is the recommendation or one of the alternatives), text, pattern (a regular expression,
+#          empty for none), list, environments (a list of {id, label, order, client_label?, deploy_note?})
+#   scope: project (a standing choice for the repo) | task (only as an exception for one approved task, never standing)
+version: 1
+conventions:
+  - id: git.flow
+    type: one-of
+    description: How branches relate to the base branch.
+    recommended: github-flow
+    alternatives: [gitflow, trunk-based, custom]
+    why: One long-lived branch plus short-lived topic branches, merged by pull request, keeps a weekly hand-off simple and every change reviewable.
+  - id: git.branch_naming
+    type: text
+    description: The pattern for a new branch name. <function> and <topic> are filled in by sync.py.
+    recommended: "<function>/<topic>"
+    alternatives: ["<topic>", "<function>-<topic>", custom]
+    why: The function in the name shows at a glance whose folder a branch changes, which is what check_writers enforces.
+  - id: git.merge_method
+    type: one-of
+    description: How a pull request is merged into the base branch.
+    recommended: squash
+    alternatives: [merge, rebase]
+    why: One commit per pull request keeps the base branch readable and makes count_prs reliable even without gh.
+  - id: git.pull_request_required
+    type: one-of
+    scope: task
+    description: Whether a change reaches the base branch through a pull request.
+    recommended: true
+    alternatives: [false]
+    why: The pull request is where the person approves a change. Working without one is allowed only as an exception for a specific task the person approved, recorded with the tasks done and the person's reason.
+  - id: git.protect_base_branch
+    type: one-of
+    description: Whether the base branch is protected by a ruleset that requires pull requests.
+    recommended: true
+    alternatives: [false]
+    why: Protection makes the merge gate hold even when someone forgets. Some GitHub plans cannot protect private repos.
+  - id: git.cross_function_prs
+    type: list
+    description: Kinds of change the project manager may make across function folders in one pull request, after functions have been handed to their own people.
+    recommended: [stage-1, manifest-rows, withheld-list]
+    alternatives: [a shorter or longer list of change kinds, or an empty list]
+    why: A Stage 1 migration, manifest rows and the withheld list are the project manager's work but touch other functions' material; everything else stays with each function's holder.
+  - id: releases.scheme
+    type: one-of
+    description: How release versions are numbered.
+    recommended: semantic
+    alternatives: [calendar, sprint-based, custom]
+    why: Version numbers such as v1.2 tell the client how big a change is and sort naturally.
+  - id: releases.id_pattern
+    type: pattern
+    description: A regular expression every version id must match; empty for no check.
+    recommended: ""
+    alternatives: ["^v\\d+\\.\\d+$", "^\\d{4}\\.\\d{2}$", custom]
+    why: A pattern catches a mistyped version id before it reaches the page; no pattern is the least surprising default.
+  - id: releases.status_label
+    type: one-of
+    description: Where a release's status label on the page comes from.
+    recommended: derived
+    alternatives: [manual]
+    why: Deriving it from where the changes are deployed keeps it honest; manual suits projects whose labels are set by agreement with the client.
+  - id: environments.set
+    type: environments
+    description: The environments a change can be in, with their labels and order on the page.
+    recommended:
+      - {id: production, label: Production, order: 1}
+      - {id: staging, label: Staging, order: 2}
+      - {id: internal-testing, label: Internal testing, order: 3}
+      - {id: design-only, label: Design only, order: 4}
+      - {id: project-setup, label: Project setup, order: 5}
+    alternatives: [any list of environments the project actually has]
+    why: These five cover most web projects and say honestly where each change is.
+  - id: layout.repo_name_pattern
+    type: text
+    description: The pattern for a delivery repo's name.
+    recommended: "<client>-<project>-delivery"
+    alternatives: [custom]
+    why: The client and project in the name make repos easy to find and hard to confuse.
+  - id: layout.optional_folders
+    type: list
+    description: Stage 2 folders this project leaves out. Stage 1 folders cannot be left out.
+    recommended: []
+    alternatives: [a list of Stage 2 folders from structure.yml]
+    why: Every folder has a place for a reason; leaving one out should be a visible decision.

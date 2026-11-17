@@ -12,6 +12,7 @@ Open the project's workspace, tell the agent who you are, then give it the proje
     - **Documents:** the SOW (a Drive link or file ID), plus any proposal, estimate sheet and kickoff notes. If no SOW is signed yet, say so. If you name a Drive folder, say whether it is the restricted shared folder or just the project's folder.
     - **Timeline:** start date, target end, phases, sprint length and first sprint date, known milestones and client deadlines.
     - **Team:** your team, the client's team (sponsor, approver, IT or technical contact), the sales/BD owner and the exec sponsor. Names and roles are enough here; handles and function owners come in Step 3.
+    - **Choices that differ from the playbook:** if the project already works differently from a [convention](conventions.md) (another git workflow, release numbering or set of environments), say so with the reason; the agent records it with `scripts/conventions.py`.
     - **Delivery basics:** environments (staging, production), release cadence, and anything the client has asked you to always or never show. Say also whether the client sees hours (the Hours page) and whether the project runs formal sprints.
 
 ## The agent does

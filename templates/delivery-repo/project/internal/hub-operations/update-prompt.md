@@ -9,4 +9,4 @@ The weekly prompt is [`playbook/templates/hub-update-prompt.md`](../../../playbo
 | Folder holding the repo clones | |
 | Sources to read, in order | see `registry.yml` |
 | Who approves the pull request | |
-| Anything this project does differently | see `playbook-deviations.md` |
+| Anything this project does differently | `python3 scripts/conventions.py list --active` (the log is `playbook-deviations.yml`) |

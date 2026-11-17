@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schemas/deviations.schema.json",
+  "title": "deviations",
+  "description": "The project's log of choices that differ from the playbook's recommendations (overrides), and of one-off exceptions for an approved task. Written by scripts/conventions.py together with conventions: in project.yml. Never rendered.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "deviations"
+    },
+    "updated": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^D-\\d{3,}$"
+          },
+          "kind": {
+            "enum": [
+              "override",
+              "exception"
+            ],
+            "description": "override: a standing project choice. exception: one approved task only (for example working without a pull request)."
+          },
+          "convention": {
+            "type": "string",
+            "minLength": 1
+          },
+          "recommended": {},
+          "chosen": {},
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "decided_by": {
+            "type": "string",
+            "minLength": 1
+          },
+          "decided_on": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "retired"
+            ]
+          },
+          "retired_on": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "tasks": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "exception only: the tasks the person approved it for, and afterwards what was done"
+          },
+          "commits": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "exception only: the commits made under it"
+          }
+        },
+        "required": [
+          "id",
+          "convention",
+          "chosen",
+          "reason",
+          "decided_by",
+          "decided_on",
+          "status"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "updated",
+    "entries"
+  ],
+  "additionalProperties": false
+}
