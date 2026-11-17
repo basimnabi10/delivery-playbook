@@ -2,6 +2,7 @@
 
 ## v1 draft
 
+- Chat digests get a home: `project/internal/chat/` holds one digest per channel per month (seven summary sections, dated bullets, internal only), indexed by a `chat-digests` manifest. New `chat-digest` schema; `validate.py` checks the sections and dates. From the first full populate run, where the playbook listed chat as a source but had no place to keep what was read.
 - First split of the onboarding guide into repo files: Step 0 to Step 7, the Cowork and Codex paths, the dry run, joining a project, and the admin material.
 - Step 0: added guidance on GitHub sign-in and the kind of token to create, with permissions and handling rules.
 - A GitHub token may be pasted into an agent session until a GitHub connector is available. Nothing is blocked: the agent warns about the risks and prefers a fine-grained, single-repo token. This is carried through `AGENTS.md`, the README, the Cowork and Codex paths, the dry run and the decisions file.

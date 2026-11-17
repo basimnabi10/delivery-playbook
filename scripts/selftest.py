@@ -537,6 +537,17 @@ def more(tmp, dest, remote):
     vfail("a meeting summary missing a section fails", "missing the section 'Blockers and risks'")
     fm_file(ms, mfm, good.replace(" [00:12:30]", ""))
     vfail("a bullet without a transcript timestamp fails", "does not end with a transcript timestamp")
+    fm_file(ms, mfm, good)
+    cd = dest / "project/internal/chat/team-chat-2026-11.md"
+    cfm = {"source": "slack", "source_id": "team-chat", "period": "2026-11", "retrieved": t, "visibility": "internal", "content_hash": "sha256:00", "threads_read": False}
+    cgood = good.replace("[00:05:10]", "(2026-11-03)").replace("[00:12:30]", "(2026-11-04)").replace("[00:20:01]", "(2026-11-05)").replace("[00:25:45]", "(2026-11-06)").replace("[00:31:00]", "(2026-11-07)").replace("[00:40:00]", "(2026-11-08)")
+    fm_file(cd, cfm, cgood)
+    r = pe("scripts/validate.py"); check("a chat digest with seven sections and dated bullets passes", r.returncode == 0, r.stdout[-400:])
+    fm_file(cd, cfm, cgood.replace(" (2026-11-04)", ""))
+    vfail("a chat digest bullet without the message date fails", "does not end with the message date")
+    fm_file(cd, {**cfm, "visibility": "client-visible"}, cgood)
+    vfail("a chat digest must be internal", "visibility")
+    cd.unlink()
     fm_file(ms, mfm, good + "\n" + "extra " * 420)
     r = pe("scripts/validate.py"); check("a body over about 400 words is a warning", r.returncode == 0 and "keep it to about 300" in r.stdout, r.stdout[-300:])
     reset()

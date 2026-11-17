@@ -1,0 +1,5 @@
+# Chat digests: one item per channel per month. See playbook/onboarding/repo-layout.md, "Chat digests".
+schema: manifest
+kind: chat-digests
+updated: 0000-00-00
+items: []

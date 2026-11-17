@@ -54,6 +54,9 @@ One line per path, two spaces per level. A name with a placeholder (`YYYY-MM-DD`
       documents/                     S2
         index.yml                    S2  manifest
         <slug>.md                    S2  proposals, kickoff material and client-shared documents, as markdown
+      chat/                          S2  digests of the chat channels in the registry; never raw messages
+        index.yml                    S2  manifest: one item per channel per month, with redaction counts
+        <source-id>-YYYY-MM.md       S2  one digest per channel per month, same seven sections as a meeting summary
       risks-and-dependencies.yml     S2  open dependencies on the client, risks, conflicts (claim, stated by, date)
 
   product/                           S1  owner: product-management
@@ -142,6 +145,17 @@ Each function folder also holds a `README.md` that names its owner, its scope an
 - **A summary is regenerated only when its transcript hash changes.** `validate` warns when it has gone stale.
 - **Tagging.** Meetings the client attended are tagged client-visible. Internal stand-ups and similar are internal.
 - **Reading order:** `index.yml`, then the summary, then (on request only) the transcript.
+
+## Chat digests
+
+Chat channels (Slack, Rocket.Chat, Teams) hold decisions and status that appear nowhere else, but also credentials, hours, HR and personal matters. They are digested, never copied.
+
+- **One digest per channel per month,** `project/internal/chat/<source-id>-YYYY-MM.md`, where `<source-id>` is the channel's id in `registry.yml`. Always internal, whatever the channel's own visibility tag, and never rendered.
+- **Shape:** front matter (source, source_id, period, retrieved, visibility: internal, content_hash, and `threads_read: false` when thread replies were not opened), then the seven meeting-summary sections. One line per bullet, each ending with the message date `(YYYY-MM-DD)`; an empty section holds `- None`. About 400 words.
+- **Never stored:** credentials or links that carry them, hours, rates, prices, invoices, payment terms, HR, health or personal matters, and anything from restricted documents. Each removal is counted per rule under `redactions` in the manifest entry; the text is never shown.
+- **Secrets found in a channel** are reported to the person at once, with where they were posted, so they can be rotated. They are never repeated.
+- **Reading:** the connector when there is one, otherwise the signed-in browser with a visible pane (Step 4). Opening a thread can mark it read, so say in the front matter when threads were not read. A month with no messages is a manifest item with the gist `Not read: <reason>` and no path.
+- The weekly refresh adds the current month's digest and rewrites it until the month ends.
 
 ## Weekly refresh
 

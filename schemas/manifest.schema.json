@@ -12,7 +12,8 @@
       "enum": [
         "meetings",
         "documents",
-        "architecture"
+        "architecture",
+        "chat-digests"
       ]
     },
     "updated": {

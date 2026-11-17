@@ -33,6 +33,7 @@ HUB_HEADER = ("schema", "updated", "covered_through", "proposals")
 SUMMARY_SECTIONS = ["Decisions", "Actions", "Asks of the client", "Blockers and risks",
                     "Status changes", "Open questions", "Claims to verify"]
 TIMESTAMP_RX = re.compile(r"\[\d{2}:\d{2}:\d{2}\]\s*$")   # a transcript timestamp, [hh:mm:ss]
+MSGDATE_RX = re.compile(r"\(\d{4}-\d{2}-\d{2}\)\s*$")       # a chat message date, (YYYY-MM-DD)
 WEEKDAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
 
 
@@ -54,6 +55,21 @@ def pick_mode(mode, state):
 
 
 def word_count(text): return len(text.split())
+
+
+def check_digest_body(rel, text, body, res):
+    """A chat digest body: the same seven sections as a meeting summary, every bullet ends with the message date."""
+    heads = {m.group(1).strip() for m in re.finditer(r"^#{1,6}\s+(.+?)\s*#*\s*$", body, re.M)}
+    for section in SUMMARY_SECTIONS:
+        if section not in heads:
+            res.error(rel, f"chat digest is missing the section '{section}'")
+    start = len(text[:text.index(body)].splitlines()) if body and body in text else 0
+    for n, line in enumerate(body.splitlines(), 1):
+        st = line.strip()
+        if st[:2] in ("- ", "* ") and st[2:].strip().rstrip(".").lower() != "none" and not MSGDATE_RX.search(st):
+            res.error(rel, f"line {start + n}: a bullet does not end with the message date such as (2026-11-02)")
+    if word_count(body) > 500:
+        res.warn(rel, f"digest body is {word_count(body)} words; keep it to about 400")
 
 
 def check_meeting_body(rel, text, body, res):
@@ -145,6 +161,8 @@ def main(argv=None):
                     res.warn(rel, f"summary is {word_count(str(fm['summary']))} words; keep it to about 150")
                 if entry["schema"] == "meeting-summary":
                     check_meeting_body(rel, text, body, res)
+                if entry["schema"] == "chat-digest":
+                    check_digest_body(rel, text, body, res)
                 if entry["schema"] == "meeting-summary":
                     tr = m.parent.parent / "transcripts" / m.name
                     if tr.exists() and fm.get("transcript_hash") and fm["transcript_hash"] != sha256_text(tr.read_text(encoding="utf-8")):
