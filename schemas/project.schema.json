@@ -269,6 +269,11 @@
             "type": "string",
             "minLength": 1
           }
+        },
+        "staging_label": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The text for the staging environment, used for every change chip and in the legend (default: Staging)."
         }
       },
       "required": [],

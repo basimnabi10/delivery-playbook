@@ -1,0 +1,22 @@
+schema: release
+updated: '2026-11-16'
+covered_through: '2026-11-15'
+proposals: []
+version: v1.3
+highlights:
+- Sharing links with an expiry date are on staging and come to production in the next release.
+changes:
+- id: C-301
+  area: sharing-links
+  tag: new
+  environment: staging
+  text: Share a document with a link that expires on a date you choose.
+  refs:
+  - 'api #118'
+- id: C-302
+  area: sharing-links
+  tag: improved
+  environment: staging
+  text: Each team can set a default expiry for new sharing links.
+  refs:
+  - 'web #241'

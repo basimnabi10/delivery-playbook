@@ -70,6 +70,10 @@
         ],
         "additionalProperties": false
       }
+    },
+    "explainer": {
+      "type": "string",
+      "description": "Optional text that explains the timeline chart to the client. Shown as the timeline's introduction instead of the default one."
     }
   },
   "required": [

@@ -17,6 +17,7 @@ environments:
   production: https://portal.example.com
 hub:
   prepared_by: CodingCops
+  staging_label: Staging only
   weekday: Monday
   brand:
     name: CodingCops

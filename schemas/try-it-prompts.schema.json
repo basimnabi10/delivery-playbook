@@ -56,6 +56,10 @@
           "good_answer": {
             "type": "string",
             "minLength": 1
+          },
+          "short_list": {
+            "type": "boolean",
+            "description": "true puts the prompt in a release's short list, shown open; the others go under 'more prompts'. Without any short-listed prompt, the first three show."
           }
         },
         "required": [

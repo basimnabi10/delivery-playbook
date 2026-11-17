@@ -30,7 +30,11 @@ from _common import find_root, get_path, load_yaml, schemas_dir  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-ENV_LABEL = {"production": ("env-prod", "Production"), "staging": ("env-stg", "Staging"), "internal-testing": ("env-int", "Internal testing")}
+ENV_LABEL = {"production": ("env-prod", "Production"), "staging": ("env-stg", "Staging"), "internal-testing": ("env-int", "Internal testing"),
+             "design-only": ("env-na", "Design only"), "project-setup": ("env-na", "Project setup")}
+ENV_ORDER = ("production", "staging", "internal-testing", "design-only", "project-setup")
+BASE_ENVS = ("production", "staging", "internal-testing")   # always in the legend; the others only when a change uses them
+TONES = {"production": "st-prod", "staging": "st-staging", "internal": "st-internal", "planned": "st-planned"}
 TAGS = {"new": ("t-new", "New"), "improved": ("t-imp", "Improved"), "fixed": ("t-fix", "Fixed"), "design": ("t-design", "Design"), "note": ("t-note", "Note")}
 
 
@@ -49,6 +53,16 @@ def fmt_range(a, b):
 
 
 def slug(s): return re.sub(r"[^a-z0-9]+", "-", str(s).lower()).strip("-") or "x"
+
+
+def anchor(v):
+    """A release's page anchor: its section_id when set (to keep an earlier page's links), else the generated id."""
+    return v.get("section_id") or slug(v["id"])
+
+
+def readable(area):
+    s = re.sub(r"[-_]+", " ", str(area)).strip()
+    return s[:1].upper() + s[1:]
 
 
 def typo(s):
@@ -91,6 +105,7 @@ def load_all(root):
     hubdir = lambda p: root / p  # noqa: E731
     ctx = {
         "project": read(root, "project.yml", {}) or {}, "registry": read(root, "registry.yml", {}) or {}, "state": read(root, "state.yml", {}) or {},
+        "phases_doc": read(root, "project/hub/phases.yml", {}) or {},
         "phases": (read(root, "project/hub/phases.yml", {}) or {}).get("phases", []),
         "milestones": (read(root, "project/hub/milestones.yml", {}) or {}).get("milestones", []),
         "weekly": read(root, "project/hub/weekly-prs.yml", {}) or {},
@@ -113,14 +128,24 @@ def load_all(root):
 
 def release_env(rel):
     envs = {c["environment"] for c in (rel or {}).get("changes", [])}
-    return [e for e in ("production", "staging", "internal-testing") if e in envs]
+    return [e for e in ENV_ORDER if e in envs]
 
 
 def status_pill(version, rel):
+    """The release's status label. page_status in versions.yml wins; an unreleased version is the next release on
+    staging; otherwise it comes from where the changes are, and a mix of staging and production says so."""
+    ps = version.get("page_status")
+    if ps:
+        return TONES.get(ps.get("tone"), "st-internal"), ps["label"]
+    if version.get("status") == "unreleased":
+        return "st-staging", "Next release, on staging"
     envs = release_env(rel)
+    if "production" in envs and "staging" in envs: return "st-prod", "Staging and production"
     if "production" in envs: return "st-prod", "In production"
     if "staging" in envs: return "st-staging", "On staging"
     if "internal-testing" in envs: return "st-internal", "Internal testing"
+    if "design-only" in envs: return "st-planned", "Design"
+    if "project-setup" in envs: return "st-planned", "Project setup"
     return {"planned": ("st-planned", "Planned"), "in-progress": ("st-internal", "In progress")}.get(version.get("status"), ("st-prod", "Released"))
 
 
@@ -173,7 +198,9 @@ def build_masthead(ctx, cfg, product, client, current, env_keys, first_date, cov
     def meta_row(k, v):
         cls = ' class="mono"' if k in ("Covers", "Last updated") else ""
         return "<div><dt>" + h(k) + "</dt><dd" + cls + ">" + h(v) + "</dd></div>"
-    legend = "".join(f'<span class="tag {c}">{l}</span>' for c, l in TAGS.values()) + "".join(f'<span class="env {c}">{l}</span>' for c, l in ENV_LABEL.values())
+    used = {c["environment"] for r in ctx["releases"].values() for c in r.get("changes", [])}
+    legend = "".join(f'<span class="tag {c}">{l}</span>' for c, l in TAGS.values()) + "".join(
+        f'<span class="env {ctx["env_label"][e][0]}">{h(ctx["env_label"][e][1])}</span>' for e in ENV_ORDER if e in BASE_ENVS or e in used)
     return (f'<header class="masthead">\n<p class="eyebrow">// {h(product)} &middot; Release notes</p>\n'
             f'<h1><span class="h1-a">{h(product)}</span> <span class="h1-b">Release Notes</span></h1>\n<p class="lede">{h(lede)}</p>\n'
             f'<dl class="meta">\n' + "\n".join(meta_row(k, v) for k, v in meta) + "\n</dl>\n"
@@ -188,7 +215,7 @@ def build_toc(entries):
 
 def build_glance(ctx, rows):
     body = "\n".join(
-        f'<tr><td class="vcol"><a href="#{slug(v["id"])}">{h(v["label"])}</a></td><td class="period">{h(per)}</td><td><a href="#{slug(v["id"])}">{h(title)}</a></td>'
+        f'<tr><td class="vcol"><a href="#{anchor(v)}">{h(v["label"])}</a></td><td class="period">{h(per)}</td><td><a href="#{anchor(v)}">{h(title)}</a></td>'
         f'<td><span class="status {c}">{h(l)}</span></td><td class="count">{n}</td></tr>' for v, per, title, c, l, n in rows)
     return ('<section class="glance" aria-labelledby="glance-label">\n<h2 class="bullet-h go" id="glance-label">At a glance</h2>\n<div class="table-wrap">\n<table>\n'
             '<thead><tr><th>Version</th><th>Period</th><th>Release</th><th>Status</th><th class="count">Changes</th></tr></thead>\n<tbody>\n' + body + '\n</tbody>\n</table>\n</div>\n</section>')
@@ -208,7 +235,7 @@ def build_lastweek(ctx, current):
         items = w.get(key) or []
         if items:
             parts.append(f'<div class="lw-part"><h3>{title}</h3><ul class="highlights">\n' + "\n".join(f"<li>{rich(i['text'])}</li>" for i in items) + "\n</ul></div>")
-    more = f'<p class="lw-more"><a href="#{slug(current["id"])}">Full {h(current["label"])} changelog, notes for IT and known limitations</a></p>' if current and current["id"] in ctx["releases"] else ""
+    more = f'<p class="lw-more"><a href="#{anchor(current)}">Full {h(current["label"])} changelog, notes for IT and known limitations</a></p>' if current and current["id"] in ctx["releases"] else ""
     return ('<section class="lastweek" aria-labelledby="lw-h">\n<h2 class="bullet-h go" id="lw-h">Worked on / merged last week</h2>\n<div class="lw-card">\n'
             f'<p class="lw-date">{lw_date}</p>\n' + "\n".join(parts) + f"\n{more}\n</div>\n</section>")
 
@@ -259,7 +286,7 @@ def build_timeline(ctx, num, product, repos):
     span = ""
     dates = [p["start"] for p in ctx["phases"]] + [m["date"] for m in ctx["milestones"]] + [x["week_ending"] for x in weeks]
     if dates: span = f"{fmt_dy(min(dates))} to {fmt_dy(max(dates))}, shaded by phase."
-    intro = "From kick-off to the planned end, shaded by phase. Bars show pull requests merged each week, and numbered dots mark milestones."
+    intro = (ctx["phases_doc"].get("explainer") or "").strip() or "From kick-off to the planned end, shaded by phase. Bars show pull requests merged each week, and numbered dots mark milestones."
     return (f'<section class="block" id="timeline" aria-labelledby="tl-h">\n{sec_head(num, "Delivery", "Delivery timeline", intro, "tl-h")}\n<dl class="stats">\n{sd}\n</dl>\n'
             f'<figure class="chart">\n<figcaption><strong>Delivery timeline</strong><span>{h(span)}</span></figcaption>\n'
             '<div class="chart-plot" id="pr-chart" role="img" aria-label="Delivery timeline"></div>\n<ul class="phase-legend" id="phase-legend" aria-label="Chart key"></ul>\n'
@@ -274,8 +301,10 @@ def build_security(ctx, num, product):
     if not cards:
         return ""
     items = "\n".join(f'<div class="sec-item"><h3>{h(c["title"])}</h3><p>{rich(c["text"])}</p><span class="verified">Verified {fmt_dy(c["last_verified"])}</span></div>' for c in cards)
-    if sec.get("note"): items += f'\n<div class="sec-item note-ok"><h3>Note</h3><p>{rich(sec["note"])}</p></div>'
-    if sec.get("caveat"): items += f'\n<div class="sec-item caveat"><h3>Caveat</h3><p>{rich(sec["caveat"])}</p></div>'
+    def links(xs):
+        return (" " + " &middot; ".join(f'<a href="{h(x["url"])}" rel="noopener noreferrer">{h(x["label"])}</a>' for x in xs)) if xs else ""
+    if sec.get("note") or sec.get("note_links"): items += f'\n<div class="sec-item note-ok"><h3>Note</h3><p>{rich(sec.get("note") or "")}{links(sec.get("note_links"))}</p></div>'
+    if sec.get("caveat") or sec.get("caveat_links"): items += f'\n<div class="sec-item caveat"><h3>Caveat</h3><p>{rich(sec.get("caveat") or "")}{links(sec.get("caveat_links"))}</p></div>'
     return (f'<section class="block" id="security" aria-labelledby="sec-h">\n{sec_head(num, "Trust", "Security and data handling", f"How {product} protects company information today.", "sec-h")}\n'
             f'<div class="sec-grid">\n{items}\n</div>\n</section>')
 
@@ -291,10 +320,12 @@ def build_release(ctx, v):
         when = f'<span class="month">{h(fmt_my(v.get("period_end") or v.get("period_start")))}</span>'
         if v.get("period_start") and v.get("period_end"): when += f'<span class="range">{h(fmt_range(v["period_start"], v["period_end"]))}</span>'
     title = v.get("title") or v["label"]
-    head = (f'<div class="rel-head">\n<div class="rel-when"><span class="ver">{h(v["label"])}</span>{when}</div>\n'
+    sid, alias = anchor(v), slug(v["id"])
+    alias_attr = f' id="{alias}"' if alias != sid else ""   # the generated id stays reachable, on the release head
+    head = (f'<div class="rel-head"{alias_attr}>\n<div class="rel-when"><span class="ver">{h(v["label"])}</span>{when}</div>\n'
             f'<div class="rel-title"><h2>{h(title)}</h2><span class="status {c}">{h(label)}</span></div>\n</div>')
     if not rel or not (rel.get("changes") or rel.get("highlights")):
-        return f'<section class="release" id="{slug(v["id"])}">\n{head}\n<div class="rel-body"><p class="empty-note">No changes recorded for this release yet.</p></div>\n</section>'
+        return f'<section class="release" id="{sid}">\n{head}\n<div class="rel-body"><p class="empty-note">No changes recorded for this release yet.</p></div>\n</section>'
     body = []
     if rel.get("highlights"):
         body.append('<ul class="highlights">\n' + "\n".join(f"<li>{rich(x)}</li>" for x in rel["highlights"]) + "\n</ul>")
@@ -305,15 +336,17 @@ def build_release(ctx, v):
             if ch["area"] not in groups: groups[ch["area"]] = []; order.append(ch["area"])
             groups[ch["area"]].append(ch)
         gh = []
+        headings = {g["area"]: g["heading"] for g in rel.get("groups", []) or []}
         for area in order:
             lis = []
             for ch in groups[area]:
                 tc, tl = TAGS.get(ch["tag"].lower(), ("t-note", ch["tag"].capitalize()))
-                ec, el = ENV_LABEL[ch["environment"]]
+                ec, el = ctx["env_label"][ch["environment"]]
+                el = h(el)
                 refs = f'<span class="refs">{h(", ".join(ch["refs"]))}</span>' if ch.get("refs") else ""
                 d = f'<span class="d">{h(fmt_d(ch["date"]))}</span>' if ch.get("date") else '<span class="d"></span>'
                 lis.append(f'<li data-env="{ch["environment"]}"><span class="tags"><span class="tag {tc}">{h(tl)}</span><span class="env {ec}">{el}</span></span><span class="txt">{rich(ch["text"])}{refs}</span>{d}</li>')
-            gh.append(f'<div class="group" data-area="{slug(area)}"><h3>{h(area)}</h3><ul class="changes">\n' + "\n".join(lis) + "\n</ul></div>")
+            gh.append(f'<div class="group" data-area="{slug(area)}"><h3>{h(headings.get(area) or readable(area))}</h3><ul class="changes">\n' + "\n".join(lis) + "\n</ul></div>")
         body.append(f'<details class="changelog">\n<summary><span class="sum-left">{CHEV}Detailed changelog<span class="sum-ver">{h(v["label"])}</span></span><span class="count">{plural(len(changes), "change")}</span></summary>\n<div class="groups">\n' + "\n".join(gh) + "\n</div>\n</details>")
     boxes = []
     if rel.get("it_notes"):
@@ -333,14 +366,15 @@ def build_release(ctx, v):
         envs = release_env(rel)
         where = " in production" if "production" in envs else (" on staging" if "staging" in envs else "")
         def pli(p): return f'<li><q>{h(p["prompt"])}</q><button class="copy" type="button">Copy</button><span class="what"><b>{h(p["category"])}.</b> {h(p["good_answer"])}</span></li>'
-        first, more = prompts[:3], prompts[3:]
+        short = [p for p in prompts if p.get("short_list")]
+        first, more = (short, [p for p in prompts if not p.get("short_list")]) if short else (prompts[:3], prompts[3:])
         t = f'<div class="tryit"><h3>Try it{where}</h3>\n<p class="tryit-note">Each prompt says what a good answer does.</p>\n<ul class="prompts">\n' + "\n".join(pli(p) for p in first) + "\n</ul>"
         if more:
             t += f'\n<details class="more-prompts"><summary>{CHEV}{len(more)} more prompts</summary>\n<ul class="prompts">\n' + "\n".join(pli(p) for p in more) + "\n</ul>\n</details>"
         body.append(t + "\n</div>")
     if rel.get("in_progress"):
         body.append('<div class="wip"><h3>In progress</h3><ul>\n' + "\n".join(f"<li>{rich(x)}</li>" for x in rel["in_progress"]) + "\n</ul></div>")
-    return f'<section class="release" id="{slug(v["id"])}">\n{head}\n<div class="rel-body">\n' + "\n".join(body) + "\n</div>\n</section>"
+    return f'<section class="release" id="{sid}">\n{head}\n<div class="rel-body">\n' + "\n".join(body) + "\n</div>\n</section>"
 
 
 def build_history(ctx, num, versions_desc):
@@ -348,7 +382,7 @@ def build_history(ctx, num, versions_desc):
     for v in ctx["versions"]:
         for ch in (ctx["releases"].get(v["id"]) or {}).get("changes", []):
             if ch["area"] not in seen: seen.add(ch["area"]); areas.append(ch["area"])
-    opts = '<option value="">All areas</option>' + "".join(f'<option value="{slug(a)}">{h(a)}</option>' for a in areas)
+    opts = '<option value="">All areas</option>' + "".join(f'<option value="{slug(a)}">{h(readable(a))}</option>' for a in areas)
     types = '<option value="">All types</option>' + "".join(f'<option value="{c}">{l}</option>' for c, l in TAGS.values())
     first, last = ctx["versions"][0]["label"], ctx["versions"][-1]["label"]
     title = f"Releases {first} to {last}" if len(ctx["versions"]) > 1 else f"Release {first}"
@@ -411,7 +445,7 @@ def build_block(ctx, project, covered, env_cfg):
     rels = []
     for v in versions:
         ch = (ctx["releases"].get(v["id"]) or {}).get("changes", [])
-        by = {k: sum(1 for c in ch if c["environment"] == k) for k in ("production", "staging", "internal-testing")}
+        by = {k: sum(1 for c in ch if c["environment"] == k) for k in ENV_ORDER}
         rels.append({"id": v["id"], "label": v["label"], "status": v["status"], "changes": len(ch), "by_environment": by})
     wk = ctx["weekly"]
     return {
@@ -455,13 +489,14 @@ def main(argv=None):
     ctx = load_all(root)
     project = ctx["project"].get("project", {})
     cfg = ctx["project"].get("hub") or {}
+    ctx["env_label"] = {**ENV_LABEL, "staging": ("env-stg", cfg.get("staging_label") or "Staging")}
     product = cfg.get("product") or project.get("name") or "Project"
     client = cfg.get("client") or project.get("client") or ""
     env_cfg = ctx["project"].get("environments") or {}
     env_keys = [k for k, val in env_cfg.items() if val] or [e for e in ("staging", "production") if any(c["environment"] == e for r in ctx["releases"].values() for c in r.get("changes", []))]
     covered = ctx["state"].get("covered_through") or date.today().isoformat()
     versions = ctx["versions"]
-    live = [v for v in versions if v.get("status") != "planned"]
+    live = [v for v in versions if v.get("status") not in ("planned", "unreleased")]
     current = (live or versions or [None])[-1]
     dates = [p["start"] for p in ctx["phases"]] + [m["date"] for m in ctx["milestones"]] + [get_path(ctx["project"], "timeline.start") or ""]
     dates = [x for x in dates if x]

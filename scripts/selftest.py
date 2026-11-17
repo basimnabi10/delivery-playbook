@@ -223,6 +223,24 @@ def run_all(tmp):
     cs = sh([PY, "scripts/check_render.py", "--sample", "--page", str(tmp / "sample.html")])
     check("the shipped sample builds and passes check_render", sm.returncode == 0 and cs.returncode == 0, sm.stdout[-300:] + cs.stdout[-300:])
     check("the sample has all three pages", all(f'data-page="{x}"' in (tmp / "sample.html").read_text() for x in ("release-notes", "sprints", "hours")))
+    sp = (tmp / "sample.html").read_text() if (tmp / "sample.html").exists() else ""
+    check("changelog groups use a heading when given, else the area id made readable", "<h3>Set-up and design</h3>" in sp and "<h3>Sharing links</h3>" in sp)
+    check("design-only and project-setup changes get their own chips, and the staging label is used for every staging chip",
+          ">Design only<" in sp and ">Project setup<" in sp and 'env-stg">Staging only<' in sp and 'env-stg">Staging<' not in sp)
+    check("an unreleased version is never the current one and shows as the next release on staging",
+          "Current version</dt><dd>v1.2" in sp and "Next release, on staging" in sp)
+    check("page_status overrides the derived label, and a release on staging and production says so", ">Demoed<" in sp and ">Staging and production<" in sp)
+    check("section_id sets a release's anchor and the generated id stays as an alias",
+          '<section class="release" id="first-production-release">' in sp and '<div class="rel-head" id="v1-0">' in sp and 'href="#first-production-release"' in sp)
+    s11 = sp[sp.find('<section class="release" id="v1-1">'):]
+    s11 = s11[s11.find('class="tryit"'):s11.find("</section>")]
+    check("short-listed try-it prompts show open, the rest under more prompts",
+          s11.find("budget folder") < s11.find("storage used") < s11.find("more prompts") < s11.find("onboarding checklist"), s11[:200])
+    check("security links and the timeline explainer render", 'href="https://portal.example.com"' in sp and "Shaded bands are the two phases" in sp)
+    vf = dest / "product/hub/versions.yml"; vd = yaml.safe_load(vf.read_text()); vd["versions"][1]["section_id"] = "v0-1"; dump(vf, vd)
+    va = sh([PY, "scripts/validate.py"], cwd=dest)
+    check("two releases with the same page anchor fail validate", va.returncode == 1 and "page anchor 'v0-1'" in va.stdout, va.stdout[-300:])
+    vd["versions"][1].pop("section_id"); dump(vf, vd)
     pj2 = yaml.safe_load((dest / "project.yml").read_text()); pj2["hub"] = {"brand": {"name": "Other Co"}}; dump(dest / "project.yml", pj2)
     sh([PY, "scripts/build.py"], cwd=dest)
     other = pv.read_text()

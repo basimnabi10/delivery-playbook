@@ -229,6 +229,16 @@ def main(argv=None):
         if n:
             res.note(rel, f"{n} value(s) marked inferred: true. A reviewer confirms each one, then removes the flag")
 
+    # each release's page anchor (section_id, or the generated v1-4 style id) is unique
+    seen = {}
+    for v in (data.get("product/hub/versions.yml") or {}).get("versions", []) or []:
+        if not isinstance(v, dict) or "id" not in v:
+            continue
+        for a in {v.get("section_id"), re.sub(r"[^a-z0-9]+", "-", str(v["id"]).lower()).strip("-")} - {None}:
+            if seen.get(a, v["id"]) != v["id"]:
+                res.error("product/hub/versions.yml", f"page anchor '{a}' is used by both {seen[a]} and {v['id']}")
+            seen.setdefault(a, v["id"])
+
     proj = data.get("project.yml", {}).get("project", {})
     for f in ("id", "name", "client"):
         if "project.yml" in data and not proj.get(f):

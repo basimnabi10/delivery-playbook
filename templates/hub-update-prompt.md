@@ -28,7 +28,7 @@ publish, merge, send or overwrite anything.
    and the week rule). Do not count yourself. If the script fails, say so
    and leave the counts unchanged.
 5. Write proposals into _inbox/ with evidence, confidence and visibility, and
-   label each change's environment: production, staging or internal-testing.
+   label each change's environment: production, staging, internal-testing, design-only or project-setup.
 6. Switches: include the Hours page only if pages.hours.enabled is true, and
    the Sprints page only if sprints.used is true.
 7. Build the preview with scripts/build.py (into out/preview/), then run

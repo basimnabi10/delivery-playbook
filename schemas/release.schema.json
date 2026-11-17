@@ -62,8 +62,11 @@
             "enum": [
               "production",
               "staging",
-              "internal-testing"
-            ]
+              "internal-testing",
+              "design-only",
+              "project-setup"
+            ],
+            "description": "Where the change is. design-only: a design decision with nothing deployed. project-setup: setting up the project (repositories, pipelines, access)."
           },
           "text": {
             "type": "string",
@@ -90,6 +93,28 @@
           "tag",
           "environment",
           "text"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "groups": {
+      "type": "array",
+      "description": "Optional heading per changelog group. Without one, the group is headed by the area id made readable (hyphens to spaces, first letter capitalised).",
+      "items": {
+        "type": "object",
+        "properties": {
+          "area": {
+            "type": "string",
+            "minLength": 1
+          },
+          "heading": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "area",
+          "heading"
         ],
         "additionalProperties": false
       }

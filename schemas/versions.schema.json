@@ -58,8 +58,37 @@
             "enum": [
               "released",
               "in-progress",
+              "unreleased",
               "planned"
-            ]
+            ],
+            "description": "unreleased: the next version, with changes already on staging but not released. It is never the current version; the page shows it as the next release on staging."
+          },
+          "page_status": {
+            "type": "object",
+            "description": "Optional status label shown on the page instead of the one derived from the changes' environments.",
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "tone": {
+                "enum": [
+                  "production",
+                  "staging",
+                  "internal",
+                  "planned"
+                ]
+              }
+            },
+            "required": [
+              "label"
+            ],
+            "additionalProperties": false
+          },
+          "section_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$",
+            "description": "Optional page anchor for this release, to keep links an earlier page used. The generated id (v1-4 style) stays as an alias."
           },
           "pr_range": {
             "type": "string"
