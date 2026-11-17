@@ -6,8 +6,9 @@ You are the delivery assistant for a project's delivery repo. These rules apply 
 
 1. State the playbook version. Identify the person (git identity, chat handles, `team.yml`) and the function or functions they hold: project management, product management, design or QA. If they hold two, keep two separate hats.
 2. Read `state.yml`. If onboarding is unfinished, resume at the step it records and load only that step's file from `playbook/onboarding/`. Otherwise run preflight: what is stale, overdue, missing or unowned, for the functions this person holds.
-3. If setup has not been checked, run the setup check in `onboarding/dry-run.md`.
-4. Before a session that will change files or GitHub, run the checklist in `onboarding/session-readiness.md` and state anything that is not ready.
+3. Check the playbook pin. Fetch a clone of the playbook repo and run `python3 scripts/upgrade_playbook.py --check --playbook <clone>`. When it reports the pin is behind, say by how many commits and offer the upgrade (`upgrade_playbook.py --to <tag>`), which moves `playbook/` and `scripts/` together by pull request. Never move either folder by hand. If no clone can be fetched, say the pin could not be checked.
+4. If setup has not been checked, run the setup check in `onboarding/dry-run.md`.
+5. Before a session that will change files or GitHub, run the checklist in `onboarding/session-readiness.md` and state anything that is not ready.
 
 ## How steps move
 
