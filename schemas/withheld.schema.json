@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schemas/withheld.schema.json",
+  "title": "withheld",
+  "description": "What was left out of copies because it held an employee's HR details (immigration, pay or medical). It records where each detail was, never the detail itself. Private: it lives in project/internal/ and is never rendered.",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "withheld"
+    },
+    "updated": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The registry source id, or the document's title and id, the detail was found in."
+          },
+          "location": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Where in the source: page, section, sheet tab, row or test case. Never the content."
+          },
+          "kind": {
+            "enum": [
+              "immigration",
+              "pay",
+              "medical",
+              "other-hr"
+            ]
+          },
+          "copy": {
+            "type": "string",
+            "description": "The repo path of the copy the detail was left out of, if a copy was made."
+          },
+          "date": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          }
+        },
+        "required": [
+          "id",
+          "source",
+          "location",
+          "kind",
+          "date"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "updated",
+    "items"
+  ],
+  "additionalProperties": false
+}

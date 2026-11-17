@@ -80,7 +80,7 @@ When your organisation turns on a GitHub connector or plugin, prefer it: you sig
    The `read` line is for zsh, the macOS default. In bash, use `read -rsp "Paste token: " t`.
 3. Make sure git ignores it. A delivery repo's starter `.gitignore` already ignores `local/`. In any other repo, run `echo 'local/' >> .git/info/exclude`, which stays in your clone and is never published.
 4. Check it. `git check-ignore -v local/github-token` must print a rule, and `git status` must not list the file. If either check fails, fix it before going on: a token committed to a public repo is leaked.
-5. Tell the agent "use my token file for GitHub". It reads the file only when you ask for something that needs GitHub write access, loads it into a temporary environment variable, never prints it, and warns you about the risks first.
+5. Tell the agent "use my token file for GitHub". It reads the file only for the GitHub work a step needs: write access you ask for, and the read-only calls the steps require (fetching the project's private code repos, `count_prs.py --source gh`, checking deploy runs). It loads it into a temporary environment variable, never prints it, and warns you about the risks once per session.
 
 The risks are the same as for pasting, plus one: the token sits in plain text on disk, so any session that has the folder can read it. Keep the folder out of cloud-synced locations, keep a copy in your password manager, overwrite the file when you renew the token, and delete it when you no longer need it. `.gitignore` is not a guarantee. A typo in the filename or `git add -f` would still commit the file, which is why the secret-scan hook (0.8) matters here.
 
@@ -90,5 +90,7 @@ The risks are the same as for pasting, plus one: the token sits in plain text on
 - If a token is ever pasted somewhere it should not be, delete it at https://github.com/settings/tokens straight away and make a new one.
 - Delete tokens you no longer need, and renew the rest before they expire.
 - If the repo's `main` branch is protected by a ruleset that requires pull requests, no token can push to `main` directly. Work on a branch and open a pull request; `scripts/sync` does this for you.
+
+**Done when** every check in the table passes or has a stated workaround, and `local/deny-list.txt` exists and holds at least one term: the real client, project, product and people names, one per line. The agent's preflight warns at the start of each session while the file is missing or empty.
 
 Next: [dry run](dry-run.md), then [Step 1](01-project-brief.md).

@@ -1,0 +1,5 @@
+# What was left out of copies because it held an employee's HR details. Each: {id, source, location, kind, copy, date}.
+# Locations only, never the content. kind: immigration, pay, medical or other-hr. See playbook/AGENTS.md.
+schema: withheld
+updated: 0000-00-00
+items: []

@@ -620,6 +620,17 @@ def more(tmp, dest, remote):
     check("the inferred flag is not shown on the client page", b.returncode == 0 and base_count >= 0 and pvw.read_text().lower().count("inferred") == base_count, b.stdout[-300:])
     reset()
 
+    print("8c. the withheld list (HR details left out of copies)")
+    wf = dest / "project/internal/withheld.yml"
+    check("the starter ships an empty withheld list", wf.exists() and (yaml.safe_load(wf.read_text()) or {}).get("items") == [])
+    entry = {"id": "W-1", "source": "qa-suite", "location": "test case 14, step 3", "kind": "pay", "copy": "qa/internal/test-plans/suite.md", "date": t}
+    dump(wf, {"schema": "withheld", "updated": t, "items": [entry]})
+    r = pe("scripts/validate.py")
+    check("a withheld entry with source, location and kind passes", r.returncode == 0, r.stdout[-300:])
+    dump(wf, {"schema": "withheld", "updated": t, "items": [{**entry, "text": "the withheld detail itself"}]})
+    vfail("a withheld entry that holds the content fails", "withheld.yml")
+    reset()
+
     print("9. the hub/ file header")
     h = dest / "project/hub/extra.yml"; h.write_text("note: no header here\n")
     r = pe("scripts/validate.py")
