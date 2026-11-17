@@ -130,6 +130,58 @@
       "required": [],
       "additionalProperties": true
     },
+    "delivery": {
+      "type": "object",
+      "description": "How the project runs, asked in Step 1. The Delivery Hub is updated weekly whatever the method.",
+      "properties": {
+        "method": {
+          "enum": [
+            "",
+            "sprints",
+            "kanban",
+            "other"
+          ]
+        },
+        "sprint_days": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Sprints only: calendar days in a sprint, for example 14."
+        },
+        "sprint_starts": {
+          "enum": [
+            "",
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+          ]
+        },
+        "first_sprint": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^(\\d{4}-\\d{2}-\\d{2})?$"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Sprints only: the start date of sprint 1."
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
     "sprints": {
       "type": "object",
       "properties": {

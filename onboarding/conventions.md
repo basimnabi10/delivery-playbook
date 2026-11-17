@@ -50,7 +50,7 @@ The project manager or lead holds all four functions until each is handed to its
 
 | Convention | Recommended | Alternatives |
 | --- | --- | --- |
-| `environments.set` | production, staging, internal testing, design only, project setup | the environments the project actually has, each with an id, a label and its order on the page |
+| `environments.set` | production, staging, internal testing, design only, project setup | the environments the project actually has, each with an id, a label and its order (1 is closest to the client's users). Optional: `client_label`, how a release whose changes reach no further is named ("On UAT"), and `deploy_note`, one sentence for the page about how changes move through it. The chips' colours follow the order |
 
 ## Layout
 

@@ -61,11 +61,11 @@
               "unreleased",
               "planned"
             ],
-            "description": "unreleased: the next version, with changes already on staging but not released. It is never the current version; the page shows it as the next release on staging."
+            "description": "unreleased: the next version, with changes already in an environment before the first one (staging by default) but not released. It is never the current version; the page shows it as the next release there."
           },
           "page_status": {
             "type": "object",
-            "description": "Optional status label shown on the page instead of the one derived from the changes' environments.",
+            "description": "Optional status label shown on the page. It replaces the one derived from the changes' environments; with releases.status_label set to manual it is the only label.",
             "properties": {
               "label": {
                 "type": "string",

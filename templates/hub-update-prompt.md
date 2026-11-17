@@ -5,7 +5,7 @@ A ready-made set of instructions for the weekly update of one artefact. Fill in 
 | Placeholder | What to put |
 | --- | --- |
 | `<artefact>` | The Delivery Hub, or the name of another client-shared artefact from `shared_artefacts` in `project.yml` |
-| `<week ending>` | The last day of the week, in the week rule's terms |
+| `<week ending>` | The last day of the week, the day `rules.counting.week_ends` names |
 
 ## The prompt
 
@@ -30,7 +30,7 @@ publish, merge, send or overwrite anything.
    changed, and record a failed read as a gap.
 4. Counts come from scripts/count_prs.py, using rules.counting (merged pull
    requests per week for every repo in code.repos, the merged-PR definition
-   and the week rule). Pass the week ending this run covers:
+   and the week end). Pass the week ending this run covers:
    python3 scripts/count_prs.py --today <week ending> --out project/hub/weekly-prs.yml
    It asks GitHub through gh; if it warns that it fell back to git, say so,
    because rebase merges can be missed. Do not count yourself. If the script

@@ -169,7 +169,11 @@
                 }
               },
               "required": [],
-              "additionalProperties": false
+              "additionalProperties": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "description": "Change counts per environment id of the project's set."
             }
           },
           "required": [

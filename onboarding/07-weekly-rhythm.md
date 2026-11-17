@@ -19,6 +19,8 @@ If your tool cannot run a git command, the agent gives you the exact commands to
 
 **The weekly routine**
 
+The update runs every week on every project, whether the project works in sprints or kanban. The weekday comes from `hub.weekday` in `project.yml`.
+
 1. Open the session and read the preflight: what is stale, overdue or missing.
 2. Let the agent ingest from your sources and propose updates into `_inbox/`.
 3. Decide the exceptions: conflicts, low confidence, and changes to dates, scope or status.

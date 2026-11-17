@@ -26,15 +26,33 @@ from pathlib import Path
 from jsonschema import Draft202012Validator
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _common import find_root, get_path, load_yaml, schemas_dir  # noqa: E402
+from _common import find_root, get_path, load_yaml, schemas_dir, week_sentence  # noqa: E402
+import _conventions  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-ENV_LABEL = {"production": ("env-prod", "Production"), "staging": ("env-stg", "Staging"), "internal-testing": ("env-int", "Internal testing"),
-             "design-only": ("env-na", "Design only"), "project-setup": ("env-na", "Project setup")}
-ENV_ORDER = ("production", "staging", "internal-testing", "design-only", "project-setup")
-BASE_ENVS = ("production", "staging", "internal-testing")   # always in the legend; the others only when a change uses them
+# Chip and pill styles by an environment's rank in the project's set (environments.set, ordered from the one closest
+# to the client's users): the first is teal, the second amber, the third primary, the rest grey.
+CHIP_BY_RANK = ("env-prod", "env-stg", "env-int")
+PILL_BY_RANK = ("st-prod", "st-staging", "st-internal")
 TONES = {"production": "st-prod", "staging": "st-staging", "internal": "st-internal", "planned": "st-planned"}
+
+
+def lower_first(s): return s[:1].lower() + s[1:] if s else s
+
+
+def environment_set(root, cfg):
+    """The project's environments in page order, each with its chip class, pill tone and client label."""
+    raw = _conventions.effective(root).get("environments.set") or []
+    envs = sorted([dict(e) for e in raw], key=lambda e: (e.get("order", 99), e["id"]))
+    for i, e in enumerate(envs):
+        e["name"] = e["label"]                     # the plain name, used in status labels
+        if e["id"] == "staging" and cfg.get("staging_label"):
+            e["label"] = cfg["staging_label"]      # hub.staging_label changes the chip and legend text only
+        e["cls"] = CHIP_BY_RANK[i] if i < len(CHIP_BY_RANK) else "env-na"
+        e["tone"] = PILL_BY_RANK[i] if i < len(PILL_BY_RANK) else "st-planned"
+        e.setdefault("client_label", (f"In {lower_first(e['name'])}" if i == 0 else f"On {lower_first(e['name'])}" if i == 1 else e["name"]))
+    return envs
 TAGS = {"new": ("t-new", "New"), "improved": ("t-imp", "Improved"), "fixed": ("t-fix", "Fixed"), "design": ("t-design", "Design"), "note": ("t-note", "Note")}
 
 
@@ -82,13 +100,8 @@ def rich(s):
 
 
 def client_week_rule(reg, wk):
-    """The week-rule sentence the client sees. The registry's week_rule is written for the team and is never shown."""
-    text = get_path(reg, "rules.counting.client_text")
-    if text:
-        return str(text).strip()
-    ends = (get_path(reg, "rules.counting.week_ends") or "sunday").capitalize()
-    tz = wk.get("time_zone") or get_path(reg, "rules.counting.time_zone") or "UTC"
-    return f"Weeks end on {ends} ({tz}), and each week is named by its last day."
+    """The week sentence the client sees: rules.counting.client_text, else one built from week_ends and time_zone."""
+    return week_sentence(reg, tz=wk.get("time_zone"))
 
 
 def plural(n, one, many=None): return f"{n} {one if n == 1 else (many or one + 's')}"
@@ -136,27 +149,32 @@ def load_all(root):
     return ctx
 
 
-def release_env(rel):
-    envs = {c["environment"] for c in (rel or {}).get("changes", [])}
-    return [e for e in ENV_ORDER if e in envs]
+def release_env(ctx, rel):
+    """The project's environments that this release's changes are in, in page order."""
+    used = {c["environment"] for c in (rel or {}).get("changes", [])}
+    return [e for e in ctx["envs"] if e["id"] in used]
 
 
-def status_pill(version, rel):
-    """The release's status label. page_status in versions.yml wins; an unreleased version is the next release on
-    staging; otherwise it comes from where the changes are, and a mix of staging and production says so."""
+def status_pill(ctx, version, rel):
+    """The release's status label. page_status in versions.yml wins (and is the only source when the project sets
+    releases.status_label to manual); an unreleased version is the next release in the second environment; otherwise
+    it comes from where the changes are, and a mix of the first two environments says so."""
     ps = version.get("page_status")
     if ps:
         return TONES.get(ps.get("tone"), "st-internal"), ps["label"]
+    by_status = {"planned": ("st-planned", "Planned"), "in-progress": ("st-internal", "In progress")}
+    if ctx["status_label"] == "manual":
+        return by_status.get(version.get("status"), ("st-prod", "Released"))
+    envs = ctx["envs"]
     if version.get("status") == "unreleased":
-        return "st-staging", "Next release, on staging"
-    envs = release_env(rel)
-    if "production" in envs and "staging" in envs: return "st-prod", "Staging and production"
-    if "production" in envs: return "st-prod", "In production"
-    if "staging" in envs: return "st-staging", "On staging"
-    if "internal-testing" in envs: return "st-internal", "Internal testing"
-    if "design-only" in envs: return "st-planned", "Design"
-    if "project-setup" in envs: return "st-planned", "Project setup"
-    return {"planned": ("st-planned", "Planned"), "in-progress": ("st-internal", "In progress")}.get(version.get("status"), ("st-prod", "Released"))
+        return "st-staging", ("Next release, " + lower_first(envs[1]["client_label"]) if len(envs) > 1 else "Next release")
+    present = release_env(ctx, rel)
+    if present:
+        top = present[0]
+        if len(envs) > 1 and top is envs[0] and envs[1] in present:
+            return top["tone"], f"{envs[1]['name']} and {lower_first(envs[0]['name'])}"
+        return top["tone"], top["client_label"]
+    return by_status.get(version.get("status"), ("st-prod", "Released"))
 
 
 # ------------------------------------------------------------------ sections
@@ -203,14 +221,14 @@ def build_masthead(ctx, cfg, product, client, current, env_keys, first_date, cov
             ("Last updated", fmt_dy(covered)), ("Prepared by", prepared)]
     principles = cfg.get("principles") or [
         {"label": "Traced to code", "text": "Every change links to the pull request or commit that shipped it.", "tone": "primary"},
-        *([{"label": "Staging, then production", "text": "Merged changes deploy to staging first. Production gets the same build after it has run on staging.", "tone": "primary"}] if {"staging", "production"} <= set(env_keys) else []),
+        *[{"label": e["label"], "text": e["deploy_note"], "tone": "primary"} for e in ctx["envs"] if e.get("deploy_note")],
         {"label": "Updated weekly", "text": f"Reviewed and refreshed each {cfg.get('weekday') or 'Monday'} from the code, meeting notes and QA.", "tone": "go"}]
     def meta_row(k, v):
         cls = ' class="mono"' if k in ("Covers", "Last updated") else ""
         return "<div><dt>" + h(k) + "</dt><dd" + cls + ">" + h(v) + "</dd></div>"
     used = {c["environment"] for r in ctx["releases"].values() for c in r.get("changes", [])}
     legend = "".join(f'<span class="tag {c}">{l}</span>' for c, l in TAGS.values()) + "".join(
-        f'<span class="env {ctx["env_label"][e][0]}">{h(ctx["env_label"][e][1])}</span>' for e in ENV_ORDER if e in BASE_ENVS or e in used)
+        f'<span class="env {e["cls"]}">{h(e["label"])}</span>' for e in ctx["envs"] if e["id"] in used or not used)
     return (f'<header class="masthead">\n<p class="eyebrow">// {h(product)} &middot; Release notes</p>\n'
             f'<h1><span class="h1-a">{h(product)}</span> <span class="h1-b">Release Notes</span></h1>\n<p class="lede">{h(lede)}</p>\n'
             f'<dl class="meta">\n' + "\n".join(meta_row(k, v) for k, v in meta) + "\n</dl>\n"
@@ -322,7 +340,7 @@ CHEV = '<svg class="chev" viewBox="0 0 20 20" fill="none" aria-hidden="true"><pa
 
 def build_release(ctx, v):
     rel = ctx["releases"].get(v["id"])
-    c, label = status_pill(v, rel)
+    c, label = status_pill(ctx, v, rel)
     when = ""
     if v.get("period_end") or v.get("period_start"):
         when = f'<span class="month">{h(fmt_my(v.get("period_end") or v.get("period_start")))}</span>'
@@ -349,8 +367,8 @@ def build_release(ctx, v):
             lis = []
             for ch in groups[area]:
                 tc, tl = TAGS.get(ch["tag"].lower(), ("t-note", ch["tag"].capitalize()))
-                ec, el = ctx["env_label"][ch["environment"]]
-                el = h(el)
+                env = next((e for e in ctx["envs"] if e["id"] == ch["environment"]), {"cls": "env-na", "label": ch["environment"]})
+                ec, el = env["cls"], h(env["label"])
                 refs = f'<span class="refs">{h(", ".join(ch["refs"]))}</span>' if ch.get("refs") else ""
                 d = f'<span class="d">{h(fmt_d(ch["date"]))}</span>' if ch.get("date") else '<span class="d"></span>'
                 lis.append(f'<li data-env="{ch["environment"]}" data-id="{h(ch["id"])}"><span class="tags"><span class="tag {tc}">{h(tl)}</span><span class="env {ec}">{el}</span></span><span class="txt">{rich(ch["text"])}{refs}</span>{d}</li>')
@@ -371,8 +389,8 @@ def build_release(ctx, v):
     if boxes: body.append('<div class="notes-grid">\n' + "\n".join(boxes) + "\n</div>")
     prompts = [ctx["prompts"][i] for i in rel.get("try_it_ids", []) if i in ctx["prompts"]]
     if prompts:
-        envs = release_env(rel)
-        where = " in production" if "production" in envs else (" on staging" if "staging" in envs else "")
+        present = release_env(ctx, rel)
+        where = (" " + lower_first(present[0]["client_label"])) if present and present[0] in ctx["envs"][:2] else ""
         def pli(p):
             label = f'<b>{h(p["category"])}.</b> ' if p.get("category") else ""
             return f'<li><q>{h(p["prompt"])}</q><button class="copy" type="button">Copy</button><span class="what">{label}{h(p["good_answer"])}</span></li>'
@@ -387,6 +405,12 @@ def build_release(ctx, v):
     return f'<section class="release" id="{sid}">\n{head}\n<div class="rel-body">\n' + "\n".join(body) + "\n</div>\n</section>"
 
 
+def where_list(ctx):
+    """The first three environments of the project's set, in words: "production, staging or internal testing"."""
+    names = [lower_first(e["name"]) if e["name"][1:2].islower() else e["name"] for e in ctx["envs"][:3]]
+    return ", ".join(names[:-1]) + " or " + names[-1] if len(names) > 1 else (names[0] if names else "")
+
+
 def build_history(ctx, num, versions_desc):
     areas, seen = [], set()
     for v in ctx["versions"]:
@@ -397,7 +421,7 @@ def build_history(ctx, num, versions_desc):
     first, last = ctx["versions"][0]["label"], ctx["versions"][-1]["label"]
     title = f"Releases {first} to {last}" if len(ctx["versions"]) > 1 else f"Release {first}"
     intro = ("Newest first. Each release has highlights, notes for IT, known limitations, prompts to try and a detailed changelog you can search and filter. "
-             "Each change carries a small tag showing where it is: production, staging or internal testing.")
+             "Each change carries a small tag showing where it is: " + where_list(ctx) + ".")
     toolbar = ('<div class="toolbar">\n<div class="toolbar-row">\n<div class="filters">\n'
                '<div class="field"><label for="f-search">Search changes</label><input id="f-search" type="search" placeholder="e.g. calendar, export, sign-in" autocomplete="off"></div>\n'
                f'<div class="field"><label for="f-area">Area</label><select id="f-area">{opts}</select></div>\n'
@@ -455,7 +479,7 @@ def build_block(ctx, project, covered, env_cfg):
     rels = []
     for v in versions:
         ch = (ctx["releases"].get(v["id"]) or {}).get("changes", [])
-        by = {k: sum(1 for c in ch if c["environment"] == k) for k in ENV_ORDER}
+        by = {e["id"]: sum(1 for c in ch if c["environment"] == e["id"]) for e in ctx["envs"]}
         rels.append({"id": v["id"], "label": v["label"], "status": v["status"], "changes": len(ch), "by_environment": by})
     wk = ctx["weekly"]
     return {
@@ -501,11 +525,13 @@ def main(argv=None):
     project = ctx["project"].get("project", {})
     cfg = ctx["project"].get("hub") or {}
     ctx["week_rule_client"] = client_week_rule(ctx["registry"], ctx["weekly"])
-    ctx["env_label"] = {**ENV_LABEL, "staging": ("env-stg", cfg.get("staging_label") or "Staging")}
+    ctx["envs"] = environment_set(root, cfg)
+    ctx["status_label"] = _conventions.effective(root).get("releases.status_label") or "derived"
     product = cfg.get("product") or project.get("name") or "Project"
     client = cfg.get("client") or project.get("client") or ""
     env_cfg = ctx["project"].get("environments") or {}
-    env_keys = [k for k, val in env_cfg.items() if val] or [e for e in ("staging", "production") if any(c["environment"] == e for r in ctx["releases"].values() for c in r.get("changes", []))]
+    used_ids = {c["environment"] for r in ctx["releases"].values() for c in r.get("changes", [])}
+    env_keys = [k for k, val in env_cfg.items() if val] or [e["id"] for e in reversed(ctx["envs"][:2]) if e["id"] in used_ids]
     covered = ctx["state"].get("covered_through") or date.today().isoformat()
     versions = ctx["versions"]
     live = [v for v in versions if v.get("status") not in ("planned", "unreleased")]
@@ -523,7 +549,7 @@ def main(argv=None):
     versions_desc = list(reversed(versions))
     rows = []
     for v in versions_desc:
-        rel = ctx["releases"].get(v["id"]); c, l = status_pill(v, rel)
+        rel = ctx["releases"].get(v["id"]); c, l = status_pill(ctx, v, rel)
         per = fmt_my(v.get("period_end") or v.get("period_start")) if (v.get("period_end") or v.get("period_start")) else "\u2013"
         rows.append((v, per, v.get("title") or v["label"], c, l, len((rel or {}).get("changes", []))))
 

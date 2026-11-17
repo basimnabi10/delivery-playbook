@@ -50,7 +50,7 @@ pages:
   hours: {enabled: true, basis: logged}   # allocation | logged; a page of the Delivery Hub, built from the timesheet only
 rules:
   never_on_client_pages: [credentials, internal links, test pass rates, developer names]
-  counting: {merged_pr: "merged into the production branch", week_rule: "Monday to Sunday, UTC", script: collect}
+  counting: {merged_pr: "merged into the merge branch", week_ends: sunday, time_zone: UTC, script: count_prs}
   publishing: {draft_only: true, weekly_slot: "Monday 10:00"}
 ```
 

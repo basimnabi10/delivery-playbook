@@ -7,7 +7,8 @@ project:
   contract: ""   # time-and-materials | fixed-price | retainer
 documents: {}
 timeline: {}
-sprints: {used: true}   # false if the project runs no formal sprints
+delivery: {method: "", sprint_days: null, sprint_starts: "", first_sprint: ""}   # method: sprints | kanban | other; the rest for sprints only. The Hub update is weekly whatever the method
+sprints: {used: true}   # the Sprints page: true exactly when delivery.method is sprints
 shared_artefacts: []   # running projects: see playbook/onboarding/adopting-a-running-project.md
 conflicts: []   # claims in existing artefacts, checked against the facts
 environments: {}

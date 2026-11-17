@@ -3,7 +3,7 @@ schema: weekly-prs
 updated: '2026-11-16'
 covered_through: '2026-11-15'
 proposals: []
-week_rule: Weeks run Monday to Sunday, UTC. A pull request merged on a Sunday night counts in that week.
+week_rule: Weeks end on Sunday (UTC), and each week is named by its last day.
 time_zone: UTC
 script_version: count_prs 1.0
 total: 384
