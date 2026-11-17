@@ -1,6 +1,6 @@
 # Delivery Playbook
 
-How CodingCops runs projects and products with an AI agent (Claude Cowork or Codex) and Git. **Version: v1 draft.**
+How CodingCops runs projects and products with an AI agent (Claude Cowork or Codex) and Git. **Version: v1.0.**
 
 Each project gets one **delivery repo**, shared by project management, product management, design and QA. The agent works from a read-only copy of this playbook inside that repo (`playbook/`), helps each person keep their part of the project data current, and builds the **Delivery Hub**: one shareable set of pages (release notes, sprints and hours) for the client, the team and execs. Executive visibility is a by-product of the work: people verify what the agent drafts instead of typing reports.
 
@@ -94,4 +94,4 @@ scripts/                   validate, count_prs, scan_visibility, sync, check_wri
 
 ## Status
 
-This is a v1 draft. The schemas and the scripts that check, count, scan, sync, refresh and build are built and tested (`python3 scripts/selftest.py`). The Delivery Hub template, its design spec, `build` and `check_render` are built. `extract_from_page` and `upgrade_playbook` are planned: see [scripts/README.md](scripts/README.md). Several tool behaviours still need checking in a real session: see [admin/decisions-and-verification.md](admin/decisions-and-verification.md).
+This is v1.0, the first tagged release. The schemas, the Delivery Hub template and its design spec, and every script listed in [scripts/README.md](scripts/README.md) are built and tested (`python3 scripts/selftest.py`). Several tool behaviours still need checking in a real session: see [admin/decisions-and-verification.md](admin/decisions-and-verification.md).
