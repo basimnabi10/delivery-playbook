@@ -9,6 +9,7 @@ prompts:
   prompt: Find the onboarding checklist and tell me who owns it.
   good_answer: Finds the right document and names its owner, without listing similar documents.
 - id: P2
+  short_list: true
   category: Permissions
   prompt: Open the finance team's budget folder as a viewer from another team.
   good_answer: Is refused with a clear message, and the attempt appears in the audit log.
@@ -17,6 +18,7 @@ prompts:
   prompt: Restore the previous version of any document you own.
   good_answer: Restores it, keeps the newer version in the history, and shows who restored it.
 - id: P4
+  short_list: true
   category: Reports
   prompt: Show storage used by each team this month.
   good_answer: Shows a chart and a list that add up to the same total.

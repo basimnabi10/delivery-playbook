@@ -29,5 +29,10 @@ cards:
   text: Only the project owner releases to production, and only a build that has already run on staging.
   last_verified: '2026-11-09'
 note: Production is limited to Acme accounts. Developer accounts were removed before launch.
+note_links:
+- label: Production
+  url: https://portal.example.com
+- label: Staging
+  url: https://staging.example.com
 caveat: Exports are still in acceptance testing. Until they are signed off, avoid exporting reports that contain
   personal data.

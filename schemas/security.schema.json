@@ -68,8 +68,52 @@
     "note": {
       "type": "string"
     },
+    "note_links": {
+      "type": "array",
+      "description": "Optional links shown with the note, for example the production and staging addresses, when the project has decided the client may see them.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "url": {
+            "type": "string",
+            "pattern": "^https?://"
+          }
+        },
+        "required": [
+          "label",
+          "url"
+        ],
+        "additionalProperties": false
+      }
+    },
     "caveat": {
       "type": "string"
+    },
+    "caveat_links": {
+      "type": "array",
+      "description": "Optional links shown with the caveat.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "url": {
+            "type": "string",
+            "pattern": "^https?://"
+          }
+        },
+        "required": [
+          "label",
+          "url"
+        ],
+        "additionalProperties": false
+      }
     }
   },
   "required": [

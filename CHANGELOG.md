@@ -30,3 +30,10 @@
 - Connector content reaches `local/incoming/` through a chunked writer in `refresh.py` (`--write-part`, `--finish`), never by re-typing; the layout page gives the fetch path per connector, and a full backfill runs one subagent per batch.
 - Adopting a running project: values a page does not show are marked unknown or `inferred: true` (capability items, security cards, milestones, week blocks). The flag is never rendered, and `validate` lists the files that hold one for the reviewer.
 - `scripts/upgrade_playbook.py`, built: moves a delivery repo's `playbook/` and `scripts/` to a newer playbook version together, records it in `state.yml` and opens the pull request through `sync.py`. Its `--check` is a new preflight step that reports when the pin is behind the playbook's latest commit.
+- Hub data model: every page label can now be kept when a page moves to the hub build. All new fields are optional, so existing delivery repos stay valid.
+- Changes can be `design-only` or `project-setup`, with their own grey chips; the staging chip's text is set once in `hub.staging_label` and used in the legend and on every change.
+- Changelog groups take an optional heading per area (`groups` in a release file); without one, the area id is made readable.
+- `versions.yml`: an optional `page_status` (label and tone) overrides the derived status; the derived label now says "Staging and production" when a release has both, instead of "In production".
+- `versions.yml`: an optional `section_id` keeps an earlier page's release anchors; the generated `v1-4` style id stays as an alias. `validate` fails when two releases share an anchor.
+- `versions.yml`: a new `unreleased` status for the next version with changes already on staging. It is never the current version and shows as the next release on staging. Migration: a next version marked `planned` only to keep it from being current can be changed to `unreleased`.
+- Try-it prompts take an optional `short_list` flag; `security.yml` takes optional `note_links` and `caveat_links`; `phases.yml` takes an optional timeline `explainer`.

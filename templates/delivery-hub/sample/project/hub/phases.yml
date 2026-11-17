@@ -2,6 +2,8 @@ schema: phases
 updated: '2026-11-16'
 covered_through: '2026-11-15'
 proposals: []
+explainer: Shaded bands are the two phases, with the review gap between them. Bars show pull requests merged each week,
+  and numbered dots mark milestones. Phase 2 dates follow the current plan.
 phases:
 - id: PH1
   name: 'Phase 1: build'

@@ -18,6 +18,7 @@ milestones:
 - id: M4
   title: Staging goes live
   date: '2026-05-11'
+  inferred: true
   status: done
 - id: M5
   title: Final Phase 1 demo

@@ -129,6 +129,8 @@ def main(argv=None):
         if block["weekly_counts"]["total"] != wk.get("total", 0): problems.append("weekly total differs")
         check("embedded block agrees with the hub/ files", not problems, "; ".join(problems))
         slugs = {re.sub(r"[^a-z0-9]+", "-", k.lower()).strip("-"): k for k in rels}
+        vdoc = load_yaml(root / "product/hub/versions.yml") if (root / "product/hub/versions.yml").exists() else {}
+        slugs.update({v["section_id"]: v["id"] for v in (vdoc or {}).get("versions", []) or [] if v.get("section_id") and v["id"] in rels})
         bad = []
         for rid, info in p.releases.items():
             k = slugs.get(rid)
