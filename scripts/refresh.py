@@ -29,8 +29,20 @@ is flagged or any summary is still pending, unless --allow-pending-summaries is 
 
 Exit codes: 0 done, 1 bad input, 2 the scan found something (nothing was changed), 3 needs a person
 (a flagged item, or --sync refused because of pending summaries).
+
+The chunked writer. A connector returns content to the model, not to a file, and content must never be re-typed by
+hand. The agent passes what the connector returned to the writer one part at a time, then joins the parts:
+
+  python3 scripts/refresh.py --write-part NAME --part N  < part      one part, read from stdin as bytes (N from 1)
+  python3 scripts/refresh.py --finish NAME [--parts K] [--sha256 HEX] [--bytes B]
+
+  NAME is a path inside the incoming folder. Parts are kept in NAME.parts/ until --finish joins them in order, checks
+  that none is missing and, when given, the part count, the byte count and the hash, and only then writes NAME and
+  removes the parts. Writing a part again replaces it, so a retry is safe. A failed check writes nothing.
 """
 import argparse
+import hashlib
+import shutil
 import sys
 from datetime import date
 from pathlib import Path
@@ -48,6 +60,56 @@ COPY_KINDS = {"meetings", "documents"}      # an `architecture` manifest lists l
 SUMMARY_REQUIRED_WORDS = 1500
 
 
+def inside(inc, name):
+    """NAME as a path inside the incoming folder, or None when it would leave it."""
+    p = Path(name)
+    if not name or p.is_absolute() or ".." in p.parts:
+        return None
+    return inc / p
+
+
+def write_part(inc, name, n):
+    target = inside(inc, name)
+    if target is None or not n or n < 1:
+        print("ERROR: --write-part needs a NAME inside the incoming folder and --part N (1 or more)")
+        return 1
+    parts = target.parent / (target.name + ".parts")
+    parts.mkdir(parents=True, exist_ok=True)
+    data = sys.stdin.buffer.read()
+    (parts / f"{n:04d}").write_bytes(data)
+    print(f"refresh: wrote part {n} of {name} ({len(data)} bytes)")
+    return 0
+
+
+def finish(inc, name, want_parts, want_sha, want_bytes):
+    target = inside(inc, name)
+    if target is None:
+        print("ERROR: --finish needs a NAME inside the incoming folder")
+        return 1
+    parts = target.parent / (target.name + ".parts")
+    nums = sorted(int(p.name) for p in parts.glob("[0-9][0-9][0-9][0-9]")) if parts.is_dir() else []
+    if not nums:
+        print(f"ERROR: no parts found for {name}. Nothing was written.")
+        return 1
+    missing = sorted(set(range(1, max(nums) + 1)) - set(nums))
+    if missing or (want_parts and len(nums) != want_parts):
+        why = f"part(s) {', '.join(map(str, missing))} missing" if missing else f"{len(nums)} part(s), expected {want_parts}"
+        print(f"ERROR: {name}: {why}. Nothing was written; write the missing parts and finish again.")
+        return 1
+    data = b"".join((parts / f"{n:04d}").read_bytes() for n in nums)
+    sha = hashlib.sha256(data).hexdigest()
+    if want_sha and want_sha.lower().replace("sha256:", "") != sha:
+        print(f"ERROR: {name}: the joined parts do not match the expected hash. Nothing was written.")
+        return 1
+    if want_bytes is not None and len(data) != want_bytes:
+        print(f"ERROR: {name}: the joined parts are {len(data)} bytes, expected {want_bytes}. Nothing was written.")
+        return 1
+    target.write_bytes(data)
+    shutil.rmtree(parts, ignore_errors=True)
+    print(f"refresh: finished {name}: {len(nums)} part(s), {len(data)} bytes, sha256:{sha}")
+    return 0
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--root")
@@ -59,11 +121,21 @@ def main(argv=None):
     ap.add_argument("--topic")
     ap.add_argument("--no-pr", action="store_true")
     ap.add_argument("--allow-pending-summaries", action="store_true")
+    ap.add_argument("--write-part", metavar="NAME", help="chunked writer: store stdin as part --part of NAME")
+    ap.add_argument("--part", type=int, metavar="N")
+    ap.add_argument("--finish", metavar="NAME", help="chunked writer: join NAME's parts in order and check them")
+    ap.add_argument("--parts", type=int, metavar="K", help="with --finish: the number of parts expected")
+    ap.add_argument("--sha256", metavar="HEX", help="with --finish: the expected sha256 of the joined content")
+    ap.add_argument("--bytes", type=int, metavar="B", help="with --finish: the expected size in bytes")
     args = ap.parse_args(argv)
     root = Path(args.root).resolve() if args.root else find_root()
     today = args.today or date.today().isoformat()
     inc = Path(args.incoming)
     inc = inc if inc.is_absolute() else root / inc
+    if args.write_part:
+        return write_part(inc, args.write_part, args.part)
+    if args.finish:
+        return finish(inc, args.finish, args.parts, args.sha256, args.bytes)
     listing = inc / "incoming.yml"
     if not listing.exists():
         print(f"ERROR: {listing.relative_to(root) if root in listing.parents else listing} not found. The agent lists what it fetched there.")

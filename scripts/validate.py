@@ -219,6 +219,16 @@ def main(argv=None):
                 if field not in doc:
                     res.error(rel, f"hub header: missing field '{field}'")
 
+    # values marked `inferred: true` (guessed while adopting a running project): never rendered, listed for the reviewer
+    def count_inferred(x):
+        if isinstance(x, dict):
+            return (1 if x.get("inferred") is True else 0) + sum(count_inferred(v) for v in x.values())
+        return sum(count_inferred(v) for v in x) if isinstance(x, list) else 0
+    for rel, doc in sorted(data.items()):
+        n = count_inferred(doc) if "/hub/" in rel else 0
+        if n:
+            res.note(rel, f"{n} value(s) marked inferred: true. A reviewer confirms each one, then removes the flag")
+
     proj = data.get("project.yml", {}).get("project", {})
     for f in ("id", "name", "client"):
         if "project.yml" in data and not proj.get(f):

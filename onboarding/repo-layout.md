@@ -125,13 +125,13 @@ Each function folder also holds a `README.md` that names its owner, its scope an
 
 1. The Hub reads only `hub/` files and the root control files.
 2. `hub/` is client-safe by path and gets the visibility scan. `internal/` is never rendered. Restricted material never enters the repo: no credentials or credential tabs, no HR document dump, no commercial figures, no rates. Hours are the one exception, as role-level totals in `project/hub/hours.yml`, and only when the Hours page is switched on.
-3. Each function writes only its own folder, and every change arrives by pull request through `scripts/sync.py`. CI runs `check_writers.py` to enforce it.
+3. Each function writes only its own folder, and every change arrives by pull request through `scripts/sync.py`. CI runs `check_writers.py` to enforce it. So that no one has to create another function's folder, `new_delivery_repo.py` creates every S1 folder in `structure.yml` up front, with a `.gitkeep` in each empty one (the empty `design/hub/` stub among them). A repo created before that, or without one of these folders, adds it in its Stage 1 pull request.
 4. Cross-references use ids, never position. A page may list releases newest first while the repo lists them oldest first; a comparison by position misaligns every row.
 5. Every `hub/` file starts with a header: `schema`, `updated`, `covered_through` and `proposals` (the proposals its content came from).
 6. A copy is a dated snapshot. Its front matter holds the source, the source id or URL, the version, the retrieved date, the visibility tag and a content hash, plus `summary:` when the copy is over about 1,500 words. The original stays the source of truth. Binary files are converted to markdown or CSV and the originals are not stored.
 7. Each `index.yml` manifest lists every copy with its retrieved date. For Drive, the manifests are the declared file ids, so the rule "read declared ids only, no broad search" still holds.
 8. Stay out of the repo even as full copies: the SOW and estimate sheets, client-version proposals and estimates (client-visible but commercial), HR document dumps, credential sheets and tabs, hours and rates.
-9. `validate` fails when an S1 file is missing and only reports a missing S2 file. While onboarding, it warns instead; it becomes strict once Step 5 is done.
+9. `validate` fails when an S1 file is missing and only reports a missing S2 file. While onboarding, it warns instead; it becomes strict once Step 5 is done. A running project that moves into this layout after Step 5 therefore lands Stage 1 as one pull request, with every S1 file and folder in it. A pull request that adds only part of Stage 1, such as one function folder, fails `validate`, and there is no partial or migration mode.
 10. The secret scan and the restricted-terms scan cover `internal/` as well as `hub/`. The secret-scan hook must be installed before `internal/` is populated, because it will hold client documents and meeting content.
 11. The repo is never behind the page it feeds. `state.yml` records the page's `covered_through`; `validate` fails when the repo's is older.
 
@@ -162,6 +162,11 @@ Chat channels (Slack, Rocket.Chat, Teams) hold decisions and status that appear 
 The refresh is split in two, because a script cannot call a connector and a model should not do the comparing.
 
 - **The agent fetches.** It reads each source through its connector and puts what it fetched in `local/incoming/` (gitignored, so raw content is never committed by accident). It lists every manifest item in `local/incoming/incoming.yml` with an id, a status (`ok`, `failed`, `deleted` or `restricted`) and the path to the content. A new item is added to its manifest first, with no hash.
+- **How fetched content reaches a file.** A connector returns content to the model, not to a file, and the agent never re-types that content by hand. It passes what the connector returned to the chunked writer, one part at a time (`refresh.py --write-part <name> --part <n>`), and joins the parts with `refresh.py --finish <name>`, which checks that no part is missing and, when given, the part count, the size and the hash. When a connector can save to a file itself, use that instead. Per connector:
+  - **Drive:** export each declared file id as text (documents as markdown or plain text, sheets as CSV) and write it under the manifest item's id.
+  - **Meeting transcripts:** fetch each transcript from the recorder's connector and write one file per meeting.
+  - **Chat:** write the month's messages for one channel to one file, write the digest from it, and never commit the file. Only the digest enters the repo.
+  - **Mail:** write each thread as plain text, one file per thread, and treat it as a document.
 - **The script compares and writes.** `scripts/refresh.py` compares each content hash with the manifest's and rewrites a copy only when the hash changed, updating `retrieved` and the hash. A failed read is recorded as a gap and the old copy stays. A deleted or newly restricted source is flagged and left alone for a person to decide. The scans run on the rewritten copies before anything is staged, and a finding puts every copy back.
 - **The agent writes the summaries.** The script lists, in `local/incoming/needs-summary.yml`, each copy and meeting whose summary must be regenerated. The summary is the agent's work. A document needs one over about 1,500 words, and every meeting needs one.
 - **The run report** goes in `project/internal/hub-operations/reviews/`: what was refreshed, what failed, what was flagged, what was not fetched, and anything that changes Hub content.
@@ -173,6 +178,7 @@ The refresh is split in two, because a script cannot call a connector and a mode
 - Scope: every meeting in the recorder from the first discovery call to the latest.
 - Each meeting becomes a transcript, a summary and a manifest row, tagged client-visible or internal on import. The manifest makes the backfill resumable.
 - It lands as several pull requests grouped by month. Before the first one merges, the PM spot-checks two or three summaries against their transcripts.
+- One session cannot hold every transcript, so the expected method is one subagent per batch (for example one month). Each subagent fetches its batch, writes each file with the chunked writer, and lists its items in `incoming.yml`.
 - The secret scan runs on every transcript, because credentials are sometimes spoken or pasted in meetings. Anything flagged is redacted and noted in the manifest.
 - Later weekly runs add new meetings the same way and never re-summarise a transcript whose hash is unchanged.
 
@@ -187,7 +193,7 @@ The refresh is split in two, because a script cannot call a connector and a mode
 | `codeowners.py` | Writes `.github/CODEOWNERS` from `team.yml`; `hub/` folders also route to the PM |
 | `sync.py` | The single door: validate, branch, commit, push, pull request |
 | `redact.py` | Replaces each secret with `[REDACTED:<rule>]` and records rule, count and date in the manifest entry |
-| `refresh.py` | The deterministic half of the weekly refresh: hashes, rewrites, gaps, flags, the scan, the summaries list and the report |
+| `refresh.py` | The deterministic half of the weekly refresh: hashes, rewrites, gaps, flags, the scan, the summaries list and the report. Its chunked writer puts connector content into `local/incoming/` |
 | `build.py` | Builds the Delivery Hub from the `hub/` files with the template in `templates/delivery-hub/` |
 | `check_render.py` | Static checks on the built page |
 
