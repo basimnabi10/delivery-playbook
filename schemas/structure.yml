@@ -38,6 +38,8 @@ files:
   - {path: "project/internal/meetings/summaries/*.md", schema: meeting-summary, kind: frontmatter, stage: S2}
   - {path: project/internal/documents/index.yml,  schema: manifest, stage: S2}
   - {path: "project/internal/documents/*.md",     schema: copy, kind: frontmatter, stage: S2}
+  - {path: project/internal/chat/index.yml,      schema: manifest, stage: S2}
+  - {path: "project/internal/chat/*.md",          schema: chat-digest, kind: frontmatter, stage: S2}
   - {path: project/internal/risks-and-dependencies.yml, schema: risks, stage: S2}
 
   # product/  owner: product-management
@@ -89,6 +91,7 @@ dirs:
   - {path: project/internal/meetings/summaries/,      stage: S2}
   - {path: project/internal/meetings/transcripts/,    stage: S2}
   - {path: project/internal/documents/,               stage: S2}
+  - {path: project/internal/chat/,                    stage: S2}
 
   # product/
   - {path: product/,                                  stage: S1}
