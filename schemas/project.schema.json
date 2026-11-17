@@ -193,6 +193,26 @@
         "type": "object"
       }
     },
+    "conventions": {
+      "type": "object",
+      "description": "The project's choices for the playbook's conventions (schemas/conventions.yml), grouped as git, releases, environments and layout. Only choices that differ from the recommendation need to be listed, each with a reason. Write it with scripts/conventions.py, which also keeps the deviation log.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "object",
+          "properties": {
+            "choice": {},
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "choice"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
     "hub": {
       "type": "object",
       "properties": {

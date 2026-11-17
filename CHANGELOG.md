@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.1
+
+- Conventions: the playbook recommends, the project decides. `schemas/conventions.yml` lists every overridable convention (git workflow, branch naming, merge method, pull requests, base-branch protection, cross-function pull requests, release scheme, id pattern and status label, environments, repo name pattern, optional folders) with the recommendation, the alternatives and the reason; `onboarding/conventions.md` explains them and lists the rules that are not conventions (client safety, visibility, secrets, the three approval gates).
+- A project's choices go in `conventions:` in `project.yml`; a choice that differs from the recommendation needs a reason. `scripts/conventions.py` writes the choice and the new deviation log, `project/internal/hub-operations/playbook-deviations.yml` (schema `deviations`), together; `validate` fails when they disagree, and preflight lists the active overrides. Migration: none needed. A repo with no `conventions:` block follows every recommendation as before. The free-text `playbook-deviations.md` is replaced by the log; an existing one is left alone with a note, so record its entries with `conventions.py` and delete it.
+
 ## v1.0
 
 - Chat digests get a home: `project/internal/chat/` holds one digest per channel per month (seven summary sections, dated bullets, internal only), indexed by a `chat-digests` manifest. New `chat-digest` schema; `validate.py` checks the sections and dates. From the first full populate run, where the playbook listed chat as a source but had no place to keep what was read.

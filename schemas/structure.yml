@@ -30,7 +30,7 @@ files:
   - {path: project/hub/hours.yml,             schema: hours,      stage: S1, when: pages.hours.enabled}
   - {path: project/internal/hub-operations/update-prompt.md,        kind: text, stage: S1}
   - {path: project/internal/hub-operations/runbook.md,              kind: text, stage: S1}
-  - {path: project/internal/hub-operations/playbook-deviations.md,  kind: text, stage: S1}
+  - {path: project/internal/hub-operations/playbook-deviations.yml, schema: deviations, stage: S2}
   - {path: project/internal/hub-operations/decisions.md,            kind: text, stage: S1}
   - {path: project/internal/hub-operations/playbook-ledger.yml,     schema: ledger, stage: S2}
   - {path: "project/internal/hub-operations/published/*.json",      schema: hub-block, kind: json, stage: S2}

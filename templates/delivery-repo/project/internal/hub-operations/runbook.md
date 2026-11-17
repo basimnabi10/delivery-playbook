@@ -1,6 +1,6 @@
 # Runbook: the weekly run
 
-How this project's weekly Delivery Hub update runs. The agent follows it in order and stops where it says stop. Anything this project does differently goes in `playbook-deviations.md` with the reason. Keep the repo list out of this file: it comes from `registry.yml`.
+How this project's weekly Delivery Hub update runs. The agent follows it in order and stops where it says stop. Anything this project does differently from a playbook recommendation is recorded with `scripts/conventions.py`, which keeps `conventions:` in `project.yml` and `playbook-deviations.yml` in step. Keep the repo list out of this file: it comes from `registry.yml`.
 
 0. **Before you start.** Do "Before a weekly run" in `playbook/onboarding/session-readiness.md`: the Python packages, `gh` (which step 4 uses, so install it if it is missing), the self-test, and the worktree next to this checkout. Work in the worktree from here on.
 1. **Read `state.yml`.** Note the playbook version, the step reached, the repo's `covered_through` date and what the published page covers (`page.covered_through`). The repo must never be older than the page.
