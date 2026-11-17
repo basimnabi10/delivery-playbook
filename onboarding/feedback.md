@@ -85,7 +85,7 @@ Then say, in one line, what you noted. Log problems with the playbook only, neve
 
 **Filing**, for each entry the person wants to file:
 
-1. Write a general draft. Title: where (a step or area name, or a repository path such as `.gitignore` or `scripts/sync.py`), a colon, a plain sentence. Body: what is wrong or missing, and what to change, in general terms with fictional names. Save the body in a file under `local/`.
+1. Write a general draft. Title: where (a step or area name, a repository path such as `.gitignore` or `scripts/sync.py`, or a file name such as `LICENSE` or `Makefile`), a colon, a plain sentence. Body: what is wrong or missing, and what to change, in general terms with fictional names. Save the body in a file under `local/`.
 2. Run `python3 scripts/feedback.py draft F-nnn --title "..." --body-file local/<file>`. It runs the check. If it reports errors, rewrite and run it again. Show the person any warnings.
 3. Show the person the exact title and body, and ask: file it, change it, or skip it. To skip: `python3 scripts/feedback.py mark F-nnn --status skipped --note "<why>"`.
 4. Only after the person approves that text: run `python3 scripts/feedback.py approve F-nnn --by "<the person's name>"`, then `python3 scripts/feedback.py file F-nnn`.
