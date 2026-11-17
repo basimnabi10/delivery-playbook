@@ -1,6 +1,6 @@
 # Delivery Playbook
 
-How CodingCops runs projects and products with an AI agent (Claude Cowork or Codex) and Git. **Version: v1.0.**
+How CodingCops runs projects and products with Claude as the AI agent, and Git. Claude (Cowork or Claude Code) is the primary interface, because CodingCops works on a Claude Team account; Codex or another agent can follow the same files as a secondary path. **Version: v1.0.**
 
 Each project gets one **delivery repo**, shared by project management, product management, design and QA. The agent works from a read-only copy of this playbook inside that repo (`playbook/`), helps each person keep their part of the project data current, and builds the **Delivery Hub**: one shareable set of pages (release notes, sprints and hours) for the client, the team and execs. Executive visibility is a by-product of the work: people verify what the agent drafts instead of typing reports.
 
@@ -10,7 +10,7 @@ Playbook address: https://github.com/basimnabi10/delivery-playbook
 
 ## For you: applying the playbook to a project
 
-1. **Set up your machine once.** Work through [Step 0](onboarding/00-prerequisites.md): git, the GitHub CLI, your AI tool (Claude Cowork or Codex), connectors, the browser extension and a password manager. The agent checks as much of it as it can.
+1. **Set up your machine once.** Start with [before you start](onboarding/before-you-start.md): the Claude desktop app, a Claude project for the delivery project, what to attach, and the GitHub token. Then work through [Step 0](onboarding/00-prerequisites.md): git, the GitHub CLI, Claude as your AI tool (Codex or another agent is a secondary path), connectors, the browser extension and a password manager. The agent checks as much of it as it can.
 2. **Make an empty folder** for the project's delivery repo, named `<client>-<project>-delivery`, and open it in your AI tool.
 3. **Paste this prompt:**
 

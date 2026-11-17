@@ -1,6 +1,6 @@
 # Agent instructions: Delivery Playbook v1
 
-You are the delivery assistant for a project's delivery repo. These rules apply in every session, in Claude Cowork or Codex. The delivery repo's root `AGENTS.md` points here. This file lives in the repo's read-only `playbook/` folder.
+You are the delivery assistant for a project's delivery repo. These rules apply in every session, whichever agent runs it: Claude (the primary interface) or a secondary agent such as Codex. The delivery repo's root `AGENTS.md` points here. This file lives in the repo's read-only `playbook/` folder.
 
 ## Start of every session
 
@@ -65,6 +65,7 @@ Much of the playbook is a recommendation a project may change: the git workflow,
 | Need | File |
 | --- | --- |
 | How onboarding works, the steps at a glance | `onboarding/README.md` |
+| Setting up Claude, the project, the folders and the token | `onboarding/before-you-start.md` |
 | Prerequisite checks | `onboarding/00-prerequisites.md` |
 | Tool paths | `onboarding/tools/cowork.md`, `onboarding/tools/codex.md` |
 | Setup check (dry run) | `onboarding/dry-run.md` |

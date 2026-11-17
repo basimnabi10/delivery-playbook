@@ -1,11 +1,12 @@
 # Onboarding: how it works
 
-A project manager can set up the playbook on a project alone: one prerequisite check (Step 0), then seven steps, on either Claude Cowork or Codex. The PM does the deciding and verifying; the agent does the typing, checking and drafting. Step 0 is done once per person, and Steps 1 to 7 once per project.
+A project manager can set up the playbook on a project alone: one prerequisite check (Step 0), then seven steps, with Claude as the agent (Codex or another agent is a secondary path). The PM does the deciding and verifying; the agent does the typing, checking and drafting. Step 0 is done once per person, and Steps 1 to 7 once per project.
 
 The end product is the **Delivery Hub**: one shareable set of pages (release notes, sprints and hours) that the agent builds from the project's data and keeps current.
 
 | Step | Who does the work | What exists afterwards |
 | --- | --- | --- |
+| [Before you start](before-you-start.md) | PM | The Claude desktop app, a Claude project per delivery project with the folder attached, and the token in place |
 | [0. Prerequisite checks](00-prerequisites.md) | PM, with the PMO for admin items | A passing setup check and dry run |
 | [1. Open the workspace and give the project brief](01-project-brief.md) | PM | A project brief and draft team list, with the SOW read |
 | [2. Ingestion channels registry](02-ingestion-channels.md) | PM answers, agent writes | `registry.yml` |
@@ -31,7 +32,7 @@ While you work, the agent keeps a private ledger of anything in the playbook tha
 
 ## Words used
 
-- **Agent:** your Claude Cowork or Codex session, running the playbook's instructions from the workspace folder.
+- **Agent:** your Claude session (Cowork or Claude Code), or a secondary agent such as Codex, running the playbook's instructions from the workspace folder.
 - **Workspace:** the project's delivery repo, a separate repo shared by project management, product management, design and QA.
 - **Registry:** YAML files that say where project information lives and who is who.
 - **`_inbox/`:** updates the agent proposes, waiting for your accept, edit or reject.

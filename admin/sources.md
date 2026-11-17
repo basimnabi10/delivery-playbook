@@ -21,3 +21,11 @@ Third-party descriptions, to verify in a real Cowork session (item 1 in [decisio
 
 - [Claude Cowork: what it does and where it runs](https://www.eesel.ai/en/blog/claude-code-cowork): connected folder, browser use as a separate capability.
 - [What data can Claude Cowork access](https://aurascape.ai/?p=6406): shell commands in an isolated virtual machine, file access on the device.
+
+Claude documentation checked for [before you start](../onboarding/before-you-start.md) (re-read before rollout):
+
+- [Get started with Claude Cowork](https://support.claude.com/en/articles/13345190-get-started-with-claude-cowork): desktop app and plans, connected folders only, isolated environment for commands, approval modes (Manual, Auto, Skip), deletion always asks, scheduled tasks run in the cloud.
+- [Use Claude Cowork on Team and Enterprise plans](https://support.claude.com/en/articles/13455879-use-claude-cowork-on-team-and-enterprise-plans): network egress under Capabilities, Code execution, applying to new sessions; admin controls such as Auto mode and "Always allow" for connector tools; local sessions.
+- [Organize your tasks with projects in Claude Cowork](https://support.claude.com/en/articles/14116274-organize-your-tasks-with-projects-in-claude-cowork) and [Organize work with projects](https://claude.com/docs/cowork/guide/projects): a project's instructions, folders, links, linked chat project and memory; instructions apply to every session in it; projects are in Cowork, not in Claude Code.
+- [What are projects?](https://support.claude.com/en/articles/9517075-what-are-projects) and [How can I create and manage projects?](https://support.claude.com/en/articles/9519177-how-can-i-create-and-manage-projects): chat project knowledge and instructions, visible to the members a project is shared with.
+- [Claude Code overview](https://code.claude.com/docs/en/overview) and [Claude Code desktop](https://code.claude.com/docs/en/desktop): Claude Code is the Code tab of the desktop app, can run on your machine, and works with git (branches, commits, pull requests).

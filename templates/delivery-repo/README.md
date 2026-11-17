@@ -4,7 +4,7 @@ The delivery repo for <project name>, shared by project management, product mana
 
 ## For you
 
-- **Start a session:** open this folder in Claude Cowork or Codex and say who you are and which function you hold. The agent follows `playbook/`.
+- **Start a session:** open this folder in Claude (or, as a secondary path, Codex) and say who you are and which function you hold. The agent follows `playbook/`.
 - **First time here?** Say "run setup check", then follow the agent. Step 0 is in `playbook/onboarding/00-prerequisites.md`.
 - **Weekly:** say "run preflight", let the agent propose updates, decide the exceptions, then approve the publish and the merge.
 - **Folders:** `project/`, `product/`, `qa/` and `design/` are written by the people who hold those functions. Each has a client-safe `hub/` and an `internal/` tier, and a `README.md` that says what it is for. `_inbox/` holds proposals waiting for a decision. `out/` holds rendered pages. `scripts/` holds the checks and is copied in from the pinned playbook by `new_delivery_repo.py`, so the starter folder does not hold it; `python3 scripts/selftest.py` proves they work. The map is in `playbook/onboarding/repo-layout.md`.

@@ -856,6 +856,27 @@ def more(tmp, dest, remote):
     vfail("a version id that does not match releases.id_pattern fails", "does not match the project's releases.id_pattern")
     reset()
 
+    print("8i. the setup page, the setup convention and the links between pages")
+    check("the Before you start page is there, and the README and Step 0 link to it",
+          (PLAYBOOK / "onboarding/before-you-start.md").exists() and "onboarding/before-you-start.md" in (PLAYBOOK / "README.md").read_text()
+          and "before-you-start.md" in (PLAYBOOK / "onboarding/00-prerequisites.md").read_text())
+    r = pe("scripts/conventions.py", "set", "setup.project_knowledge", "client-visible-documents", "--reason", "the client asked for the brief in the project", "--by", "Dana Ortiz")
+    check("putting documents in project knowledge is a recorded override with a reason", r.returncode == 0 and pe("scripts/validate.py").returncode == 0, r.stdout)
+    check("a project-knowledge choice outside the list is refused", pe("scripts/conventions.py", "set", "setup.project_knowledge", "everything", "--reason", "x", "--by", "Dana Ortiz").returncode == 1)
+    reset()
+    broken = []
+    for md in (PLAYBOOK.rglob("*.md") if PLAYBOOK == PB else []):   # in a delivery repo, scripts/ sits outside playbook/
+        rel = md.relative_to(PLAYBOOK)
+        if rel.parts[0] in ("templates", "local", ".git"):
+            continue
+        for m in re.finditer(r"\]\(([^)#\s]+)(#[^)]*)?\)", md.read_text(encoding="utf-8")):
+            target = m.group(1)
+            if target.startswith(("http:", "https:", "mailto:")) or "<" in target:
+                continue
+            if not (md.parent / target).exists():
+                broken.append(f"{rel}: {target}")
+    check("every relative link between the playbook's pages resolves", not broken, "; ".join(broken[:5]))
+
     print("9. the hub/ file header")
     h = dest / "project/hub/extra.yml"; h.write_text("note: no header here\n")
     r = pe("scripts/validate.py")

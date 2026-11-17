@@ -56,6 +56,11 @@ Nothing here needs a decision from the PM. The first list records what is decide
 | 22 | The pre-filled issue link | The fallback link carries the title and body in the address. A long body may be cut, so the script leaves the body out above about 7,500 characters | Verify with a long draft |
 | 23 | Duplicate search | `gh issue list --search` is fuzzy, so the script treats any hit as a possible duplicate and asks the person | Tune after real issues arrive |
 | 24 | Who keeps the ledger | The ledger sits in `project/internal/hub-operations/`, written by the PM and readable by devs and execs. Product, design and QA tell their PM or open an issue themselves | Confirm, or give each function its own ledger |
+| 25 | Pushing from Cowork | In at least one Cowork session, clone and fetch from GitHub worked but `git push` was refused. Anthropic's documentation does not say when or why | Check in each account with the dry run (session readiness row 8); the fallbacks are in [before you start](../onboarding/before-you-start.md), section 6 |
+| 26 | Scheduled tasks and local folders | The documentation says scheduled tasks run in the cloud and do not need the computer awake, but not whether one can reach a folder connected on that computer | Check in your account before scheduling a draft-only weekly run |
+| 27 | Claude Code and git sign-in | The documentation says Claude Code can run on your computer and works with git (branches, commits, pull requests); it does not say whether a local session pushes with your own git sign-in | Check in your account with `git push --dry-run` from a Claude Code session |
+| 28 | Connectors per project | The documentation lists a Cowork project's instructions, folders, links, linked chat project and memory; it does not say whether connectors can be limited to one project | Check in your account |
+| 29 | Two descriptions of where Cowork runs | One support page says Cowork runs tasks in the cloud; the Team and Enterprise page describes local sessions with code in an isolated virtual machine on the user's computer | The playbook does not depend on which; re-read both pages before rollout |
 
 Checks for item 6. Any "no" means keeping the browser fallback for v1.
 
