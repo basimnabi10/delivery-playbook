@@ -78,6 +78,12 @@ conventions:
       - {id: project-setup, label: Project setup, order: 5}
     alternatives: [any list of environments the project actually has]
     why: These five cover most web projects and say honestly where each change is.
+  - id: setup.project_knowledge
+    type: one-of
+    description: What the delivery project's Claude project holds besides its folders and instructions.
+    recommended: none
+    alternatives: [client-visible-documents]
+    why: Project knowledge is visible to everyone the project is shared with; documents stay in Drive and the repo, read by id, where visibility tags and scans apply.
   - id: layout.repo_name_pattern
     type: text
     description: The pattern for a delivery repo's name.

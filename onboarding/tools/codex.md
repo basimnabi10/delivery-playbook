@@ -1,4 +1,6 @@
-# Path B: Codex
+# Secondary path: Codex
+
+The playbook's primary interface is Claude, because CodingCops works on a Claude Team account (see [the Claude path](cowork.md)). Codex works too, and this page sets it up for anyone who uses it.
 
 Codex runs commands inside an operating-system sandbox that is limited to the current workspace by default, with an approval policy that decides when it must stop and ask. Network access is off by default. The playbook needs workspace-write with approval on request, network on for GitHub, and the Chrome extension for browser reading. These eight settings make it able to run the playbook.
 

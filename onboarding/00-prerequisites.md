@@ -2,16 +2,16 @@
 
 Eight checks, done once per person. **Run every check from inside the agent session, not only in your own terminal:** what is installed and signed in on your machine is not necessarily what the agent's shell can see. A common failure: the agent's shell has no GitHub sign-in, so repos have to be fetched by hand.
 
-Pick your tool path first: [Path A, Claude Cowork](tools/cowork.md) or [Path B, Codex](tools/codex.md). Then work through the table. When it is done, run the [dry run](dry-run.md).
+Read [before you start](before-you-start.md) first. Use Claude: [the Claude path](tools/cowork.md) is the primary one, because CodingCops works on a Claude Team account. [Codex](tools/codex.md) or another agent is a secondary path; nothing is wrong with them, they are just not what the organisation runs on. Then work through the table. When it is done, run the [dry run](dry-run.md).
 
 | # | Check | What you do | What the agent verifies |
 | --- | --- | --- | --- |
 | 0.1 | Accounts and access | Request access to the delivery repo, the project's Google Group and the restricted drive folder. Make sure you have Slack, Rocket.Chat, tldv and any client-tool accounts | Repo clones; the drive folder opens; each web account is signed in where needed |
 | 0.2 | Git and GitHub CLI | Install git, the GitHub CLI and Python 3.9 or later; run `gh auth login`; set `git config user.name` and `user.email` | `git --version`, `gh --version` and `python3 --version` run. `gh auth status` shows you signed in with the scopes needed (typically repo and read:org, plus workflow if CI files will be pushed). `gh repo view <org>/<repo>` opens the delivery repo. For a token you create yourself, see [GitHub sign-in and tokens](#github-sign-in-and-tokens) |
-| 0.3 | AI session tool | Pick your path: **A, Claude Cowork** or **B, Codex**. Install it and sign in on a plan that includes the features below | The workspace folder opens and the playbook instructions load |
+| 0.3 | AI session tool | Install Claude (the desktop app, for Cowork and Claude Code) and sign in with your CodingCops Claude Team account. Only if you cannot, use the secondary path (Codex) | The workspace folder opens and the playbook instructions load |
 | 0.4 | Tool permissions | Set the permissions in your path (A or B) | The [dry run](dry-run.md) |
 | 0.5 | Connectors | Authorise Slack, Gmail, Google Calendar, Google Drive and tldv, plus Atlassian if the project uses Jira | Lists each connector as present or missing, and reads one harmless item from each |
-| 0.6 | Browser fallback | Install the Chrome extension for your path (Claude in Chrome for Cowork, the Codex Chrome extension for Codex). Sign in to Slack web, Rocket.Chat and the client's tool in that browser | Opens a test tab and reads one page you are signed in to |
+| 0.6 | Browser fallback | Install Claude in Chrome (on the secondary path, the Codex Chrome extension). Sign in to Slack web, Rocket.Chat and the client's tool in that browser | Opens a test tab and reads one page you are signed in to |
 | 0.7 | Password manager | Install Bitwarden Free. Set a strong master password and two-step login, store the recovery code, move your tokens in | Cannot verify; you confirm. The agent never reads it |
 | 0.8 | Local setup | In the delivery repo: `pip install -r scripts/requirements.txt` and `sh scripts/install_hooks.sh`. Create the gitignored `local/` folder, `registry.local.yml`, and `local/deny-list.txt` (real client, project and people names, one per line). Optionally `local/preferences.md` for how you like to be asked and shown things, for example "ask all clarifications in one batch" | `git check-ignore local/` confirms it is ignored; the hook blocks a test secret; `python3 scripts/selftest.py` passes |
 
