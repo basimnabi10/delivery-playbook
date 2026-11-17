@@ -54,6 +54,10 @@
               "at-risk",
               "slipped"
             ]
+          },
+          "inferred": {
+            "type": "boolean",
+            "description": "true when the milestone's date or status was inferred rather than read from a source. Never rendered; validate lists it for the reviewer."
           }
         },
         "required": [

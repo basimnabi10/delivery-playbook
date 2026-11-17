@@ -125,6 +125,10 @@
         ],
         "additionalProperties": false
       }
+    },
+    "inferred": {
+      "type": "boolean",
+      "description": "true when this week block was reconstructed afterwards (for example for past weeks when a running project adopts the layout). Never rendered; validate lists it for the reviewer."
     }
   },
   "required": [

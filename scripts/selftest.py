@@ -73,6 +73,10 @@ def run_all(tmp):
     check("creates the repo and the first commit", r.returncode == 0 and (dest / ".git").exists(), r.stdout + r.stderr)
     check("copies playbook/, scripts/ and the layout", all((dest / p).exists() for p in ("playbook/AGENTS.md", "scripts/validate.py", "project/hub/milestones.yml", "qa/hub/known-limitations.yml")))
     check("keeps the starter in playbook/templates/ and scripts out of playbook/", (dest / "playbook/templates/delivery-repo/project.yml").exists() and not (dest / "playbook/scripts").exists())
+    s1_dirs = [e["path"] for e in yaml.safe_load((PLAYBOOK / "schemas/structure.yml").read_text())["dirs"]
+               if e["stage"] == "S1" and not e.get("optional") and not any(c in e["path"] for c in "*?[<")]
+    check("creates every Stage 1 folder in structure.yml", bool(s1_dirs) and all((dest / p).is_dir() for p in s1_dirs),
+          ", ".join(p for p in s1_dirs if not (dest / p).is_dir()))
     bad = sh([PY, str(HERE / "new_delivery_repo.py"), "--name", "BadName", "--dest", str(tmp / "x"), "--playbook", str(PLAYBOOK)])
     check("rejects a name that is not <client>-<project>-delivery", bad.returncode != 0)
 
@@ -485,10 +489,42 @@ def more(tmp, dest, remote):
         tv = sh([PY, str(HERE / "validate.py"), "--root", str(tpl)])
         check("validate passes on the starter folder", tv.returncode == 0 and "OK" in tv.stdout, tv.stdout[-300:])
         check("the starter has no scripts/; new_delivery_repo copies it from the playbook", not (tpl / "scripts").exists() and (dest / "scripts/validate.py").exists())
+        pb2 = tmp / "pb-no-stub"
+        shutil.copytree(PLAYBOOK, pb2, ignore=shutil.ignore_patterns(".git", "__pycache__", "local"))
+        shutil.rmtree(pb2 / "templates/delivery-repo/design/hub")
+        ns = tmp / "no-stub" / "acme-stub-delivery"
+        g = sh([PY, str(HERE / "new_delivery_repo.py"), "--name", "acme-stub-delivery", "--dest", str(ns), "--playbook", str(pb2)])
+        check("new_delivery_repo creates a Stage 1 folder the starter lacks (design/hub/), with a .gitkeep",
+              g.returncode == 0 and (ns / "design/hub/.gitkeep").exists() and "design/hub/" in g.stdout, g.stdout[-300:] + g.stderr[-300:])
+        sv = sh([PY, "scripts/validate.py", "--mode", "strict"], cwd=ns)
+        check("on that fresh repo, strict validate reports no missing folder", "folder is missing" not in sv.stdout, sv.stdout[-400:])
+        dump(ns / "team.yml", {"functions": {"project-management": {"owner": "dana"}, "product-management": {"owner": "dana"}, "design": {"owner": "priya"}, "qa": {"owner": "omar"}},
+                               "people": [{"id": "dana", "name": "Dana Ortiz", "org": "internal", "functions": ["project-management"], "handles": {"github": "dana-o"}},
+                                          {"id": "priya", "name": "Priya Nair", "org": "internal", "functions": ["design"], "handles": {}}], "readers": []})
+        sh(["git", "commit", "-q", "-am", "team"], cwd=ns); sh(["git", "switch", "-q", "-c", "pm-change"], cwd=ns)
+        ph = ns / "project/hub/phases.yml"; ph.write_text(ph.read_text() + "# pm edit\n"); sh(["git", "commit", "-q", "-am", "pm edit"], cwd=ns)
+        cw = sh([PY, "scripts/check_writers.py", "--base", "main", "--head", "pm-change", "--author", "dana-o"], cwd=ns)
+        check("with every Stage 1 folder in place, the PM's change passes check_writers (no design/ stub to add)", cw.returncode == 0, cw.stdout)
     shutil.rmtree(dest / "design/hub"); vfail("a missing S1 folder (design/hub/) fails in strict mode", "design/hub/: folder is missing")
     reset()
     shutil.rmtree(dest / "qa/internal/runs"); r = pe("scripts/validate.py")
     check("a missing S2 folder is only reported", r.returncode == 0 and "qa/internal/runs/: folder is missing" in r.stdout, r.stdout[-300:])
+    reset()
+
+    print("8b. values marked inferred (adopting a running project)")
+    pvw = dest / "out/preview/index.html"
+    pe("scripts/build.py"); base_count = pvw.read_text().lower().count("inferred") if pvw.exists() else -1
+    for rel, path in (("product/hub/capabilities.yml", ("areas", 0, "items", 0)), ("project/hub/milestones.yml", ("milestones", 0)),
+                      ("product/hub/security.yml", ("cards", 0)), (next(str(p.relative_to(dest)) for p in sorted((dest / "project/hub/weeks").glob("*.yml"))), ())):
+        d = yaml.safe_load((dest / rel).read_text()); node = d
+        for k in path:
+            node = node[k]
+        node["inferred"] = True; dump(dest / rel, d)
+    r = pe("scripts/validate.py")
+    check("validate accepts inferred: true on capabilities, security cards, milestones and week blocks, and lists each file",
+          r.returncode == 0 and r.stdout.count("value(s) marked inferred") == 4, r.stdout[-500:])
+    b = pe("scripts/build.py")
+    check("the inferred flag is not shown on the client page", b.returncode == 0 and base_count >= 0 and pvw.read_text().lower().count("inferred") == base_count, b.stdout[-300:])
     reset()
 
     print("9. the hub/ file header")
@@ -655,6 +691,29 @@ def more(tmp, dest, remote):
     r = pe("scripts/refresh.py", "--today", "2026-11-16", "--sync", "--no-pr", "--allow-pending-summaries")
     on_remote = sh(["git", "ls-remote", "--heads", str(remote), "project/refresh-2026-11-16"]).stdout.strip()
     check("--sync hands the branch to sync.py and never touches main", r.returncode == 0 and bool(on_remote) and sh(["git", "rev-parse", "main"], cwd=dest).stdout.strip() == head, r.stdout[-400:])
+
+    print("12b. the chunked writer for connector content")
+    winc = dest / "local/incoming"; winc.mkdir(parents=True, exist_ok=True)
+
+    def wp(name, n, data):
+        return subprocess.run([PY, "scripts/refresh.py", "--write-part", name, "--part", str(n)], cwd=dest, input=data, capture_output=True)
+    chunks = ["Ana: caf\u00e9 at nine\n".encode(), b"Ben: agreed\r\n", b"no newline at the end"]
+    whole = b"".join(chunks)
+    for n in (2, 3, 1):
+        wp("meetings/m-1.md", n, chunks[n - 1])
+    r = pe("scripts/refresh.py", "--finish", "meetings/m-1.md", "--parts", "3", "--bytes", str(len(whole)), "--sha256", sha256_text(whole.decode()).replace("sha256:", ""))
+    out = winc / "meetings/m-1.md"
+    check("the chunked writer joins numbered parts byte for byte, in any write order, and removes the parts",
+          r.returncode == 0 and out.read_bytes() == whole and not (winc / "meetings/m-1.md.parts").exists(), r.stdout)
+    wp("m-2.md", 1, b"one"); wp("m-2.md", 3, b"three")
+    r1 = pe("scripts/refresh.py", "--finish", "m-2.md")
+    wp("m-2.md", 2, b"two")
+    r2 = pe("scripts/refresh.py", "--finish", "m-2.md", "--sha256", "0" * 64)
+    check("a missing part or a wrong hash stops the writer and writes nothing",
+          r1.returncode == 1 and "part(s) 2 missing" in r1.stdout and r2.returncode == 1 and not (winc / "m-2.md").exists() and (winc / "m-2.md.parts").is_dir(), r1.stdout + r2.stdout)
+    r3 = pe("scripts/refresh.py", "--finish", "m-2.md", "--bytes", "11")
+    check("retrying after the missing part is written succeeds", r3.returncode == 0 and (winc / "m-2.md").read_bytes() == b"onetwothree", r3.stdout)
+    check("a name outside the incoming folder is refused", wp("../escape.md", 1, b"x").returncode == 1 and not (dest / "local/escape.md").exists())
     reset()
 
     print("13. the week rule")

@@ -5,7 +5,9 @@
                                        [--create-remote OWNER]
 
 Run it from a clone of the playbook. It:
-  1. copies templates/delivery-repo/ into the new folder
+  1. copies templates/delivery-repo/ into the new folder, and creates every Stage 1 folder in schemas/structure.yml
+     that the starter lacks, with a .gitkeep in each empty one, so no function ever has to create another
+     function's folder (check_writers would block it)
   2. copies this script's own scripts/ folder into the new folder's scripts/ (so no script lives on one machine only,
      and it works the same from a playbook clone or from inside a delivery repo)
   3. copies the rest of the playbook into playbook/ as a pinned, read-only copy
@@ -24,6 +26,9 @@ from pathlib import Path
 
 import subprocess
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _common import load_yaml  # noqa: E402
+
 
 def run(cmd, cwd=None, check=False):
     r = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True)
@@ -35,6 +40,25 @@ def run(cmd, cwd=None, check=False):
 HERE = Path(__file__).resolve().parent
 PLAYBOOK = HERE.parent
 IGNORE = shutil.ignore_patterns("__pycache__", "*.pyc", ".DS_Store")
+
+
+def stage1_folders(pb, dest):
+    """Create every Stage 1 folder listed in structure.yml, with a .gitkeep in each empty one. Returns the ones added."""
+    sp = pb / "schemas" / "structure.yml"
+    if not sp.exists():
+        return []
+    added = []
+    for e in load_yaml(sp).get("dirs", []) or []:
+        p = e["path"]
+        if e.get("stage") != "S1" or e.get("optional") or any(c in p for c in "*?[<"):
+            continue
+        d = dest / p.rstrip("/")
+        if not d.exists():
+            added.append(p)
+        d.mkdir(parents=True, exist_ok=True)
+        if not any(d.iterdir()):
+            (d / ".gitkeep").touch()
+    return added
 
 
 def main(argv=None):
@@ -56,6 +80,9 @@ def main(argv=None):
         print(f"ERROR: {tpl} not found. Run this from a clone of the playbook."); return 2
 
     shutil.copytree(tpl, dest, dirs_exist_ok=True, ignore=IGNORE)
+    added = stage1_folders(pb, dest)
+    if added:
+        print(f"new_delivery_repo: added {len(added)} Stage 1 folder(s) the starter lacked: {', '.join(added)}")
     shutil.copytree(HERE, dest / "scripts", dirs_exist_ok=True, ignore=IGNORE)
     skip = {".git", ".github", "scripts", "local", "__pycache__"}
     (dest / "playbook").mkdir(exist_ok=True)

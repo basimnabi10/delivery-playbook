@@ -19,6 +19,10 @@ A new project and a running project get equal billing, and the steps are the sam
 
 If the baseline is a published Delivery Hub page, the agent parses it into proposals, one per section, stamped with the page's version (`extract_from_page`, see [scripts](../scripts/README.md)). Once you accept them, the `hub/` files are the source and the page is checked against them: the repo must never be older than the page. Releases are matched by id, never by position, because the page may list them newest first.
 
+**Stage 1 lands as one pull request.** A running project usually moves into the layout after Step 5, when `validate` is strict, so a pull request with only part of Stage 1 (for example one function folder) fails. Put every Stage 1 file and folder in a single pull request. There is no partial or migration mode. See [the layout](repo-layout.md), rule 9.
+
+**Fields the page does not show.** Some required values cannot be read from an existing page: the release a capability arrived in, when a security claim was last verified, and the week blocks for past weeks. Mark a value unknown where its schema allows that. Otherwise infer it from the repos, the registry and the meeting summaries, and set `inferred: true` on that item (a capability item, a security card, a milestone or a week block). The flag is never shown on the client page. `validate` lists every file that holds an inferred value, so the reviewer in [Step 6](06-review-and-publish.md) can confirm each one; remove the flag once a value is confirmed.
+
 The inventory and the decisions go in `project.yml` (fictional example):
 
 ```yaml
@@ -39,7 +43,7 @@ conflicts:
     evidence: "That tool shows no issues; the work is in the repos' pull requests"
 ```
 
-**Done when** every client-shared artefact is in the inventory with a decision, every claim in each baseline has a status, and every contradiction is resolved or recorded as an open item.
+**Done when** every client-shared artefact is in the inventory with a decision, every claim in each baseline has a status, every contradiction is resolved or recorded as an open item, and every value that could not be read from the baseline is marked unknown or `inferred: true`.
 
 ## If it goes wrong
 
