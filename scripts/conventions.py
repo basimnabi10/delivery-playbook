@@ -6,6 +6,8 @@
   python3 scripts/conventions.py set git.flow gitflow --reason "the client's release process needs a develop branch" --by "Dana Ortiz"
   python3 scripts/conventions.py set git.flow github-flow --by "Dana Ortiz"        back to the recommendation
   python3 scripts/conventions.py check
+  python3 scripts/conventions.py exception git.pull_request_required --task "..." [--task "..."] --reason "..." --by "..."
+  python3 scripts/conventions.py close D-004 --done "what was done"
 
 The playbook recommends; a project may choose differently (onboarding/conventions.md). A choice that differs from the
 recommendation needs a reason. `set` writes the choice into conventions: in project.yml and an entry in
@@ -49,11 +51,7 @@ def replace_top_level(text, key, block):
 
 
 def write_log(root, entries, today):
-    p = root / C.LOG
-    p.parent.mkdir(parents=True, exist_ok=True)
-    head = ("# The project's choices that differ from the playbook's recommendations, and exceptions for one approved task.\n"
-            "# Written by scripts/conventions.py and scripts/sync.py. Do not edit by hand. See playbook/onboarding/conventions.md.\n")
-    p.write_text(head + yaml.safe_dump({"schema": "deviations", "updated": today, "entries": entries}, sort_keys=False, width=120, allow_unicode=True))
+    C.write_log(root, entries, today)
 
 
 def main(argv=None):
@@ -67,6 +65,9 @@ def main(argv=None):
     p = sub.add_parser("show", parents=[common]); p.add_argument("id")
     p = sub.add_parser("set", parents=[common]); p.add_argument("id"); p.add_argument("choice"); p.add_argument("--reason", default=""); p.add_argument("--by", required=True)
     sub.add_parser("check", parents=[common])
+    p = sub.add_parser("exception", parents=[common]); p.add_argument("id"); p.add_argument("--task", action="append", required=True)
+    p.add_argument("--reason", required=True); p.add_argument("--by", required=True)
+    p = sub.add_parser("close", parents=[common]); p.add_argument("entry"); p.add_argument("--done", action="append", default=[])
     a = ap.parse_args(argv)
     root = Path(a.root).resolve() if a.root else find_root()
     today = a.today or a.today_top or date.today().isoformat()
@@ -106,6 +107,29 @@ def main(argv=None):
             print("ERROR", e)
         print(f"conventions: {'ok' if not errs else str(len(errs)) + ' problem(s)'}")
         return 1 if errs else 0
+
+    if a.cmd == "exception":
+        c = reg.get(a.id)
+        if not c or c.get("scope") != "task":
+            print(f"ERROR: {a.id} is not a convention that allows a task exception"); return 1
+        if not a.reason.strip():
+            print("ERROR: give the person's reason with --reason"); return 1
+        n = max([int(e["id"][2:]) for e in entries if str(e.get("id", "")).startswith("D-")] + [0]) + 1
+        entries.append({"id": f"D-{n:03d}", "kind": "exception", "convention": a.id, "recommended": c["recommended"], "chosen": c["alternatives"][0],
+                        "reason": a.reason.strip(), "decided_by": a.by, "decided_on": today, "status": "active", "tasks": a.task})
+        write_log(root, entries, today)
+        print(f"D-{n:03d}: exception to {a.id} for {len(a.task)} approved task(s), recorded. Use it with: scripts/sync.py --exception D-{n:03d}. "
+              f"Close it when the tasks are done: scripts/conventions.py close D-{n:03d} --done \"...\"")
+        return 0
+
+    if a.cmd == "close":
+        e = next((x for x in entries if x.get("id") == a.entry), None)
+        if not e or e.get("kind") != "exception" or e.get("status") != "active":
+            print(f"ERROR: {a.entry} is not an active exception"); return 1
+        e["status"], e["retired_on"] = "retired", today
+        e["tasks"] = (e.get("tasks") or []) + [f"done: {d}" for d in a.done]
+        write_log(root, entries, today)
+        print(f"{a.entry} closed"); return 0
 
     # set
     c = reg.get(a.id)

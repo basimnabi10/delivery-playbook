@@ -1,9 +1,11 @@
 # Written in Step 3: who is on the project and who holds each function.
+# Recommended: the PM (or lead) owns all four functions from the start. When a function gets its own person, that
+# person becomes its owner and the PM its backup. Pull requests for a function's folder are authored by its holder.
 functions:
-  project-management: {}
-  product-management: {}   # one person can hold two functions: list both in that person's `functions`
-  design: {}
-  qa: {}
+  project-management: {owner: ""}
+  product-management: {owner: ""}
+  design: {owner: ""}
+  qa: {owner: ""}
 people: []
 # Optional fields per person: client_facing, engagement (billed | shadow),
 # status (proposed | confirmed | left-client | inactive), introduced_to_client,

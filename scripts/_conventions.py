@@ -130,3 +130,14 @@ def active_lines(root):
         lines.append(f"{e.get('id')} {what} {e.get('convention')}: {e.get('chosen')!r} instead of {e.get('recommended')!r}{tasks}. "
                      f"Reason: {e.get('reason')} ({e.get('decided_by')}, {e.get('decided_on')})")
     return lines
+
+
+def write_log(root, entries, today=None):
+    import yaml
+    from datetime import date
+    p = root / LOG
+    p.parent.mkdir(parents=True, exist_ok=True)
+    head = ("# The project's choices that differ from the playbook's recommendations, and exceptions for one approved task.\n"
+            "# Written by scripts/conventions.py and scripts/sync.py. Do not edit by hand. See playbook/onboarding/conventions.md.\n")
+    p.write_text(head + yaml.safe_dump({"schema": "deviations", "updated": today or date.today().isoformat(), "entries": entries},
+                                       sort_keys=False, width=120, allow_unicode=True))
