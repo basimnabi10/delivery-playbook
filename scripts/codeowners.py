@@ -13,16 +13,12 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _common import find_root, load_yaml, schemas_dir  # noqa: E402
+from _common import code_owner_ids, find_root, function_people, load_yaml, schemas_dir  # noqa: E402
 
 
 def handles_for(team, fn):
     people = {p["id"]: p for p in team.get("people", []) or []}
-    ids = []
-    cfg = (team.get("functions") or {}).get(fn) or {}
-    for k in ("owner", "backup"):
-        if cfg.get(k):
-            ids.append(cfg[k])
+    ids = function_people((team.get("functions") or {}).get(fn))
     for p in people.values():
         if fn in (p.get("functions") or []) and p["id"] not in ids:
             ids.append(p["id"])
@@ -38,7 +34,7 @@ def build(team, folders):
     lines = ["# Generated from team.yml by scripts/codeowners.py. Do not edit by hand.",
              "# GitHub only honours an entry for a person who has Write access to the repo.", ""]
     pm = handles_for(team, "project-management")
-    shared_ids = (team.get("code_owners") or {}).get("people")
+    shared_ids = code_owner_ids(team)
     if shared_ids:
         people = {p["id"]: p for p in team.get("people", []) or []}
         shared = ["@" + ((people.get(i) or {}).get("handles") or {}).get("github", "").lstrip("@") for i in shared_ids

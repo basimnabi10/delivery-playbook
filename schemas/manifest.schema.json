@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "schemas/manifest.schema.json",
   "title": "manifest",
-  "description": "Index of the copies or locations in a folder. For Drive, it is the list of declared file ids.",
+  "description": "Index of the copies or locations in a folder. For Drive, it is the list of declared file ids. Item paths resolve relative to the manifest's own folder, not the repo root. Copies under product/internal/ and qa/internal/ have no manifest of their own: the project's documents manifest (project/internal/documents/index.yml) lists them, with paths such as ../../../qa/internal/test-plans/plan.md.",
   "type": "object",
   "properties": {
     "schema": {
@@ -69,7 +69,8 @@
             "type": "string"
           },
           "path": {
-            "type": "string"
+            "type": "string",
+            "description": "Relative to this manifest's folder (for example transcripts/2026-11-02-sync.md, or ../../../qa/internal/test-plans/plan.md for a QA copy listed in a project manifest)."
           },
           "gist": {
             "type": "string",

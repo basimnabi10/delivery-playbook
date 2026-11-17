@@ -82,11 +82,14 @@
               "connector",
               "api",
               "browser",
-              "manual"
-            ]
+              "manual",
+              "none"
+            ],
+            "description": "How the source is read. none: listed so everyone knows it exists, and never read."
           },
           "commercial": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "true when the source holds commercial terms (rates, totals, payment terms, estimates), including ones the client already holds. Such a source stays out of shared data either way."
           },
           "files": {
             "type": "array",

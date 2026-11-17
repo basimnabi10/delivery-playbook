@@ -649,6 +649,39 @@ def more(tmp, dest, remote):
     vfail("a withheld entry that holds the content fails", "withheld.yml")
     reset()
 
+    print("8d. schema alignment: registry, team and manifests")
+    rg = yaml.safe_load((dest / "registry.yml").read_text())
+    rg["sources"] = rg.get("sources", []) + [{"id": "drive-estimate", "type": "drive-sheet", "visibility": "restricted", "read": "none", "commercial": True}]
+    dump(dest / "registry.yml", rg)
+    r = pe("scripts/validate.py")
+    check("a source with read: none and commercial: true validates", r.returncode == 0, r.stdout[-300:])
+    rg["sources"][-1]["commercial"] = "client-holds"; dump(dest / "registry.yml", rg)
+    vfail("commercial must be true or false", "commercial")
+    reset()
+    tm = yaml.safe_load((dest / "team.yml").read_text())
+    tm["functions"]["qa"] = {"owner": "omar", "backups": ["lee"]}
+    tm["functions"]["engineering"] = {"owner": "lee"}
+    tm["people"].append({"id": "lee", "name": "Lee Chen", "org": "internal", "functions": ["engineering"], "handles": {"github": "lee-c"}})
+    tm["code_owners"] = ["dana"]
+    dump(dest / "team.yml", tm)
+    r = pe("scripts/validate.py")
+    check("team.yml with an extra function, backups as a list and code_owners as a list validates", r.returncode == 0, r.stdout[-300:])
+    co = pe("scripts/codeowners.py"); cotext = (dest / ".github/CODEOWNERS").read_text() if co.returncode == 0 else ""
+    check("codeowners reads the list forms (a QA backup, code_owners as a list)",
+          any(l.startswith("/qa/ ") and "@lee-c" in l for l in cotext.splitlines()) and any(l.startswith("/team.yml") and "@dana-o" in l for l in cotext.splitlines()), cotext[:400])
+    sh(["git", "switch", "-q", "-c", "t8d"], cwd=dest); sh(["git", "add", "-A"], cwd=dest); sh(["git", "commit", "-q", "-m", "team"], cwd=dest)
+    kl = dest / "qa/hub/known-limitations.yml"; kl.write_text(kl.read_text() + "# backup edit\n"); sh(["git", "commit", "-q", "-am", "qa by backup"], cwd=dest)
+    cw = pe("scripts/check_writers.py", "--base", "t8d~1", "--head", "t8d", "--author", "lee-c")
+    check("check_writers counts a backup named under backups, and ignores the extra function", cw.returncode == 0, cw.stdout)
+    reset()
+    plan = dest / "qa/internal/test-plans/plan.md"
+    fm_file(plan, {"source": "drive", "source_id": "f-9", "retrieved": t, "visibility": "internal", "content_hash": "sha256:x"}, "A QA copy.\n")
+    dump(dest / "project/internal/documents/index.yml", {"schema": "manifest", "kind": "documents", "updated": t, "items": [
+        {"id": "D9", "title": "QA plan", "visibility": "internal", "source": "drive", "source_id": "f-9", "retrieved": t, "path": "../../../qa/internal/test-plans/plan.md"}]})
+    r = pe("scripts/validate.py")
+    check("the project's documents manifest lists a QA copy by a path relative to its own folder", r.returncode == 0 and "listed but the file is missing" not in r.stdout, r.stdout[-300:])
+    reset()
+
     print("9. the hub/ file header")
     h = dest / "project/hub/extra.yml"; h.write_text("note: no header here\n")
     r = pe("scripts/validate.py")
