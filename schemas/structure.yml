@@ -41,6 +41,7 @@ files:
   - {path: project/internal/chat/index.yml,      schema: manifest, stage: S2}
   - {path: "project/internal/chat/*.md",          schema: chat-digest, kind: frontmatter, stage: S2}
   - {path: project/internal/risks-and-dependencies.yml, schema: risks, stage: S2}
+  - {path: project/internal/withheld.yml,     schema: withheld, stage: S2}
 
   # product/  owner: product-management
   - {path: product/README.md,              kind: text, stage: S2}

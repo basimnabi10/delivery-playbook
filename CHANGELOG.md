@@ -41,3 +41,7 @@
 - A week is named by its last day everywhere on the page ("Week ending 9 Nov"; the Monday when `week_ends: monday`): the stats, the chart's tooltips and table, and the last-week card (layout rule 12).
 - Try-it prompts may leave out `category`; the page then shows no label instead of a stand-in.
 - Timeline band labels: an optional `short_label` per phase and `gap_short_label` for the gap before it; without them a narrow band's name is cut from its start ("GAP BEF…"), never shortened to a made-up "P2".
+- The local GitHub token file may also be read for the read-only GitHub calls the steps require (fetching private code repos, `count_prs.py --source gh`, deploy-run checks), with the same handling rules and the same once-per-session warning.
+- New rule: a live secret found in a source is reported to the person by source and location, with a suggestion to rotate it, and never repeated or stored.
+- New rule: an employee's HR details (immigration, pay, medical) found in copied material are left out of the copy, and `project/internal/withheld.yml` (schema `withheld`) records each omission by source and location, never the content (layout rule 14).
+- Step 0 has a done-when that includes a non-empty `local/deny-list.txt`, and preflight warns while it is missing or empty.

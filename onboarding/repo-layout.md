@@ -58,6 +58,7 @@ One line per path, two spaces per level. A name with a placeholder (`YYYY-MM-DD`
         index.yml                    S2  manifest: one item per channel per month, with redaction counts
         <source-id>-YYYY-MM.md       S2  one digest per channel per month, same seven sections as a meeting summary
       risks-and-dependencies.yml     S2  open dependencies on the client, risks, conflicts (claim, stated by, date)
+      withheld.yml                   S2  HR details left out of copies: source and location only, never the content
 
   product/                           S1  owner: product-management
     README.md                        S2  what the folder is for
@@ -136,6 +137,7 @@ Each function folder also holds a `README.md` that names its owner, its scope an
 11. The repo is never behind the page it feeds. `state.yml` records the page's `covered_through`; `validate` fails when the repo's is older.
 12. A week ends on the day `rules.counting.week_ends` names, in `rules.counting.time_zone`, and is named by that last day: "week ending 9 Nov". With `week_ends: monday`, a week is named by its Monday. The page uses that one name everywhere: the stats, the chart and its table, and the last-week card.
 13. `rules.counting.week_rule` is written for the team and is never shown on the page, because it can name people and scripts. The page shows `rules.counting.client_text` when it is set, otherwise a fixed sentence that gives the week-end day and the time zone. The scan and `check_render.py` fail a built page that names one of the playbook's scripts.
+14. An employee's HR details (immigration, pay, medical) found in copied material never enter the repo. The copy keeps only what passes the restricted-terms check, and `project/internal/withheld.yml` records each omission by source and location, never its content (see `AGENTS.md`).
 
 ## Meetings
 
