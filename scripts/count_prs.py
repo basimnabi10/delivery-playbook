@@ -7,13 +7,23 @@ The counts come from this script, never from the model. The week rule is a param
 registry.yml (rules.counting.week_ends and rules.counting.time_zone) or given on the command line.
 
 Sources:
-  git (default)  reads merge history on the production branch of local clones. A pull request is a
-                 commit whose subject starts "Merge pull request #N" or ends "(#N)" (squash merges).
-  gh             asks GitHub with `gh pr list --state merged` (needs `gh` signed in).
+  gh (default)   asks GitHub with `gh pr list --state merged`, so every merge method counts. When `gh` is missing
+                 or not signed in, it falls back to git and says so: rebase merges can then be missed.
+  git            reads merge history on the merge branch of local clones. A pull request is a commit whose
+                 subject starts "Merge pull request #N" or ends "(#N)" (squash merges). Rebase merges are missed.
+
+The branch is code.merge_branch in registry.yml, the branch pull requests merge into. code.production_branch is
+still read when merge_branch is absent (older registries). code.deploy_branch, if set, is not used for counting.
+
+The covered week. Without --today, the count runs up to the week ending recorded in state.yml (covered_through),
+never to the day the script happens to run, so a late or back-dated run does not move covered_through or add a
+partial week. The weekly prompt passes --today <the week ending> to move it on. Merges after that date are not
+counted. With no date in state.yml, the run date is used.
 """
 import argparse
 import json
 import re
+import shutil
 import sys
 from collections import defaultdict
 from datetime import date, datetime, timedelta
@@ -60,18 +70,18 @@ def main(argv=None):
     ap.add_argument("--root")
     ap.add_argument("--repos-dir", help="folder holding a clone of each repo, named after the repo")
     ap.add_argument("--repo-path", action="append", default=[], metavar="NAME=PATH", help="override one repo's clone path")
-    ap.add_argument("--source", choices=["git", "gh"], default="git")
+    ap.add_argument("--source", choices=["git", "gh"], default="gh", help="gh (default; falls back to git with a warning) or git")
     ap.add_argument("--week-ends", choices=DAYS, help="the day a week ends (default: registry, else sunday)")
     ap.add_argument("--time-zone", help="IANA time zone (default: registry, else UTC)")
     ap.add_argument("--since", help="first date to count from (default: the first merge)")
-    ap.add_argument("--today", help="treat this date as today (for tests)")
+    ap.add_argument("--today", help="count up to this date, the week ending (default: covered_through in state.yml)")
     ap.add_argument("--out", help="write YAML here (default: print)")
     args = ap.parse_args(argv)
 
     root = Path(args.root).resolve() if args.root else find_root()
     reg = load_yaml(root / "registry.yml") if (root / "registry.yml").exists() else {}
     repos = get_path(reg, "code.repos", []) or []
-    branch = get_path(reg, "code.production_branch", "main") or "main"
+    branch = get_path(reg, "code.merge_branch") or get_path(reg, "code.production_branch") or "main"
     ends = (args.week_ends or get_path(reg, "rules.counting.week_ends") or "sunday").lower()
     tzname = args.time_zone or get_path(reg, "rules.counting.time_zone") or "UTC"
     rule_text = get_path(reg, "rules.counting.week_rule") or f"weeks end {ends.capitalize()}, {tzname}"
@@ -79,12 +89,27 @@ def main(argv=None):
     if not repos:
         raise SystemExit("ERROR: registry.yml lists no repos under code.repos")
     overrides = dict(p.split("=", 1) for p in args.repo_path)
-    today = date.fromisoformat(args.today) if args.today else datetime.now(tz).date()
+    state = load_yaml(root / "state.yml") if (root / "state.yml").exists() else {}
+    recorded = (state or {}).get("covered_through")
+    if args.today:
+        today = date.fromisoformat(args.today)
+    elif recorded:
+        today = date.fromisoformat(str(recorded))
+        print(f"count_prs: counting up to {today}, the week ending recorded in state.yml (pass --today to move it on)", file=sys.stderr)
+    else:
+        today = datetime.now(tz).date()
+    source = args.source
+    if source == "gh":
+        gh = shutil.which("gh")
+        if not gh or run([gh, "auth", "status"]).returncode != 0:
+            print("WARNING: gh is " + ("not installed" if not gh else "not signed in") + ", so this count uses git history. "
+                  "Pull requests merged by rebase can be missed; check the total against GitHub.", file=sys.stderr)
+            source = "git"
 
     per_repo = {}
     for repo in repos:
         name = repo.split("/")[-1]
-        if args.source == "gh":
+        if source == "gh":
             per_repo[repo] = merged_from_gh(repo, branch, tz)
             continue
         p = Path(overrides.get(name) or (Path(args.repos_dir).expanduser() / name if args.repos_dir else ""))
@@ -98,7 +123,7 @@ def main(argv=None):
     counts, by_repo = defaultdict(int), defaultdict(lambda: defaultdict(int))
     for repo, days in per_repo.items():
         for d in days:
-            if args.since and d < date.fromisoformat(args.since):
+            if (args.since and d < date.fromisoformat(args.since)) or d > today:
                 continue
             we = week_ending(d, ends_idx)
             counts[we] += 1

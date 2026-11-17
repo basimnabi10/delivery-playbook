@@ -30,7 +30,8 @@ If you are unsure, tag a source `internal`. You can loosen it later; a wrong `cl
 ```yaml
 code:
   repos: [acme/web, acme/core, acme/service]
-  production_branch: main
+  merge_branch: main          # the branch pull requests merge into; the weekly counts read it
+  deploy_branch: production   # optional: only when production deploys from a different branch
 sources:
   - {id: slack-client,   type: slack,       ref: "#acme-client",     visibility: client-visible, read: connector}
   - {id: slack-internal, type: slack,       ref: "#acme-internal",   visibility: internal,       read: connector}

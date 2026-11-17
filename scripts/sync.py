@@ -1,14 +1,20 @@
 #!/usr/bin/env python3
 """sync: the single door for changes. Validate, branch, commit, push, open the pull request.
 
-  python3 scripts/sync.py --function project --topic weekly-update-2026-11-16 -m "Weekly update" [--dry-run]
+  python3 scripts/sync.py --function project --topic weekly-update-2026-11-16 -m "Weekly update" [--title T] [--base B] [--dry-run]
 
 Order of work, and it stops at the first failure:
   1. validate.py must pass. If it fails, nothing is branched or committed.
-  2. create the branch <function>/<topic> (the agent never commits to main)
+  2. create the branch <function>/<topic> from where you are (the agent never commits to main). It does this when
+     you are on the base branch or on a detached HEAD (a worktree made from origin/main is detached). On any other
+     branch it commits there.
   3. stage everything not ignored, then scan the staged files for secrets
   4. commit, push, and open the pull request with `gh`
 If `gh` is missing or not signed in, the exact commands to run yourself are printed instead.
+The pull request title is --title, or else the first line of the commit message.
+
+Stacked pull requests (a backfill in parts): check out the branch of the part below, then run sync with
+--base <that branch>. The new branch starts from it, and its pull request targets it instead of main.
 The first commit of a new repo is the only one made straight to main, and new_delivery_repo.py makes it.
 """
 import argparse
@@ -38,7 +44,8 @@ def main(argv=None):
     ap.add_argument("--topic", required=True, help="short kebab-case topic, for example weekly-update-2026-11-16")
     ap.add_argument("-m", "--message", required=True)
     ap.add_argument("--body-file", help="markdown file for the pull request description")
-    ap.add_argument("--base", default="main")
+    ap.add_argument("--title", help="pull request title (default: the first line of the commit message)")
+    ap.add_argument("--base", default="main", help="the branch the pull request targets; on it, the new branch starts from it")
     ap.add_argument("--remote", default="origin")
     ap.add_argument("--dry-run", action="store_true", help="validate and show the plan, change nothing")
     ap.add_argument("--no-pr", action="store_true", help="push the branch but do not open a pull request")
@@ -66,11 +73,13 @@ def main(argv=None):
         print("sync: dry run, nothing changed"); return 0
 
     cur = git("rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
-    if cur == args.base:
-        if git("rev-parse", "--verify", branch).returncode == 0:
+    if cur in (args.base, "HEAD"):   # "HEAD" means detached: never commit there
+        if git("rev-parse", "--verify", "-q", f"refs/heads/{branch}").returncode == 0:
             print(f"ERROR: branch {branch} already exists. Pick another topic."); return 2
         if git("switch", "-c", branch).returncode != 0:
             print("ERROR: could not create the branch"); return 2
+        if cur == "HEAD":
+            print(f"sync: HEAD was detached; created {branch} from it")
     else:
         branch = cur
         print(f"sync: already on {branch}, committing there")
@@ -94,13 +103,14 @@ def main(argv=None):
     print(f"sync: pushed {branch}")
     if args.no_pr:
         return 0
+    title = args.title or args.message.strip().splitlines()[0]
     body = Path(args.body_file).read_text() if args.body_file else f"{args.message}\n\nChanged: " + ", ".join(f"{k} ({len(v)})" for k, v in group(files).items())
     if gh:
-        pr = run(["gh", "pr", "create", "--base", args.base, "--head", branch, "--title", args.message, "--body", body], cwd=root)
+        pr = run(["gh", "pr", "create", "--base", args.base, "--head", branch, "--title", title, "--body", body], cwd=root)
         if pr.returncode == 0:
             print(f"sync: pull request opened: {pr.stdout.strip()}"); return 0
         print(f"sync: gh could not open the pull request ({pr.stderr.strip().splitlines()[-1] if pr.stderr.strip() else 'error'}).")
-    print("Open the pull request yourself:\n  " + f'gh pr create --base {args.base} --head {branch} --title "{args.message}" --fill\n  or on GitHub: compare {branch} with {args.base}.')
+    print("Open the pull request yourself:\n  " + f'gh pr create --base {args.base} --head {branch} --title "{title}" --fill\n  or on GitHub: compare {branch} with {args.base}.')
     return 0
 
 

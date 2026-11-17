@@ -25,8 +25,11 @@ publish, merge, send or overwrite anything.
    changed, and record a failed read as a gap.
 4. Counts come from scripts/count_prs.py, using rules.counting (merged pull
    requests per week for every repo in code.repos, the merged-PR definition
-   and the week rule). Do not count yourself. If the script fails, say so
-   and leave the counts unchanged.
+   and the week rule). Pass the week ending this run covers:
+   python3 scripts/count_prs.py --today <week ending> --out project/hub/weekly-prs.yml
+   It asks GitHub through gh; if it warns that it fell back to git, say so,
+   because rebase merges can be missed. Do not count yourself. If the script
+   fails, say so and leave the counts unchanged.
 5. Write proposals into _inbox/ with evidence, confidence and visibility, and
    label each change's environment: production, staging, internal-testing, design-only or project-setup.
 6. Switches: include the Hours page only if pages.hours.enabled is true, and

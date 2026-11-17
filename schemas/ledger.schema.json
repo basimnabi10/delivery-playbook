@@ -82,6 +82,7 @@
               "drafted",
               "approved",
               "filed",
+              "commented",
               "skipped",
               "duplicate"
             ]
@@ -106,7 +107,8 @@
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
           },
           "issue": {
-            "type": "string"
+            "type": "string",
+            "description": "The issue link (filed), or the comment link ending #issuecomment-<number> (commented)."
           },
           "note": {
             "type": "string"

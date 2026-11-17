@@ -100,7 +100,7 @@ def run_all(tmp):
     reg["sources"] = [{"id": "slack-client", "type": "slack", "ref": "#acme", "visibility": "client-visible", "read": "connector"}]
     reg["rules"]["counting"].update({"week_rule": "Monday to Sunday, UTC", "week_ends": "sunday", "time_zone": "UTC"})
     dump(dest / "registry.yml", reg)
-    c = sh([PY, "scripts/count_prs.py", "--repos-dir", str(repos), "--out", "project/hub/weekly-prs.yml"], cwd=dest)
+    c = sh([PY, "scripts/count_prs.py", "--source", "git", "--repos-dir", str(repos), "--out", "project/hub/weekly-prs.yml"], cwd=dest)
     wk = yaml.safe_load((dest / "project/hub/weekly-prs.yml").read_text()) if c.returncode == 0 else {}
     check("counts 4 merged PRs once each (a repeated PR and a non-PR are ignored)", c.returncode == 0 and wk.get("total") == 4, c.stdout + c.stderr)
     check("every week ends on the configured day", all(date.fromisoformat(w["week_ending"]).weekday() == 6 for w in wk.get("weeks", [])))
@@ -498,7 +498,8 @@ def feedback_section(tmp):
     gh = bindir / "gh"
     gh.write_text("#!/bin/sh\necho \"$@\" >> \"$GH_LOG\"\ncase \"$1 $2\" in\n  \"auth status\") exit 0;;\n  \"issue list\") echo \"${GH_LIST:-[]}\"; exit 0;;\n"
                   "  \"issue create\")\n    if [ -n \"$GH_FAIL_LABEL\" ] && echo \"$@\" | grep -q -- \"--label\"; then echo \"could not add label\" >&2; exit 1; fi\n"
-                  "    echo \"https://github.com/basimnabi10/delivery-playbook/issues/42\"; exit 0;;\nesac\nexit 0\n")
+                  "    echo \"https://github.com/basimnabi10/delivery-playbook/issues/42\"; exit 0;;\n"
+                  "  \"issue comment\") echo \"https://github.com/basimnabi10/delivery-playbook/issues/$3#issuecomment-555\"; exit 0;;\nesac\nexit 0\n")
     gh.chmod(0o755)
     log = tmp / "feedback" / "gh.log"
     env = lambda **k: {"PATH": str(bindir) + os.pathsep + os.environ["PATH"], "GH_LOG": str(log), **k}  # noqa: E731
@@ -528,6 +529,23 @@ def feedback_section(tmp):
     check("with no gh, nothing is filed and a link to open is given", nf.returncode == 3 and "issues/new?template=suggest-a-change.md&title=" in nf.stdout and entries()[3]["status"] == "approved" and (fb / "local/playbook-feedback/F-004.md").exists(), nf.stdout)
     mk = F("mark", "F-004", "--status", "filed", "--issue", "https://github.com/basimnabi10/delivery-playbook/issues/43")
     check("the person can record the issue they opened by hand", mk.returncode == 0 and entries()[3]["status"] == "filed")
+
+    F("add", "--step", "template", "--kind", "bug", "--raw", "Caches got committed.")
+    dot = ".gitignore: ignore Python caches in the delivery repo starter"
+    dr5 = F("draft", "F-005", "--title", dot, "--body", "Running the scripts creates a cache folder that the starter does not ignore, so it ends up in commits. Ignore it in the starter.")
+    check("a title may start with a dotfile or any repository path", dr5.returncode == 0 and entries()[4]["status"] == "drafted", dr5.stdout)
+    check("a title that names no place is still refused", F("check", "--title", "Fix: the caches end up in every commit", "--body", "x" * 80).returncode == 1)
+    F("approve", "F-005", "--by", "Dana Ortiz")
+    log.write_text("")
+    cm = F("comment", "F-005", "--on", "7", env=env())
+    calls = [l for l in log.read_text().splitlines() if l.startswith("issue comment")]
+    check("comment posts the approved draft on the existing issue and records the comment link",
+          cm.returncode == 0 and entries()[4]["status"] == "commented" and entries()[4]["issue"].endswith("/issues/7#issuecomment-555")
+          and calls and calls[0].startswith("issue comment 7 --repo basimnabi10/delivery-playbook"), cm.stdout + "\n".join(calls))
+    check("a commented entry passes validate", sh([PY, "scripts/validate.py"], cwd=fb).returncode == 0)
+    ml = F("mark", "F-004", "--status", "filed", "--issue", "https://github.com/basimnabi10/delivery-playbook/issues/43#issuecomment-77")
+    check("mark --issue accepts a comment link", ml.returncode == 0 and entries()[3]["issue"].endswith("#issuecomment-77"), ml.stdout)
+    check("mark --status commented needs a comment link", F("mark", "F-004", "--status", "commented", "--issue", "https://github.com/basimnabi10/delivery-playbook/issues/43").returncode == 2)
 
     def ledger_breaks(name, mutate, expect):
         keep = led.read_text(); doc = yaml.safe_load(keep); mutate(doc); dump(led, doc)
@@ -827,11 +845,69 @@ def more(tmp, dest, remote):
     sh(["git", "commit", "-q", "--allow-empty", "-m", "Merge pull request #1 from a/b"], cwd=web2, env={"GIT_COMMITTER_DATE": when, "GIT_AUTHOR_DATE": when})
 
     def week_of(day):
-        r = pe("scripts/count_prs.py", "--repos-dir", str(repos2), "--week-ends", day, "--today", "2026-11-10")
+        r = pe("scripts/count_prs.py", "--source", "git", "--repos-dir", str(repos2), "--week-ends", day, "--today", "2026-11-10")
         weeks = yaml.safe_load(r.stdout)["weeks"] if r.returncode == 0 else []
         return [w["week_ending"] for w in weeks if w["merged"]]
     check("--week-ends monday counts a Monday merge toward the week just finished", week_of("monday") == ["2026-11-02"], str(week_of("monday")))
     check("--week-ends sunday counts the same merge toward the week after", week_of("sunday") == ["2026-11-08"], str(week_of("sunday")))
+
+    print("13b. count_prs: gh first, the recorded week, the merge branch")
+    late = "2026-11-12T12:00:00+00:00"   # after the recorded week ending
+    sh(["git", "commit", "-q", "--allow-empty", "-m", "Merge pull request #2 from a/c"], cwd=web2, env={"GIT_COMMITTER_DATE": late, "GIT_AUTHOR_DATE": late})
+    st13 = yaml.safe_load((dest / "state.yml").read_text()); st13["covered_through"] = "2026-11-08"; dump(dest / "state.yml", st13)
+    ghbin = tmp / "gh13"; ghbin.mkdir(exist_ok=True); fake_gh = ghbin / "gh"
+
+    def gh_stub(auth_ok, prs="[]"):
+        fake_gh.write_text("#!/bin/sh\ncase \"$1 $2\" in\n  \"auth status\") exit " + ("0" if auth_ok else "1") + ";;\n"
+                           "  \"pr list\") echo '" + prs + "'; exit 0;;\nesac\nexit 0\n"); fake_gh.chmod(0o755)
+    genv = {"PATH": str(ghbin) + os.pathsep + os.environ["PATH"]}
+    gh_stub(False)
+    r = sh([PY, "scripts/count_prs.py", "--repos-dir", str(repos2), "--week-ends", "sunday"], cwd=dest, env=genv)
+    doc = yaml.safe_load(r.stdout) if r.returncode == 0 else {}
+    check("without a signed-in gh, count_prs falls back to git and warns that rebase merges can be missed",
+          r.returncode == 0 and "falls back" not in r.stdout and "rebase" in r.stderr and doc.get("total") == 1, r.stdout[-200:] + r.stderr[-300:])
+    check("without --today, a late run counts up to the week ending in state.yml and does not move it",
+          doc.get("covered_through") == "2026-11-08" and doc.get("partial_week") is False and [w["week_ending"] for w in doc.get("weeks", [])][-1] == "2026-11-08", str(doc)[:300])
+    gh_stub(True, '[{"number":1,"mergedAt":"2026-11-02T12:00:00Z"},{"number":5,"mergedAt":"2026-11-04T09:00:00Z"}]')
+    r = sh([PY, "scripts/count_prs.py", "--week-ends", "sunday"], cwd=dest, env=genv)
+    doc = yaml.safe_load(r.stdout) if r.returncode == 0 else {}
+    check("by default it asks GitHub through gh, so a pull request merged by rebase is counted too",
+          r.returncode == 0 and doc.get("total") == 2 and "WARNING" not in r.stderr, r.stdout[-200:] + r.stderr[-200:])
+    dev = "2026-11-03T12:00:00+00:00"
+    sh(["git", "switch", "-q", "-c", "develop"], cwd=web2)
+    sh(["git", "commit", "-q", "--allow-empty", "-m", "Add a thing (#9)"], cwd=web2, env={"GIT_COMMITTER_DATE": dev, "GIT_AUTHOR_DATE": dev})
+    sh(["git", "switch", "-q", "main"], cwd=web2)
+    rg = yaml.safe_load((dest / "registry.yml").read_text()); rg["code"].pop("production_branch", None); rg["code"]["merge_branch"] = "develop"; dump(dest / "registry.yml", rg)
+    r = pe("scripts/count_prs.py", "--source", "git", "--repos-dir", str(repos2), "--week-ends", "sunday", "--today", "2026-11-08")
+    check("count_prs counts on code.merge_branch", r.returncode == 0 and yaml.safe_load(r.stdout)["total"] == 2, r.stdout[-200:] + r.stderr[-200:])
+    rg["code"].pop("merge_branch"); rg["code"]["production_branch"] = "main"; dump(dest / "registry.yml", rg)
+    r = pe("scripts/count_prs.py", "--source", "git", "--repos-dir", str(repos2), "--week-ends", "sunday", "--today", "2026-11-08")
+    check("an older registry with only production_branch still counts, and validates",
+          r.returncode == 0 and yaml.safe_load(r.stdout)["total"] == 1 and pe("scripts/validate.py").returncode == 0, r.stdout[-200:])
+    reset()
+
+    print("13c. sync: a detached HEAD, the title, stacked pull requests")
+    nogh = tmp / "nogh13"; nogh.mkdir(exist_ok=True)
+    plain = {"PATH": str(nogh) + os.pathsep + os.environ["PATH"]}
+    sh(["git", "checkout", "-q", "--detach", "main"], cwd=dest)
+    p13 = dest / "project/hub/phases.yml"; p13.write_text(p13.read_text() + "# detached edit\n")
+    s1 = pe("scripts/sync.py", "--function", "project", "--topic", "detached", "-m", "Detached change\n\nMore detail in the body.", env=plain)
+    head = sh(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=dest).stdout.strip()
+    on_remote = sh(["git", "ls-remote", "--heads", str(remote), "project/detached"]).stdout.strip()
+    check("on a detached HEAD, sync creates <function>/<topic> before committing and pushes it",
+          s1.returncode == 0 and head == "project/detached" and bool(on_remote) and "HEAD was detached" in s1.stdout, s1.stdout[-400:])
+    check("the pull request title defaults to the first line of the commit message", 'title "Detached change" --fill' in s1.stdout, s1.stdout[-300:])
+    p13.write_text(p13.read_text() + "# part two\n")
+    s2 = pe("scripts/sync.py", "--function", "project", "--topic", "part-two", "-m", "Part two", "--title", "Backfill, part 2", "--base", "project/detached", env=plain)
+    stacked = sh(["git", "merge-base", "--is-ancestor", "project/detached", "project/part-two"], cwd=dest).returncode == 0
+    check("--base stacks a pull request on another branch, and --title sets its title",
+          s2.returncode == 0 and stacked and "--base project/detached --head project/part-two" in s2.stdout and '"Backfill, part 2"' in s2.stdout, s2.stdout[-400:])
+    sh(["git", "checkout", "-q", "--detach", "main"], cwd=dest)
+    p13.write_text(p13.read_text() + "# no remote\n")
+    s3 = pe("scripts/sync.py", "--function", "project", "--topic", "offline", "-m", "Offline", "--remote", "nowhere", env=plain)
+    check("when the push fails, sync prints the push command with the new branch name, not HEAD",
+          s3.returncode == 3 and "git push -u nowhere project/offline" in s3.stdout, s3.stdout[-300:])
+    reset()
 
     print("14. the selftest runs inside a generated delivery repo")
     if NESTED:

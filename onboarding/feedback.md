@@ -85,11 +85,11 @@ Then say, in one line, what you noted. Log problems with the playbook only, neve
 
 **Filing**, for each entry the person wants to file:
 
-1. Write a general draft. Title: where, a colon, a plain sentence. Body: what is wrong or missing, and what to change, in general terms with fictional names. Save the body in a file under `local/`.
+1. Write a general draft. Title: where (a step or area name, or a repository path such as `.gitignore` or `scripts/sync.py`), a colon, a plain sentence. Body: what is wrong or missing, and what to change, in general terms with fictional names. Save the body in a file under `local/`.
 2. Run `python3 scripts/feedback.py draft F-nnn --title "..." --body-file local/<file>`. It runs the check. If it reports errors, rewrite and run it again. Show the person any warnings.
 3. Show the person the exact title and body, and ask: file it, change it, or skip it. To skip: `python3 scripts/feedback.py mark F-nnn --status skipped --note "<why>"`.
 4. Only after the person approves that text: run `python3 scripts/feedback.py approve F-nnn --by "<the person's name>"`, then `python3 scripts/feedback.py file F-nnn`.
-   - Exit code 4 means possible duplicates were found and listed. Show them. The person chooses: add a comment to one of them, skip, or file anyway with `--allow-duplicates`.
+   - Exit code 4 means possible duplicates were found and listed. Show them. The person chooses: add a comment to one of them, skip, or file anyway with `--allow-duplicates`. To comment, run `python3 scripts/feedback.py comment F-nnn --on <issue number>`: it runs the same check, posts the approved text as a comment, and records the comment link. Without `gh`, it prints the issue link and saves the text; once the person has posted it, run `python3 scripts/feedback.py mark F-nnn --status commented --issue <the comment link>`.
    - Exit code 3 means `gh` is missing, not signed in, or refused. Give the person the link it printed. When they have filed it, run `python3 scripts/feedback.py mark F-nnn --status filed --issue <link>`.
 5. When you are done, say how many were filed, skipped and left. The ledger changes reach the repo through `scripts/sync.py` like any other change.
 

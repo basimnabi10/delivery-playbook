@@ -15,16 +15,38 @@
             "minLength": 1
           }
         },
+        "merge_branch": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The branch pull requests merge into. count_prs.py counts merges on it."
+        },
+        "deploy_branch": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional: the branch production deploys from, when it differs from merge_branch. Not used for counting."
+        },
         "production_branch": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "Older name for merge_branch, still read when merge_branch is absent."
         }
       },
       "required": [
-        "repos",
-        "production_branch"
+        "repos"
       ],
-      "additionalProperties": true
+      "additionalProperties": true,
+      "anyOf": [
+        {
+          "required": [
+            "merge_branch"
+          ]
+        },
+        {
+          "required": [
+            "production_branch"
+          ]
+        }
+      ]
     },
     "sources": {
       "type": "array",
