@@ -287,6 +287,50 @@ def run_all(tmp):
 
     more(tmp, dest, remote)
     feedback_section(tmp)
+    upgrade_section(tmp)
+
+
+def upgrade_section(tmp):
+    print("16. upgrade_playbook: move playbook/ and scripts/ together")
+    fake = tmp / "pb-versions"
+    shutil.copytree(PLAYBOOK, fake, ignore=shutil.ignore_patterns(".git", "__pycache__", "local"))
+    shutil.copytree(HERE, fake / "scripts", dirs_exist_ok=True, ignore=shutil.ignore_patterns("__pycache__"))
+    g = lambda *a: sh(["git", *a], cwd=fake)  # noqa: E731
+    g("init", "-q", "-b", "main"); g("add", "-A"); g("commit", "-q", "-m", "old"); g("tag", "v9.0")
+    (fake / "onboarding/new-in-v9-1.md").write_text("New page.\n")
+    (fake / "scripts/added_in_v9_1.txt").write_text("marker\n")
+    old_page = next(p for p in sorted((fake / "onboarding").glob("*.md")) if p.name != "new-in-v9-1.md")
+    g("rm", "-q", str(old_page.relative_to(fake))); g("add", "-A"); g("commit", "-q", "-m", "new"); g("tag", "v9.1")
+    g("checkout", "-q", "v9.0")
+    rp = tmp / "upgrade" / "acme-pin-delivery"
+    n = sh([PY, str(HERE / "new_delivery_repo.py"), "--name", "acme-pin-delivery", "--dest", str(rp), "--playbook", str(fake)])
+    g("checkout", "-q", "main")
+    pinned = (yaml.safe_load((rp / "state.yml").read_text()) or {}).get("playbook_version") if n.returncode == 0 else None
+    check("a repo made from an old playbook records that pin", pinned == "v9.0", n.stdout[-300:] + n.stderr[-300:])
+    rem = tmp / "upgrade" / "remote.git"; sh(["git", "init", "-q", "--bare", "-b", "main", str(rem)])
+    sh(["git", "remote", "add", "origin", str(rem)], cwd=rp); sh(["git", "push", "-q", "-u", "origin", "main"], cwd=rp)
+    up = lambda *a: sh([PY, "scripts/upgrade_playbook.py", "--playbook", str(fake), *a], cwd=rp)  # noqa: E731
+    c = up("--check")
+    check("--check reports a pin that is behind (exit 3, with the count)", c.returncode == 3 and "1 commit(s) behind" in c.stdout, c.stdout + c.stderr)
+    (rp / "project/hub/phases.yml").write_text((rp / "project/hub/phases.yml").read_text() + "# stray\n")
+    d = up("--to", "v9.1", "--no-pr")
+    check("the upgrade refuses a working folder with other changes", d.returncode == 1 and "has changes" in d.stdout, d.stdout)
+    sh(["git", "checkout", "-q", "--", "."], cwd=rp)
+    u = up("--to", "v9.1", "--no-pr")
+    st = yaml.safe_load((rp / "state.yml").read_text()) or {}
+    check("the upgrade moves playbook/ and scripts/ together, removing files the new version dropped",
+          u.returncode == 0 and (rp / "playbook/onboarding/new-in-v9-1.md").exists() and (rp / "scripts/added_in_v9_1.txt").exists()
+          and not (rp / "playbook" / old_page.relative_to(fake)).exists(), u.stdout[-500:] + u.stderr[-300:])
+    check("state.yml records the new version", st.get("playbook_version") == "v9.1" and bool(st.get("playbook_date")), str(st.get("playbook_version")))
+    on_remote = sh(["git", "ls-remote", "--heads", str(rem), "pmo/upgrade-playbook-v9.1"]).stdout.strip()
+    check("it hands the branch to sync.py and never commits to main",
+          bool(on_remote) and sh(["git", "log", "--oneline", "-1", "main"], cwd=rp).stdout.find("Upgrade") == -1, u.stdout[-300:])
+    sh(["git", "switch", "-q", "main"], cwd=rp)
+    sh(["git", "merge", "-q", "--ff-only", "pmo/upgrade-playbook-v9.1"], cwd=rp)
+    c2 = up("--check")
+    check("after the upgrade, --check reports the pin as current", c2.returncode == 0 and "is current" in c2.stdout, c2.stdout)
+    back = up("--to", "v9.0", "--no-pr")
+    check("moving the pin backwards is refused", back.returncode == 1 and "older than the pin" in back.stdout, back.stdout)
 
 
 # ---------------------------------------------------------------- sections 8 to 14

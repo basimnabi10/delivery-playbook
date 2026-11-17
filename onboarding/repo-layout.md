@@ -197,4 +197,4 @@ The refresh is split in two, because a script cannot call a connector and a mode
 | `build.py` | Builds the Delivery Hub from the `hub/` files with the template in `templates/delivery-hub/` |
 | `check_render.py` | Static checks on the built page |
 
-Planned, with their interfaces in [`scripts/README.md`](../scripts/README.md): `extract_from_page` and `upgrade_playbook`. The page's look is specified in [the design spec](../templates/delivery-hub/design.md).
+`upgrade_playbook.py` moves `playbook/` and `scripts/` to a newer playbook version together, by pull request. Planned, with its interface in [`scripts/README.md`](../scripts/README.md): `extract_from_page`. The page's look is specified in [the design spec](../templates/delivery-hub/design.md).
