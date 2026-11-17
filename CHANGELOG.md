@@ -1,6 +1,6 @@
 # Changelog
 
-## v1 draft
+## v1.0
 
 - Chat digests get a home: `project/internal/chat/` holds one digest per channel per month (seven summary sections, dated bullets, internal only), indexed by a `chat-digests` manifest. New `chat-digest` schema; `validate.py` checks the sections and dates. From the first full populate run, where the playbook listed chat as a source but had no place to keep what was read.
 - First split of the onboarding guide into repo files: Step 0 to Step 7, the Cowork and Codex paths, the dry run, joining a project, and the admin material.
