@@ -349,12 +349,14 @@ def main(argv=None):
                 res.error(rel, f"duplicate ledger id {dup}")
             for e in doc.get("entries", []):
                 st, d = e.get("status"), e.get("draft") or {}
-                if st in ("drafted", "approved", "filed") and not (d.get("title") and d.get("body")):
+                if st in ("drafted", "approved", "filed", "commented") and not (d.get("title") and d.get("body")):
                     res.error(rel, f"{e.get('id')} is {st} but has no draft title and body")
-                if st in ("approved", "filed") and not e.get("approved_by"):
+                if st in ("approved", "filed", "commented") and not e.get("approved_by"):
                     res.error(rel, f"{e.get('id')} is {st} but nobody approved it (approved_by is empty)")
-                if st == "filed" and not re.search(r"^https://github\.com/[^/\s]+/[^/\s]+/issues/\d+$", e.get("issue", "")):
+                if st == "filed" and not re.search(r"^https://github\.com/[^/\s]+/[^/\s]+/issues/\d+(#issuecomment-\d+)?$", e.get("issue", "")):
                     res.error(rel, f"{e.get('id')} is filed but has no issue link")
+                if st == "commented" and not re.search(r"^https://github\.com/[^/\s]+/[^/\s]+/issues/\d+#issuecomment-\d+$", e.get("issue", "")):
+                    res.error(rel, f"{e.get('id')} is commented but has no comment link")
 
     if not args.no_scan:
         for rel, n, rule in scan_visibility.scan(root, ["."], registry=registry or {}):

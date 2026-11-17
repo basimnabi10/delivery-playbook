@@ -3,7 +3,7 @@ code:
   - acme/portal-web
   - acme/portal-api
   - acme/portal-infra
-  production_branch: main
+  merge_branch: main
 sources:
 - id: slack-client
   type: slack

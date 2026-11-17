@@ -1,7 +1,8 @@
 # Written in Step 2: where project information lives, and who may see what comes from it.
 code:
   repos: []
-  production_branch: main
+  merge_branch: main       # the branch pull requests merge into; count_prs.py counts merges on it
+  # deploy_branch: production   # optional, when production deploys from a different branch
 sources: []   # each: id, type, ref, visibility, read (connector | api | browser | manual); optional owner, url, files, commercial
 restricted_drive_folder: ""
 versioning: {}

@@ -13,7 +13,9 @@ project. Only an approved, generic draft is ever filed, and only after the perso
   feedback.py draft F-001 --title "Step 4: ..." --body-file draft.md
   feedback.py approve F-001 --by "Dana Ortiz"   run only after the person has approved the exact text
   feedback.py file F-001 [--dry-run]            files the issue with gh, or prints a link to open
-  feedback.py mark F-001 --status skipped|duplicate|filed|open [--issue URL] [--note "..."]
+  feedback.py comment F-001 --on 12 [--dry-run] posts the approved draft as a comment on an existing issue instead
+  feedback.py mark F-001 --status skipped|duplicate|filed|commented|open [--issue URL] [--note "..."]
+                                                URL: an issue link, or a comment link (#issuecomment-...)
 
 The public repo gets nothing that points back to a project: the check blocks names on the deny-list
 (local/deny-list.txt), secrets, finding and ticket numbers, emails, handles and internal addresses,
@@ -41,7 +43,11 @@ KINDS = ["gap", "wrong", "unclear", "friction", "idea", "bug", "worked"]
 SEVERITIES = ["blocker", "friction", "minor"]
 STEPS = ["0", "1", "2", "3", "4", "5", "6", "7", "joining", "adopting", "layout", "scripts", "template", "feedback", "other"]
 OPEN_STATES = ("open", "drafted", "approved")
-TITLE_RX = re.compile(r"^(Step [0-7]|Joining|Adopting|Layout|Scripts|Template|Feedback|Other|[A-Za-z0-9_./-]+\.(?:md|yml|yaml|py|json|html|css|js|sh)): \S.{8,}$")
+# Where the problem is: a step or area name, or any repository path. A path has a dot or a slash in it, so a
+# dotfile (.gitignore) or a nested path (templates/delivery-repo/.gitignore) counts and a plain word does not.
+TITLE_RX = re.compile(r"^(Step [0-7]|Joining|Adopting|Layout|Scripts|Template|Feedback|Other|(?=[^:\s]*[./])[A-Za-z0-9_./-]*[A-Za-z0-9_][A-Za-z0-9_./-]*): \S.{8,}$")
+ISSUE_URL_RX = re.compile(r"^https://github\.com/[^/\s]+/[^/\s]+/issues/\d+$")
+COMMENT_URL_RX = re.compile(r"^https://github\.com/[^/\s]+/[^/\s]+/issues/\d+#issuecomment-\d+$")
 ALLOWED_HANDLES = {"@basimnabi10"}
 COMMON = set("""The This That These Those There Then They Their It Its In On At To For Of And Or But If When While Where Which Who What Why How
 Step Steps Hub Delivery Playbook Project PM Product Design QA Agent Claude Cowork Codex GitHub Slack Rocket Chat Google Drive Gmail Calendar
@@ -247,6 +253,39 @@ def possible_duplicates(gh, repo, title):
 
 
 # ------------------------------------------------------------------ commands
+def comment(root, doc, a, today):
+    """Post an approved draft as a comment on an existing issue (the choice offered when file finds a duplicate)."""
+    e = find_entry(doc, a.id)
+    d = e.get("draft") or {}
+    if e["status"] != "approved":
+        print("ERROR: %s is %s. Draft it, show the person the exact text, and run approve first." % (a.id, e["status"])); return 2
+    errs, warns = check_text(root, d["title"], d["body"]); report(errs, [])
+    if errs:
+        print("comment: nothing was posted, the draft no longer passes the check"); return 1
+    repo = a.repo or PLAYBOOK_REPO
+    text = "**" + d["title"] + "**\n\n" + compose_body(e)
+    out = root / "local" / "playbook-feedback"
+    out.mkdir(parents=True, exist_ok=True)
+    f = out / (a.id + "-comment.md")
+    f.write_text(text, encoding="utf-8")
+    issue_url = "https://github.com/%s/issues/%d" % (repo, a.on)
+    if a.dry_run:
+        print("comment: dry run. Would comment on %s\n  text saved in %s" % (issue_url, f.relative_to(root))); return 0
+    gh = gh_ready()
+    if not gh:
+        print("comment: gh is not installed or not signed in, so nothing was posted.")
+        print("Open %s, paste the text saved in %s as a comment, then run:\n  python3 scripts/feedback.py mark %s --status commented --issue <the comment link>"
+              % (issue_url, f.relative_to(root), a.id)); return 3
+    r = run([gh, "issue", "comment", str(a.on), "--repo", repo, "--body-file", str(f)])
+    m = re.search(r"https://github\.com/\S+/issues/\d+#issuecomment-\d+", (r.stdout or "") + (r.stderr or ""))
+    if r.returncode != 0 or not m:
+        print("comment: gh could not post the comment (%s)." % ((r.stderr or r.stdout).strip().splitlines() or ["no output"])[-1])
+        print("Open %s and paste the text saved in %s." % (issue_url, f.relative_to(root))); return 3
+    e["status"] = "commented"; e["issue"] = m.group(0)
+    save_ledger(root, doc, today)
+    print("%s posted as a comment: %s" % (a.id, m.group(0))); return 0
+
+
 def read_body(a):
     if getattr(a, "body_file", None):
         return Path(a.body_file).read_text(encoding="utf-8")
@@ -267,7 +306,8 @@ def main(argv=None):
     p = sub.add_parser("draft"); p.add_argument("id"); p.add_argument("--title", required=True); p.add_argument("--body"); p.add_argument("--body-file")
     p = sub.add_parser("approve"); p.add_argument("id"); p.add_argument("--by", required=True)
     p = sub.add_parser("file"); p.add_argument("id"); p.add_argument("--repo"); p.add_argument("--dry-run", action="store_true"); p.add_argument("--allow-duplicates", action="store_true")
-    p = sub.add_parser("mark"); p.add_argument("id"); p.add_argument("--status", required=True, choices=["open", "skipped", "duplicate", "filed"]); p.add_argument("--issue", default=""); p.add_argument("--note", default="")
+    p = sub.add_parser("comment"); p.add_argument("id"); p.add_argument("--on", required=True, type=int, metavar="ISSUE"); p.add_argument("--repo"); p.add_argument("--dry-run", action="store_true")
+    p = sub.add_parser("mark"); p.add_argument("id"); p.add_argument("--status", required=True, choices=["open", "skipped", "duplicate", "filed", "commented"]); p.add_argument("--issue", default=""); p.add_argument("--note", default="")
     a = ap.parse_args(argv)
     root = Path(a.root).resolve() if a.root else find_root()
     today = a.today or date.today().isoformat()
@@ -340,14 +380,19 @@ def main(argv=None):
 
     if a.cmd == "mark":
         e = find_entry(doc, a.id)
-        if a.status == "filed" and not re.search(r"^https://github\.com/[^/\s]+/[^/\s]+/issues/\d+$", a.issue):
-            print("ERROR: give the issue link with --issue"); return 2
-        if a.status == "filed" and not e.get("approved_by"):
+        if a.status == "filed" and not (ISSUE_URL_RX.match(a.issue) or COMMENT_URL_RX.match(a.issue)):
+            print("ERROR: give the issue link (or the comment link) with --issue"); return 2
+        if a.status == "commented" and not COMMENT_URL_RX.match(a.issue):
+            print("ERROR: give the comment link with --issue (it ends #issuecomment-<number>)"); return 2
+        if a.status in ("filed", "commented") and not e.get("approved_by"):
             print("ERROR: %s was never approved. Run approve first." % a.id); return 2
         e["status"] = a.status
         if a.issue: e["issue"] = a.issue
         if a.note: e["note"] = a.note
         save_ledger(root, doc, today); print("%s marked %s" % (a.id, a.status)); return 0
+
+    if a.cmd == "comment":
+        return comment(root, doc, a, today)
 
     # file
     e = find_entry(doc, a.id)
@@ -377,7 +422,7 @@ def main(argv=None):
             print("POSSIBLE DUPLICATES on %s:" % repo)
             for x in dups:
                 print("  #%s [%s] %s  %s" % (x.get("number"), x.get("state"), x.get("title"), x.get("url")))
-            print("file: nothing was filed. Ask the person: add a comment to one of these, skip this entry, or file anyway with --allow-duplicates.")
+            print("file: nothing was filed. Ask the person: add a comment to one of these (feedback.py comment %s --on <number>), skip this entry, or file anyway with --allow-duplicates." % a.id)
             return 4
     cmd = [gh, "issue", "create", "--repo", repo, "--title", d["title"], "--body-file", str(f)]
     r = run(cmd + ["--label", "suggestion"])
