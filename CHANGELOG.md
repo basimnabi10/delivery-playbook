@@ -15,6 +15,8 @@
 - New first page, [before you start](onboarding/before-you-start.md): run the playbook in the Claude desktop app in Cowork (Claude Code for git where a session cannot push; Codex or another agent as the secondary path), one Claude project per delivery project with its instructions, attach the delivery folder (and its parent for weekly runs) and no project knowledge (new convention `setup.project_knowledge`), which GitHub token to create and where to keep it, which sessions may read it, the approval mode and permissions for autonomous runs, network egress, scheduled runs, and what to do when the session cannot push. Statements about Claude come from Anthropic's documentation (listed in `admin/sources.md`); the rest is marked to check in your account (`admin/decisions-and-verification.md`, items 25 to 29).
 - Claude is the primary interface throughout (README, onboarding, Step 0, `AGENTS.md`, the tool pages); Codex is the secondary path. The Cowork page recommends Auto approval mode where available and never Skip.
 - The dry run checks the session, the connected folder, the token file (present and ignored, yes or no) and the project's instructions (rows 14 to 16); session readiness adds Push, Session and Token file (rows 8 to 10).
+- `feedback.py`: a title may start with a bare file name, one that exists in the playbook (`LICENSE: ...`) or a common one without an extension (`Makefile: ...`); a plain word is still refused.
+- Admin pages: every script is listed as built, and the publishing example no longer says "v1 draft". The playbook's own `.gitignore` now ignores Python caches, and three cache files committed by mistake are removed.
 
 ## v1.0
 

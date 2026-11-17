@@ -19,10 +19,10 @@ This playbook is one repo. The starter folder for each project's delivery repo l
    ```
    git init -b main
    git add .
-   git commit -m "Delivery Playbook v1 draft"
+   git commit -m "Delivery Playbook"
    git remote add origin https://github.com/basimnabi10/delivery-playbook.git
    git push -u origin main
-   git tag v0.1 && git push origin v0.1
+   git tag -a v1.0 -m "Delivery Playbook v1.0" && git push origin v1.0
    ```
 
    The first commit is the only one made straight to `main`.

@@ -590,6 +590,10 @@ def feedback_section(tmp):
     dr5 = F("draft", "F-005", "--title", dot, "--body", "Running the scripts creates a cache folder that the starter does not ignore, so it ends up in commits. Ignore it in the starter.")
     check("a title may start with a dotfile or any repository path", dr5.returncode == 0 and entries()[4]["status"] == "drafted", dr5.stdout)
     check("a title that names no place is still refused", F("check", "--title", "Fix: the caches end up in every commit", "--body", "x" * 80).returncode == 1)
+    check("a bare file name works as the title location: one in the playbook (LICENSE) or a common one (Makefile)",
+          F("check", "--title", "LICENSE: name the copyright holder in one place only", "--body", "x" * 80).returncode == 0
+          and F("check", "--title", "Makefile: add a target that runs the selftest", "--body", "x" * 80).returncode == 0)
+    check("a bare word that is neither is still refused", F("check", "--title", "Licence: name the copyright holder in one place", "--body", "x" * 80).returncode == 1)
     F("approve", "F-005", "--by", "Dana Ortiz")
     log.write_text("")
     cm = F("comment", "F-005", "--on", "7", env=env())

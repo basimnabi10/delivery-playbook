@@ -130,12 +130,27 @@ def name_candidates(text):
     return sorted(found)
 
 
+# Common file names without an extension, accepted as a title location even when the playbook has no such file.
+BARE_FILES = {"Makefile", "Dockerfile", "LICENSE", "CODEOWNERS", "Procfile", "Gemfile", "Rakefile", "Vagrantfile", "Jenkinsfile", "README", "CHANGELOG", "NOTICE"}
+BARE_NAME_RX = re.compile(r"^([A-Za-z0-9_-]+): \S.{8,}$")
+
+
+def bare_file_title(root, title):
+    """A title may start with a bare file name: one that exists in the playbook (the pinned playbook/ folder in a
+    delivery repo, or the repo itself in a playbook clone), or a common one such as Makefile. A plain word is refused."""
+    m = BARE_NAME_RX.match(title or "")
+    if not m:
+        return False
+    base = root / "playbook" if (root / "playbook").is_dir() else root
+    return m.group(1) in BARE_FILES or (base / m.group(1)).is_file()
+
+
 def check_text(root, title, body):
     """Return (errors, warnings). Errors block drafting and filing; warnings are for a person to look at."""
     errors, warnings = [], []
     text = (title or "") + "\n" + (body or "")
-    if not TITLE_RX.match(title or ""):
-        errors.append("title: start with where, then a colon and a plain sentence: 'Step 4: ...' or a file name such as 'README.md: ...'")
+    if not (TITLE_RX.match(title or "") or bare_file_title(root, title)):
+        errors.append("title: start with where, then a colon and a plain sentence: 'Step 4: ...', a path such as 'scripts/sync.py: ...', or a file name such as 'Makefile: ...'")
     elif len(title) > 100:
         warnings.append("title: over 100 characters; shorter is easier to triage")
     if len(title or "") > 140:
