@@ -1,0 +1,9 @@
+# Every screen and state the product needs, so devs and QA can check nothing is missing.
+updated: 0000-00-00
+items: []
+# - id: checkout-payment
+#   title: Payment
+#   flow: checkout
+#   states: [default, loading, error, empty]
+#   status: approved          # not-started | in-progress | in-review | approved | handed-off
+#   version: v3

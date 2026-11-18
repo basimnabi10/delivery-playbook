@@ -1,0 +1,10 @@
+# Questions the design is waiting on. Close a question by adding the answer, the date and where it came from.
+items: []
+# - id: q-brand-colour
+#   question: Final primary brand colour?
+#   flow: brand
+#   asked: 2026-01-10
+#   waiting_on: client        # client | product | dev
+#   answer:
+#   answered:
+#   source:

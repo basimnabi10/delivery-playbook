@@ -94,19 +94,29 @@ One line per path, two spaces per level. A name with a placeholder (`YYYY-MM-DD`
   design/                            S1  owner: design
     README.md                        S2  what the folder is for
     hub/                             S1  an empty stub: nothing on the page comes from design until a section needs it
-    internal/                        S2  never rendered
-      figma.yml                      S2  links, not copies
-      briefs/                        S2
-        <slug>.md                    S2
-      prototypes/                    S2
-        <slug>.md                    S2
-      handoff/                       S2
-        <slug>.md                    S2
+    internal/                        S2  never rendered; the design record, links not copies
+      status.yml                     S2  where every design item stands today
+      design-files.yml               S2  every Claude Design link, with the version that matters
+      screens.yml                    S2  every screen and state, by flow
+      approvals.yml                  S2  what was signed off, when, and the proof
+      change-requests.yml            S2  changes asked for after approval, flagged to the PM
+      open-questions.yml             S2  what the design is waiting on
+      01-intake/                     S2  the product handoff and constraints
+      02-brand/                      S2  brand guide, design system, its changelog and thinking
+      03-inspiration/                S2  moodboards and references, as links, with why
+      04-research/                   S2  personas, journeys and findings
+      05-concepts/                   S2  wireframes and first drafts, kept or dropped
+      06-flows/                      S2  one folder per flow
+        _flow-template/              S2  copy and rename per flow: brief, thinking, versions, handoff
+      design-review/                 S2  built versus designed, one file per release
       decisions/                     S2
+        YYYY-MM-DD-<slug>.md         S2  one design decision: options, choice, reason, approver
+      log/                           S2
+        YYYY-MM-DD.md                S2  one working day: what, why, hours, next
       deltas/                        S2
         index.yml                    S2  locations of design-delta documents
 ```
-Each function folder also holds a `README.md` that names its owner, its scope and what the Hub reads from it.
+Each function folder also holds a `README.md` that names its owner, its scope and what the Hub reads from it. Inside `design/`, every folder also has its own `README.md` and a `cover.svg` picture of what it holds, and the files that start with `_` are templates to copy.
 
 ## What each Hub section reads
 

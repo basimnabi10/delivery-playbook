@@ -1,0 +1,13 @@
+# Where every design item stands today. Updated at the end of each design session.
+# Read first by anyone on the team, and by the weekly run when it drafts the PM's weekly page.
+updated: 0000-00-00
+items: []
+# - id: checkout              # the same id as the folder in 06-flows/
+#   title: Checkout
+#   stage: flows              # intake | brand | inspiration | research | concepts | flows | review
+#   status: in-review         # exploring | in-review | approved | handed-off | parked
+#   version: v3               # the version in design-files.yml
+#   next: Send v3 to the PM for client review
+#   waiting_on: client        # client | product | dev | design | none
+#   hours_to_date: 14         # internal; the sum of this item's hours in log/
+#   updated: 2026-01-15

@@ -1,0 +1,15 @@
+# Every Claude Design file for this project, as a link. The design itself is never copied into the repo.
+# One row per design, design system, moodboard or concept. Add a row when a new one is started.
+updated: 0000-00-00
+items: []
+# - id: checkout
+#   title: Checkout flow
+#   tool: claude-design       # claude-design | figma | other
+#   kind: design              # design | design-system | moodboard | concept | prototype
+#   url: https://claude.ai/artifact/<id>
+#   version: v3               # the version label that matters now (the approved or in-review one)
+#   status: in-review         # exploring | in-review | approved | handed-off | parked
+#   owner: design
+#   visibility: internal      # internal | client-visible (the PM decides when a design is shared)
+#   folder: 06-flows/checkout/
+#   checked: 2026-01-15       # last time someone confirmed the link and version
