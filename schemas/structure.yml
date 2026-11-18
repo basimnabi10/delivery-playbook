@@ -64,12 +64,16 @@ files:
   - {path: "qa/internal/test-plans/*.md",  schema: copy, kind: frontmatter, stage: S2}
 
   # design/  owner: design. design/hub/ is an empty stub until something on the page comes from design.
-  - {path: design/README.md,               kind: text, stage: S2}
-  - {path: design/internal/figma.yml,      stage: S2}
-  - {path: design/internal/deltas/index.yml, schema: manifest, stage: S2}
-  - {path: "design/internal/briefs/*.md",     schema: copy, kind: frontmatter, stage: S2}
-  - {path: "design/internal/prototypes/*.md", schema: copy, kind: frontmatter, stage: S2}
-  - {path: "design/internal/handoff/*.md",    schema: copy, kind: frontmatter, stage: S2}
+  - {path: design/README.md,                    kind: text, stage: S2}
+  - {path: design/internal/status.yml,                stage: S2}
+  - {path: design/internal/design-files.yml,          stage: S2}
+  - {path: design/internal/screens.yml,               stage: S2}
+  - {path: design/internal/approvals.yml,             stage: S2}
+  - {path: design/internal/change-requests.yml,       stage: S2}
+  - {path: design/internal/open-questions.yml,        stage: S2}
+  - {path: design/internal/deltas/index.yml,    schema: manifest, stage: S2}
+  - {path: "design/internal/decisions/*.md",    kind: text, stage: S2}
+  - {path: "design/internal/log/*.md",          kind: text, stage: S2}
 
 dirs:
   # Root folders. scripts/ and playbook/ are copied in by new_delivery_repo.py, so the starter folder does not hold them.
@@ -115,10 +119,16 @@ dirs:
   - {path: design/,                                   stage: S1}
   - {path: design/hub/,                               stage: S1}                  # an empty stub is valid
   - {path: design/internal/,                          stage: S2}
-  - {path: design/internal/briefs/,                   stage: S2}
-  - {path: design/internal/prototypes/,               stage: S2}
-  - {path: design/internal/handoff/,                  stage: S2}
+  - {path: design/internal/01-intake/,                stage: S2}
+  - {path: design/internal/02-brand/,                 stage: S2}
+  - {path: design/internal/03-inspiration/,           stage: S2}
+  - {path: design/internal/04-research/,              stage: S2}
+  - {path: design/internal/05-concepts/,              stage: S2}
+  - {path: design/internal/06-flows/,                 stage: S2}
+  - {path: design/internal/06-flows/_flow-template/,  stage: S2}
+  - {path: design/internal/design-review/,            stage: S2}
   - {path: design/internal/decisions/,                stage: S2}
+  - {path: design/internal/log/,                      stage: S2}
   - {path: design/internal/deltas/,                   stage: S2}
 
 # Which function owns each top-level folder (used by check_writers and the CODEOWNERS generator)

@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 252" width="880" height="252" role="img" aria-label="One flow, start to handoff: Copy this folder and rename it for each new flow. Nine short files tell the whole story of that flow.">
+<style>
+.bg{fill:#F6F7FC;stroke:#E1E5F2}.bar{fill:#4156AF}.tile{fill:#EEF1FB}.ic{fill:none;stroke:#4156AF;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.eye{fill:#5A6178;font:600 12px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.08em}
+.ttl{fill:#2C3C82;font:700 26px -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
+.tag{fill:#3A3F52;font:400 16px -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
+.chip{fill:#FFFFFF;stroke:#E1E5F2}.ctx{fill:#2C3C82;font:500 13px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+@media (prefers-color-scheme:dark){.bg{fill:#151A2E;stroke:#273050}.bar{fill:#8EA0F0}.tile{fill:#1D2547}.ic{stroke:#8EA0F0}
+.eye{fill:#98A0BA}.ttl{fill:#C3CDFF}.tag{fill:#CFD4E6}.chip{fill:#0E1222;stroke:#273050}.ctx{fill:#C3CDFF}}
+</style>
+<rect class="bg" x="1" y="1" width="878" height="250" rx="16"/>
+<clipPath id="card"><rect x="1" y="1" width="878" height="250" rx="16"/></clipPath>
+<rect class="bar" x="1" y="1" width="8" height="250" clip-path="url(#card)"/>
+<rect class="tile" x="36" y="56.0" width="140" height="140" rx="22"/>
+<g class="ic" transform="translate(58 78.0) scale(4)"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></g>
+<text class="eye" x="204" y="52">COPY ME</text>
+<text class="ttl" x="204" y="84">One flow, start to handoff</text>
+<text class="tag" x="204" y="112">Copy this folder and rename it for each new flow. Nine short files tell</text>
+<text class="tag" x="204" y="136">the whole story of that flow.</text>
+<rect class="chip" x="204" y="162" width="85" height="26" rx="13"/>
+<text class="ctx" x="215" y="179.5">brief.md</text>
+<rect class="chip" x="297" y="162" width="108" height="26" rx="13"/>
+<text class="ctx" x="308" y="179.5">thinking.md</text>
+<rect class="chip" x="413" y="162" width="108" height="26" rx="13"/>
+<text class="ctx" x="424" y="179.5">versions.md</text>
+<rect class="chip" x="529" y="162" width="93" height="26" rx="13"/>
+<text class="ctx" x="540" y="179.5">states.md</text>
+<rect class="chip" x="630" y="162" width="77" height="26" rx="13"/>
+<text class="ctx" x="641" y="179.5">copy.md</text>
+<rect class="chip" x="204" y="196" width="148" height="26" rx="13"/>
+<text class="ctx" x="215" y="213.5">accessibility.md</text>
+<rect class="chip" x="360" y="196" width="108" height="26" rx="13"/>
+<text class="ctx" x="371" y="213.5">feedback.md</text>
+<rect class="chip" x="476" y="196" width="100" height="26" rx="13"/>
+<text class="ctx" x="487" y="213.5">prompts.md</text>
+<rect class="chip" x="584" y="196" width="132" height="26" rx="13"/>
+<text class="ctx" x="595" y="213.5">dev-handoff.md</text>
+</svg>

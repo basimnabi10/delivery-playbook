@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 220" width="880" height="220" role="img" aria-label="Brand and design system: The brand guide, the Claude Design design system, every change to it, and the thinking behind the direction.">
+<style>
+.bg{fill:#F6F7FC;stroke:#E1E5F2}.bar{fill:#4156AF}.tile{fill:#EEF1FB}.ic{fill:none;stroke:#4156AF;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.eye{fill:#5A6178;font:600 12px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.08em}
+.ttl{fill:#2C3C82;font:700 26px -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
+.tag{fill:#3A3F52;font:400 16px -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
+.chip{fill:#FFFFFF;stroke:#E1E5F2}.ctx{fill:#2C3C82;font:500 13px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+@media (prefers-color-scheme:dark){.bg{fill:#151A2E;stroke:#273050}.bar{fill:#8EA0F0}.tile{fill:#1D2547}.ic{stroke:#8EA0F0}
+.eye{fill:#98A0BA}.ttl{fill:#C3CDFF}.tag{fill:#CFD4E6}.chip{fill:#0E1222;stroke:#273050}.ctx{fill:#C3CDFF}}
+</style>
+<rect class="bg" x="1" y="1" width="878" height="218" rx="16"/>
+<clipPath id="card"><rect x="1" y="1" width="878" height="218" rx="16"/></clipPath>
+<rect class="bar" x="1" y="1" width="8" height="218" clip-path="url(#card)"/>
+<rect class="tile" x="36" y="40.0" width="140" height="140" rx="22"/>
+<g class="ic" transform="translate(58 62.0) scale(4)"><circle cx="13.5" cy="6.5" r="1.5"/><circle cx="17.5" cy="10.5" r="1.5"/><circle cx="8.5" cy="7.5" r="1.5"/><circle cx="6.5" cy="12.5" r="1.5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.65-.75 1.65-1.69 0-.44-.18-.84-.44-1.13-.29-.29-.44-.65-.44-1.13a1.64 1.64 0 0 1 1.67-1.67h2c3.05 0 5.56-2.5 5.56-5.55C21.97 6.01 17.46 2 12 2z"/></g>
+<text class="eye" x="204" y="52">STAGE 2 · BRAND</text>
+<text class="ttl" x="204" y="84">Brand and design system</text>
+<text class="tag" x="204" y="112">The brand guide, the Claude Design design system, every change to it, and</text>
+<text class="tag" x="204" y="136">the thinking behind the direction.</text>
+<rect class="chip" x="204" y="162" width="132" height="26" rx="13"/>
+<text class="ctx" x="215" y="179.5">brand-guide.md</text>
+<rect class="chip" x="344" y="162" width="148" height="26" rx="13"/>
+<text class="ctx" x="355" y="179.5">design-system.md</text>
+<rect class="chip" x="500" y="162" width="116" height="26" rx="13"/>
+<text class="ctx" x="511" y="179.5">changelog.md</text>
+<rect class="chip" x="624" y="162" width="108" height="26" rx="13"/>
+<text class="ctx" x="635" y="179.5">thinking.md</text>
+</svg>

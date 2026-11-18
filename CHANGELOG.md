@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Design folder, ready for Claude Design: `design/internal/` is now the design record, laid out in the order design work happens: `01-intake/` (product handoff, constraints), `02-brand/` (brand guide, design system, its changelog, thinking), `03-inspiration/` (moodboards and references as links, with why each was kept or dropped), `04-research/`, `05-concepts/`, and `06-flows/` with one folder per flow copied from `_flow-template/` (brief, thinking, versions, states, copy, accessibility, feedback, prompts, developer handoff). Alongside them: `design-review/`, `decisions/` (one file per decision, with the reason and approver), `log/` (one file per working day: what, why, hours, next) and `deltas/`. Top-level lists the whole team reads: `status.yml`, `design-files.yml` (every Claude Design link and its version), `screens.yml`, `approvals.yml`, `change-requests.yml`, `open-questions.yml`, plus `assets.md`, `naming.md`, `prompt-library.md` and `learnings.md`. Every folder has a README and a `cover.svg` picture of what it holds; files starting with `_` are templates. `design/hub/` stays an empty stub.
+- `figma.yml`, `briefs/`, `prototypes/` and `handoff/` are replaced by `design-files.yml` and the flow folders. Migration: optional. `validate` only notes missing Stage 2 files and folders, so an existing repo keeps working; the design README says where each old file moves, and the new folders can be copied from `playbook/templates/delivery-repo/design/`.
+
 ## v1.1
 
 - Conventions: the playbook recommends, the project decides. `schemas/conventions.yml` lists every overridable convention (git workflow, branch naming, merge method, pull requests, base-branch protection, cross-function pull requests, release scheme, id pattern and status label, environments, repo name pattern, optional folders) with the recommendation, the alternatives and the reason; `onboarding/conventions.md` explains them and lists the rules that are not conventions (client safety, visibility, secrets, the three approval gates).

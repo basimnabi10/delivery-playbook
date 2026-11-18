@@ -1,0 +1,10 @@
+# Changes asked for after something was approved. Each one is flagged to the PM, who decides whether it is in scope.
+items: []
+# - id: cr-checkout-saved-cards
+#   flow: checkout
+#   asked_by: client
+#   date: 2026-01-20
+#   request: Add saved cards to the payment step
+#   after_approval_of: checkout-v3      # id in approvals.yml
+#   pm_decision: pending                # pending | in-scope | out-of-scope | later
+#   status: open                        # open | done | declined

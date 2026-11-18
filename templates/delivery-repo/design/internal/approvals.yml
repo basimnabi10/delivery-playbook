@@ -1,0 +1,10 @@
+# What was signed off, by whom, when, and the proof. This settles "we never agreed to that".
+items: []
+# - id: checkout-v3
+#   what: Checkout flow v3
+#   design: checkout          # id in design-files.yml
+#   version: v3
+#   approved_by: client       # client | product | pm
+#   date: 2026-01-15
+#   evidence: project/internal/meetings/summaries/2026-01-15-weekly.md   # or an email subject and date
+#   notes: Approved with one change, tracked in change-requests.yml
